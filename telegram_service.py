@@ -70,7 +70,7 @@ async def send_plots_to_all(plot_paths, context: ContextTypes.DEFAULT_TYPE):
 
 async def send_messages_to_all(message_paths, context: ContextTypes.DEFAULT_TYPE):
     subscribers = get_subscribers()
-    messages = [open(message_path, 'r').read() for message_path in message_paths]
+    messages = [open(message_path, 'r', encoding="utf-8").read() for message_path in message_paths]
     for chat_id in subscribers:
         for message in messages:
             await context.bot.send_message(chat_id=chat_id, text=message, parse_mode='MarkdownV2')
