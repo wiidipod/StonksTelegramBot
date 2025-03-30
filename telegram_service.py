@@ -73,7 +73,6 @@ async def send_messages_to_all(message_paths, context: ContextTypes.DEFAULT_TYPE
     messages = [open(message_path, 'r').read() for message_path in message_paths]
     for chat_id in subscribers:
         for message in messages:
-            print(message)
             await context.bot.send_message(chat_id=chat_id, text=message, parse_mode='MarkdownV2')
 
 
