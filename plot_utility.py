@@ -60,7 +60,8 @@ def plot(
     plt.tight_layout()
     image_path = f'{ticker}_plot.png'
     plt.savefig(image_path)
-    plt.show()
+    # plt.show()
+
     return image_path
 
 

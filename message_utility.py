@@ -66,7 +66,7 @@ def write_message(
 
     message_path = f"{ticker}_message.txt"
 
-    with open(message_path, "w") as file:
+    with open(message_path, "w", encoding="utf-8") as file:
         file.write(message)
 
     return message_path

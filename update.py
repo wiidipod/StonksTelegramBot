@@ -64,5 +64,3 @@ if __name__ == '__main__':
 
     application = telegram_service.get_application()
     asyncio.run(telegram_service.send_all(plot_paths, message_paths, application))
-    # asyncio.run(telegram_service.send_plots_to_all(plot_paths, application))
-    # asyncio.run(telegram_service.send_messages_to_all(message_paths, application))
