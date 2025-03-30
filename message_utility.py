@@ -11,8 +11,8 @@ def write_message(
     macd_signal=None,
     macd_diff=None,
 ):
-    bearish_emoji = "\U0001F4C9"
-    bullish_emoji = "\U0001F4C8"
+    bearish_emoji = "📉"
+    bullish_emoji = "📈"
 
     if sma_220[-1] <= close[-1]:
         sma_emoji = bullish_emoji
