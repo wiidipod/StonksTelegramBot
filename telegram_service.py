@@ -61,11 +61,25 @@ async def end(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=chat_id, text=message)
 
 
-async def send_images_to_all(image_paths, context: ContextTypes.DEFAULT_TYPE):
+async def send_plots_to_all(plot_paths, context: ContextTypes.DEFAULT_TYPE):
     subscribers = get_subscribers()
-    media = [InputMediaPhoto(open(image_path, 'rb')) for image_path in image_paths]
+    media = [InputMediaPhoto(open(image_path, 'rb')) for image_path in plot_paths]
     for chat_id in subscribers:
         await context.bot.send_media_group(chat_id=chat_id, media=media)
+
+
+async def send_messages_to_all(message_paths, context: ContextTypes.DEFAULT_TYPE):
+    subscribers = get_subscribers()
+    messages = [open(message_path, 'r').read() for message_path in message_paths]
+    for chat_id in subscribers:
+        for message in messages:
+            print(message)
+            await context.bot.send_message(chat_id=chat_id, text=message, parse_mode='MarkdownV2')
+
+
+async def send_all(plot_paths, message_paths, context: ContextTypes.DEFAULT_TYPE):
+    await send_plots_to_all(plot_paths, context)
+    await send_messages_to_all(message_paths, context)
 
 
 def get_application():

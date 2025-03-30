@@ -1,12 +1,12 @@
 import numpy as np
 from matplotlib import pyplot as plt
-import yfinance_service
 from matplotlib.patches import Rectangle
 import matplotlib.gridspec as gridspec
 
 
 def plot(
         ticker,
+        name,
         close,
         sma_220,
         growths,
@@ -20,7 +20,6 @@ def plot(
         macd_diff=None
 ):
     length = end_index - start_index
-    name = yfinance_service.get_name(ticker)
 
     fig = plt.figure(figsize=(9.0, 14.0))
     fig.suptitle(name)
