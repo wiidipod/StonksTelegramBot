@@ -20,8 +20,8 @@ def get_growths(closes, future=0):
     factor, base, error_factor = get_fit(closes)
 
     growth = get_growth(len(closes) + future, factor, base)
-    lower_growth = get_growth(len(closes) + future, factor, base, 1.0 / error_factor)
-    upper_growth = get_growth(len(closes) + future, factor, base, error_factor)
+    lower_growth = [g / error_factor for g in growth]
+    upper_growth = [g * error_factor for g in growth]
     lower_border = [min(c / g for c, g in zip(closes, growth)) * g for g in growth]
     upper_border = [max(c / g for c, g in zip(closes, growth)) * g for g in growth]
 
