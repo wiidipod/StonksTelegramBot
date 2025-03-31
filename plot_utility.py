@@ -3,14 +3,56 @@ from matplotlib import pyplot as plt
 from matplotlib.patches import Rectangle
 import matplotlib.gridspec as gridspec
 
+import regression_utility
+import yfinance_service
+
 
 def plot(
         ticker,
         name,
         close,
-        sma_220,
         growths,
         yscale='log',
+):
+    fig = plt.figure(figsize=(27.0, 9.0))
+    fig.suptitle(name)
+
+    price_subplot = fig.add_subplot(111)
+    price_subplot.set_yscale(yscale)
+    price_subplot.set_ylabel('Price')
+    price_subplot.plot(close)
+    price_subplot.grid(True)
+    for i, growth in enumerate(growths):
+        if i == 0:
+            color = 'tab:red'
+        elif i == 1:
+            color = 'tab:purple'
+        elif i == 2:
+            color = 'tab:blue'
+        elif i == 3:
+            color = 'tab:cyan'
+        elif i == 4:
+            color = 'tab:green'
+        else:
+            color = 'tab:gray'
+        plt.plot(growth, color=color, linestyle='dashed')
+
+    plt.tight_layout()
+    image_path = f'{ticker}_plot.png'
+    plt.savefig(image_path)
+    # plt.close(fig)
+    # plt.show()
+
+    return image_path
+
+
+def plot_with_ta(
+        ticker,
+        name,
+        close,
+        sma_220,
+        growths,
+        yscale='linear',
         start_index=0,
         end_index=250,
         rsi=None,
@@ -21,7 +63,7 @@ def plot(
 ):
     length = end_index - start_index
 
-    fig = plt.figure(figsize=(9.0, 14.0))
+    fig = plt.figure(figsize=(9.0, 9.0))
     fig.suptitle(name)
     gs = gridspec.GridSpec(3, 1, height_ratios=[3, 1, 1])
 
@@ -33,8 +75,20 @@ def plot(
     price_subplot.plot(close[start_index:end_index])
     price_subplot.plot(sma_220[start_index:end_index])
     price_subplot.grid(True)
-    for growth in growths:
-        plt.plot(growth[start_index:end_index], color='gray', linestyle='dashed')
+    for i, growth in enumerate(growths):
+        if i == 0:
+            color = 'tab:red'
+        elif i == 1:
+            color = 'tab:purple'
+        elif i == 2:
+            color = 'tab:blue'
+        elif i == 3:
+            color = 'tab:cyan'
+        elif i == 4:
+            color = 'tab:green'
+        else:
+            color = 'tab:gray'
+        plt.plot(growth[start_index:end_index], color=color, linestyle='dashed')
 
     # MACD
     macd_subplot = fig.add_subplot(gs[1])
@@ -50,15 +104,16 @@ def plot(
     rsi_subplot.set_ylabel('RSI')
     rsi_subplot.plot(rsi[start_index:])
     rsi_subplot.plot(rsi_sma[start_index:])
-    rsi_subplot.plot([70] * length, color='gray', linestyle='dashed')
-    rsi_subplot.plot([50] * length, color='gray', linestyle='dashed')
-    rsi_subplot.plot([30] * length, color='gray', linestyle='dashed')
-    rect = Rectangle((0, 30), length, 40, color='gray', alpha=0.3)
+    color = 'tab:gray'
+    rsi_subplot.plot([70] * length, color=color, linestyle='dashed')
+    rsi_subplot.plot([50] * length, color=color, linestyle='dashed')
+    rsi_subplot.plot([30] * length, color=color, linestyle='dashed')
+    rect = Rectangle((0, 30), length, 40, color=color, alpha=0.3)
     rsi_subplot.add_patch(rect)
     rsi_subplot.grid(True)
 
     plt.tight_layout()
-    image_path = f'{ticker}_plot.png'
+    image_path = f'{ticker}_plot_with_ta.png'
     plt.savefig(image_path)
     # plt.close(fig)
     # plt.show()
@@ -82,3 +137,16 @@ def get_colors(macd_diff, start_index):
         if 0 > macd1 > macd0:
             colors.append(red2)
     return colors
+
+
+if __name__ == '__main__':
+    ticker = 'PUM.DE'
+    name = yfinance_service.get_name(ticker)
+    close = yfinance_service.get_closes([ticker])[ticker]
+    fit, lower_fit, upper_fit, lower_border, upper_border = regression_utility.get_growths(close, future=250)
+    plot(
+        ticker,
+        name,
+        close,
+        [lower_border, lower_fit, fit, upper_fit, upper_border],
+    )

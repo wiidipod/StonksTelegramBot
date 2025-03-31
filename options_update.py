@@ -20,6 +20,7 @@ if __name__ == '__main__':
     future = 250
 
     upsides = {}
+    all_plot_with_ta_paths = {}
     all_plot_paths = {}
     all_message_paths = {}
 
@@ -36,7 +37,7 @@ if __name__ == '__main__':
                 continue
 
             rsi, rsi_sma = ta_utility.calculate_rsi(close)
-            if rsi[-1] >= 70.0 or rsi_sma[-1] >= 70.0:
+            if rsi[-1] > 70.0 or rsi_sma[-1] > 70.0:
                 continue
 
             macd, macd_signal, macd_diff = ta_utility.calculate_macd(close)
@@ -49,19 +50,25 @@ if __name__ == '__main__':
 
             upside = lower_growth[-1] / close[-1] - 1.0
             downside = 1.0 - lower_border[-1] / close[-1]
-            if upside <= 0.0 or downside >= 0.0:
+            if upside < 0.0 or downside > 0.0:
                 continue
 
+            pe_ratio = yfinance_service.get_pe_ratio(ticker)
+            if pe_ratio is None:
+                continue
+
+            upside = (upside + 1.0) / pe_ratio * 20.0 - 1.0
             upsides[ticker] = upside
 
             name = f'{yfinance_service.get_name(ticker)}: {upside:.2%}'
+            growths = [lower_border, lower_growth, growth, upper_growth, upper_border]
 
-            plot_path = plot_utility.plot(
+            plot_with_ta_path = plot_utility.plot_with_ta(
                 ticker,
                 name,
                 close,
                 ta_utility.calculate_sma_220(close),
-                [lower_border, lower_growth, growth, upper_growth, upper_border],
+                growths,
                 start_index=len(close) - future,
                 end_index=len(close),
                 rsi=rsi,
@@ -71,12 +78,19 @@ if __name__ == '__main__':
                 macd_diff=macd_diff,
             )
 
+            plot_path = plot_utility.plot(
+                ticker,
+                name,
+                close,
+                growths,
+            )
+
             message_path = message_utility.write_message(
                 ticker,
                 name,
                 close,
                 ta_utility.calculate_sma_220(close),
-                [lower_border, lower_growth, growth, upper_growth, upper_border],
+                growths,
                 future=future,
                 rsi=rsi,
                 rsi_sma=rsi_sma,
@@ -85,6 +99,7 @@ if __name__ == '__main__':
                 macd_diff=macd_diff,
             )
 
+            all_plot_with_ta_paths[ticker] = plot_with_ta_path
             all_plot_paths[ticker] = plot_path
             all_message_paths[ticker] = message_path
 
@@ -92,10 +107,18 @@ if __name__ == '__main__':
     message_paths = []
 
     sorted_upsides = sorted(upsides.items(), key=lambda x: x[1], reverse=True)
-    for ticker, upside in sorted_upsides[:10]:
+    for ticker, upside in sorted_upsides[:1]:
         print(f"{ticker}: {upside:.2%}")
+        plot_paths.append(all_plot_with_ta_paths[ticker])
         plot_paths.append(all_plot_paths[ticker])
         message_paths.append(all_message_paths[ticker])
+
+        # name = yfinance_service.get_name(ticker)
+        # close = yfinance_service.get_closes([ticker])[ticker]
+        # fit, lower_fit, upper_fit, lower_border, upper_border = regression_utility.get_growths(close, future=0)
+        # growths = [lower_border, lower_fit, fit, upper_fit, upper_border]
+        # plot_with_ta_path = plot_utility.plot(ticker, name, close, growths)
+        # plot_paths.append(plot_with_ta_path)
 
     application = telegram_service.get_application()
     asyncio.run(telegram_service.send_all(plot_paths, message_paths, application))

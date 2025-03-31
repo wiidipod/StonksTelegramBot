@@ -69,7 +69,6 @@ def get_dow_jones_tickers():
     column = 1
     tickers = get_tickers(source, column=column, replace_dots=True)
     tickers.append('^DJI')
-    print(list(reversed(tickers)))
     return tickers
 
 
@@ -104,7 +103,6 @@ def get_tecdax_tickers():
     exchange = 'DE'
     tickers = get_tickers(source, attribute='id', name=id, column=column, exchange=exchange)
     tickers.append('^TECDAX')
-    print(list(reversed(tickers)))
     return tickers
 
 
@@ -132,7 +130,6 @@ def get_cac_40_tickers():
     column = 3
     tickers = get_tickers(source, column=column)
     tickers.append('^FCHI')
-    print(list(reversed(tickers)))
     return tickers
 
 

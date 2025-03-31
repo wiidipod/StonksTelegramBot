@@ -24,7 +24,7 @@ def write_message(
     else:
         growth_emoji = bearish_emoji
 
-    if rsi[-1] < 70 and rsi_sma[-1] < 70:
+    if rsi[-1] < 70.0 and rsi_sma[-1] < 70.0:
         rsi_emoji = bullish_emoji
     else:
         rsi_emoji = bearish_emoji

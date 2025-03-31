@@ -9,8 +9,16 @@ import message_utility
 
 if __name__ == '__main__':
     tickers = [
-        '^NDX',
         '^GDAXI',
+        '^NDX',
+        '^GSPC',
+        '^DJI',
+        '^MDAXI',
+        '^STOXX50E',
+        '^N225',
+        '^TECDAX',
+        '^FCHI',
+        '^FTSE',
         'BTC-EUR',
         'GME'
     ]
@@ -30,7 +38,7 @@ if __name__ == '__main__':
         macd, macd_signal, macd_diff = ta_utility.calculate_macd(close)
         name = yfinance_service.get_name(ticker)
 
-        plot_path = plot_utility.plot(
+        plot_path = plot_utility.plot_with_ta(
             ticker,
             name,
             close,
