@@ -1,5 +1,4 @@
 import asyncio
-
 import message_utility
 import plot_utility
 import regression_utility
@@ -20,6 +19,7 @@ if __name__ == '__main__':
     future = 250
 
     upsides = {}
+    peg_ratios = {}
     all_plot_with_ta_paths = {}
     all_plot_paths = {}
     all_message_paths = {}
@@ -48,19 +48,18 @@ if __name__ == '__main__':
             if growth[-future] >= growth[-1] or lower_growth[-future] <= close[-1]:
                 continue
 
-            upside = lower_growth[-1] / close[-1] - 1.0
-            downside = 1.0 - lower_border[-1] / close[-1]
-            if upside < 0.0 or downside > 0.0:
+            upside = min(lower_growth[-future], lower_border[-1]) / close[-1] - 1.0
+            if upside < 0.0:
                 continue
 
-            pe_ratio = yfinance_service.get_pe_ratio(ticker)
-            if pe_ratio is None:
+            peg_ratio = yfinance_service.get_peg_ratio(ticker)
+            if peg_ratio is None or peg_ratio > 1.0:
                 continue
 
-            upside = upside / pe_ratio * 20.0
             upsides[ticker] = upside
+            peg_ratios[ticker] = peg_ratio
 
-            name = f'{yfinance_service.get_name(ticker)} - Upside: {upside:.2%}'
+            name = f'{yfinance_service.get_name(ticker)}'
             growths = [lower_border, lower_growth, growth, upper_growth, upper_border]
 
             plot_with_ta_path = plot_utility.plot_with_ta(
@@ -108,7 +107,7 @@ if __name__ == '__main__':
 
     sorted_upsides = sorted(upsides.items(), key=lambda x: x[1], reverse=True)
     for ticker, upside in sorted_upsides[:10]:
-        print(f"{ticker} - Upside: {upside:.2%}")
+        print(f"{ticker} - Upside: {upside:.2%} - PEG Ratio: {peg_ratios[ticker]:.2f}")
         plot_paths.append(all_plot_with_ta_paths[ticker])
         plot_paths.append(all_plot_paths[ticker])
         message_paths.append(all_message_paths[ticker])
