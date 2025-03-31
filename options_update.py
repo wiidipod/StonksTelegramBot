@@ -57,10 +57,10 @@ if __name__ == '__main__':
             if pe_ratio is None:
                 continue
 
-            upside = (upside + 1.0) / pe_ratio * 20.0 - 1.0
+            upside = upside / pe_ratio * 20.0
             upsides[ticker] = upside
 
-            name = f'{yfinance_service.get_name(ticker)}: {upside:.2%}'
+            name = f'{yfinance_service.get_name(ticker)} - Upside: {upside:.2%}'
             growths = [lower_border, lower_growth, growth, upper_growth, upper_border]
 
             plot_with_ta_path = plot_utility.plot_with_ta(
@@ -107,8 +107,8 @@ if __name__ == '__main__':
     message_paths = []
 
     sorted_upsides = sorted(upsides.items(), key=lambda x: x[1], reverse=True)
-    for ticker, upside in sorted_upsides[:1]:
-        print(f"{ticker}: {upside:.2%}")
+    for ticker, upside in sorted_upsides[:10]:
+        print(f"{ticker} - Upside: {upside:.2%}")
         plot_paths.append(all_plot_with_ta_paths[ticker])
         plot_paths.append(all_plot_paths[ticker])
         message_paths.append(all_message_paths[ticker])

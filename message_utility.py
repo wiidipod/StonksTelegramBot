@@ -27,7 +27,7 @@ def write_message(
     else:
         growth_emoji = bearish_emoji
 
-    if rsi[-1] < 30.0 and rsi_sma[-1] < 30.0:
+    if rsi[-1] < 30.0 or rsi_sma[-1] < 30.0:
         rsi_emoji = rocket_emoji
     elif rsi[-1] < 70.0 and rsi_sma[-1] < 70.0:
         rsi_emoji = bullish_emoji
