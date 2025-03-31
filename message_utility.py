@@ -41,8 +41,8 @@ def write_message(
 
     message = f" **{name}** \n \n ".replace('.', '\.')
     message += f"{sma_emoji} **Price** ``` "
-    message += f"Close:       {close[-1]:16.8f} \n "
-    message += f"SMA-220:     {sma_220[-1]:16.8f} \n ``` \n "
+    message += f"Close:   {close[-1]:16.8f} \n "
+    message += f"SMA-220: {sma_220[-1]:16.8f} \n ``` \n "
 
     message += f"{growth_emoji} **Growth** ``` "
     message += f"Highest Fit: {growths[4][-future]:16.8f} \n "
@@ -52,15 +52,15 @@ def write_message(
     message += f"Lowest Fit:  {growths[0][-future]:16.8f} \n ``` \n "
 
     message += f"{rsi_emoji} **RSI** ``` "
-    message += f"RSI:         {rsi[-1]:16.8f} \n "
-    message += f"RSI SMA:     {rsi_sma[-1]:16.8f} \n ``` \n "
+    message += f"RSI:     {rsi[-1]:16.8f} \n "
+    message += f"RSI SMA: {rsi_sma[-1]:16.8f} \n ``` \n "
 
     message += f"{macd_emoji} **MACD** ``` "
     message += f"MACD:        {macd[-1]:16.8f} \n "
     message += f"MACD Signal: {macd_signal[-1]:16.8f} \n "
     message += f"MACD Diff:   {macd_diff[-1]:16.8f} \n ``` \n "
 
-    message += f"**Future Growth** ``` "
+    message += f"**52w Growth** ``` "
     message += f"Highest Fit: {growths[4][-1]:16.8f} \n "
     message += f"Upper Fit:   {growths[3][-1]:16.8f} \n "
     message += f"Fit:         {growths[2][-1]:16.8f} \n "
