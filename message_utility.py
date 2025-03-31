@@ -13,18 +13,23 @@ def write_message(
 ):
     bearish_emoji = "📉"
     bullish_emoji = "📈"
+    rocket_emoji = "🚀"
 
     if sma_220[-1] <= close[-1]:
         sma_emoji = bullish_emoji
     else:
         sma_emoji = bearish_emoji
 
-    if close[-1] <= growths[2][-future]:
+    if close[-1] <= growths[1][-future]:
+        growth_emoji = rocket_emoji
+    elif close[-1] <= growths[2][-future]:
         growth_emoji = bullish_emoji
     else:
         growth_emoji = bearish_emoji
 
-    if rsi[-1] < 70.0 and rsi_sma[-1] < 70.0:
+    if rsi[-1] < 30.0 and rsi_sma[-1] < 30.0:
+        rsi_emoji = rocket_emoji
+    elif rsi[-1] < 70.0 and rsi_sma[-1] < 70.0:
         rsi_emoji = bullish_emoji
     else:
         rsi_emoji = bearish_emoji

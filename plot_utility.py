@@ -14,7 +14,7 @@ def plot(
         growths,
         yscale='log',
 ):
-    fig = plt.figure(figsize=(27.0, 9.0))
+    fig = plt.figure(figsize=(9.0, 9.0), dpi=300)
     fig.suptitle(name)
 
     price_subplot = fig.add_subplot(111)
@@ -63,7 +63,7 @@ def plot_with_ta(
 ):
     length = end_index - start_index
 
-    fig = plt.figure(figsize=(27.0, 15.0))
+    fig = plt.figure(figsize=(9.0, 9.0), dpi=300)
     fig.suptitle(name)
     gs = gridspec.GridSpec(3, 1, height_ratios=[3, 1, 1])
 

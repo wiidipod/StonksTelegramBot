@@ -38,12 +38,13 @@ if __name__ == '__main__':
         macd, macd_signal, macd_diff = ta_utility.calculate_macd(close)
         name = yfinance_service.get_name(ticker)
 
-        plot_path = plot_utility.plot_with_ta(
+        growths = [lower_border, lower_growth, growth, upper_growth, upper_border]
+        plot_with_ta_path = plot_utility.plot_with_ta(
             ticker,
             name,
             close,
             sma_220,
-            [lower_border, lower_growth, growth, upper_growth, upper_border],
+            growths,
             start_index=len(close) - future,
             end_index=len(close),
             rsi=rsi,
@@ -53,12 +54,19 @@ if __name__ == '__main__':
             macd_diff=macd_diff,
         )
 
+        plot_path = plot_utility.plot(
+            ticker,
+            name,
+            close,
+            growths,
+        )
+
         message_path = message_utility.write_message(
             ticker,
             name,
             close,
             sma_220,
-            [lower_border, lower_growth, growth, upper_growth, upper_border],
+            growths,
             future=future,
             rsi=rsi,
             rsi_sma=rsi_sma,
@@ -67,6 +75,7 @@ if __name__ == '__main__':
             macd_diff=macd_diff,
         )
 
+        plot_paths.append(plot_with_ta_path)
         plot_paths.append(plot_path)
         message_paths.append(message_path)
 
