@@ -24,22 +24,25 @@ def get_name(ticker):
 
 
 def get_pe_ratio(ticker, limit=40.0):
-    info = yf.Ticker(ticker).info
-    forward_pe = info.get("forwardPE")
-    trailing_pe = info.get("trailingPE")
-    if (
-        forward_pe is None
-            or trailing_pe is None
-            or forward_pe == 0
-            or trailing_pe == 0
-            or math.isnan(forward_pe)
-            or math.isnan(trailing_pe)
-            or forward_pe > limit
-            or trailing_pe > limit
-    ):
+    try:
+        pe_ratio = yf.Ticker(ticker).info.get("trailingPE")
+        if pe_ratio is None or pe_ratio == 0 or math.isnan(pe_ratio):
+            return None
+        return pe_ratio
+    except:
         return None
-    return (max(forward_pe, 10.0) + max(trailing_pe, 10.0)) / 2.0
+
+
+def get_peg_ratio(ticker):
+    try:
+        peg_ratio = yf.Ticker(ticker).info.get("trailingPegRatio")
+        if peg_ratio is None or peg_ratio == 0 or math.isnan(peg_ratio):
+            return None
+        return peg_ratio
+    except:
+        return None
+
 
 
 if __name__ == '__main__':
-    print(get_pe_ratio('^NDX'))
+    print(get_peg_ratio('AAPL'))
