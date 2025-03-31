@@ -75,17 +75,13 @@ def plot_with_ta(
     price_subplot.plot(close[start_index:end_index])
     price_subplot.plot(sma_220[start_index:end_index])
     price_subplot.grid(True)
-    for i, growth in enumerate(growths):
+    for i, growth in enumerate(growths[1:-1]):
         if i == 0:
-            color = 'tab:red'
-        elif i == 1:
             color = 'tab:purple'
-        elif i == 2:
+        elif i == 1:
             color = 'tab:blue'
-        elif i == 3:
+        elif i == 2:
             color = 'tab:cyan'
-        elif i == 4:
-            color = 'tab:green'
         else:
             color = 'tab:gray'
         plt.plot(growth[start_index:end_index], color=color, linestyle='dashed')
