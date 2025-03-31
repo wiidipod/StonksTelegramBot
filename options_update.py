@@ -36,10 +36,10 @@ if __name__ == '__main__':
                 continue
 
             rsi, rsi_sma = ta_utility.calculate_rsi(close)
-            if rsi[-1] > 70 or rsi_sma[-1] > 70:
+            if rsi[-1] >= 70.0 or rsi_sma[-1] >= 70.0:
                 continue
 
-            macd, macd_signal, macd_diff = ta_utility.calculate_macd(closes[ticker])
+            macd, macd_signal, macd_diff = ta_utility.calculate_macd(close)
             if macd_diff[-1] < 0.0:
                 continue
 
@@ -54,7 +54,7 @@ if __name__ == '__main__':
 
             upsides[ticker] = upside
 
-            name = yfinance_service.get_name(ticker)
+            name = f'{yfinance_service.get_name(ticker)}: {upside:.2%}'
 
             plot_path = plot_utility.plot(
                 ticker,

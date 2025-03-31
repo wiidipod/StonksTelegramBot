@@ -64,6 +64,15 @@ def get_nasdaq_100_tickers():
     return tickers
 
 
+def get_dow_jones_tickers():
+    source = 'https://en.wikipedia.org/wiki/Dow_Jones_Industrial_Average'
+    column = 1
+    tickers = get_tickers(source, column=column, replace_dots=True)
+    tickers.append('^DJI')
+    print(list(reversed(tickers)))
+    return tickers
+
+
 def get_euro_stoxx_50_tickers():
     source = 'https://en.wikipedia.org/wiki/EURO_STOXX_50'
     tickers = get_tickers(source)
@@ -88,6 +97,17 @@ def get_mdax_tickers():
     return tickers
 
 
+def get_tecdax_tickers():
+    source = 'https://de.wikipedia.org/wiki/TecDAX'
+    id = 'zusammensetzung'
+    column = 2
+    exchange = 'DE'
+    tickers = get_tickers(source, attribute='id', name=id, column=column, exchange=exchange)
+    tickers.append('^TECDAX')
+    print(list(reversed(tickers)))
+    return tickers
+
+
 def get_swiss_market_index():
     source = 'https://en.wikipedia.org/wiki/Swiss_Market_Index'
     attribute = 'class'
@@ -104,6 +124,15 @@ def get_ftse_100_tickers():
     exchange = 'L'
     tickers = get_tickers(source, column=column, exchange=exchange)
     tickers.append('^FTSE')
+    return tickers
+
+
+def get_cac_40_tickers():
+    source = 'https://en.wikipedia.org/wiki/CAC_40'
+    column = 3
+    tickers = get_tickers(source, column=column)
+    tickers.append('^FCHI')
+    print(list(reversed(tickers)))
     return tickers
 
 
@@ -168,17 +197,20 @@ def get_precious_metals_tickers():
 
 def get_all_tickers():
     tickers = []
-    tickers.extend(get_s_p_500_tickers())  # United States
-    tickers.extend(get_nasdaq_100_tickers())  # United States
-    tickers.extend(get_euro_stoxx_50_tickers())  # Europe
     tickers.extend(get_dax_tickers())  # Germany
+    tickers.extend(get_nasdaq_100_tickers())  # United States
+    tickers.extend(get_s_p_500_tickers())  # United States
+    tickers.extend(get_dow_jones_tickers())  # United States
     tickers.extend(get_mdax_tickers())  # Germany
-    tickers.extend(get_swiss_market_index())  # Switzerland
-    tickers.extend(get_ftse_100_tickers())  # United Kingdom
-    tickers.extend(get_asx_50_tickers())  # Australia
-    tickers.extend(get_hang_seng_tickers())  # Hong Kong
+    tickers.extend(get_euro_stoxx_50_tickers())  # Europe
     tickers.extend(get_nikkei_225_tickers())  # Japan
-    tickers.extend(get_kospi_tickers())  # South Korea
+    tickers.extend(get_tecdax_tickers())  # Germany
+    tickers.extend(get_cac_40_tickers())  # France
+    tickers.extend(get_ftse_100_tickers())  # United Kingdom
+    # tickers.extend(get_swiss_market_index())  # Switzerland
+    # tickers.extend(get_asx_50_tickers())  # Australia
+    # tickers.extend(get_hang_seng_tickers())  # Hong Kong
+    # tickers.extend(get_kospi_tickers())  # South Korea
     tickers.extend(get_cryptocurrency_tickers())  # Cryptocurrencies
     tickers.extend(get_precious_metals_tickers())  # Precious Metals
     return sorted(list(set(tickers)))
