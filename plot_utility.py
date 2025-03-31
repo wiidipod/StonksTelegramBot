@@ -63,7 +63,7 @@ def plot_with_ta(
 ):
     length = end_index - start_index
 
-    fig = plt.figure(figsize=(9.0, 9.0))
+    fig = plt.figure(figsize=(27.0, 15.0))
     fig.suptitle(name)
     gs = gridspec.GridSpec(3, 1, height_ratios=[3, 1, 1])
 
@@ -144,6 +144,7 @@ if __name__ == '__main__':
     name = yfinance_service.get_name(ticker)
     close = yfinance_service.get_closes([ticker])[ticker]
     fit, lower_fit, upper_fit, lower_border, upper_border = regression_utility.get_growths(close, future=250)
+
     plot(
         ticker,
         name,
