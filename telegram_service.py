@@ -1,5 +1,6 @@
+import asyncio
 import logging
-from telegram import Update, InputMediaPhoto
+from telegram import Update, InputMediaPhoto, BotCommand
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
 
 
@@ -84,6 +85,14 @@ async def send_all(plot_paths, message_paths, context: ContextTypes.DEFAULT_TYPE
     await send_messages_to_all(message_paths, context)
 
 
+async def set_commands(context: ContextTypes.DEFAULT_TYPE):
+    commands = [
+        BotCommand(command='start', description='Subscribe to daily updates'),
+        BotCommand(command='end', description='Unsubscribe from daily updates'),
+    ]
+    await context.bot.set_my_commands(commands)
+
+
 def get_application():
     token = get_token()
     application = ApplicationBuilder().token(token).build()
@@ -95,3 +104,8 @@ def get_application():
     application.add_handler(end_handler)
 
     return application
+
+
+if __name__ == "__main__":
+    application = get_application()
+    asyncio.run(set_commands(application))
