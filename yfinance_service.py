@@ -23,10 +23,10 @@ def get_name(ticker):
     return f'{name} ({ticker})'
 
 
-def get_pe_ratio(ticker, limit=40.0):
+def get_pe_ratio(ticker):
     try:
         pe_ratio = yf.Ticker(ticker).info.get("trailingPE")
-        if pe_ratio is None or pe_ratio == 0 or math.isnan(pe_ratio):
+        if pe_ratio is None or pe_ratio <= 0.0 or math.isnan(pe_ratio):
             return None
         return pe_ratio
     except:
@@ -36,13 +36,34 @@ def get_pe_ratio(ticker, limit=40.0):
 def get_peg_ratio(ticker):
     try:
         peg_ratio = yf.Ticker(ticker).info.get("trailingPegRatio")
-        if peg_ratio is None or peg_ratio == 0 or math.isnan(peg_ratio):
+        if peg_ratio is None or peg_ratio <= 0.0 or math.isnan(peg_ratio):
             return None
         return peg_ratio
     except:
         return None
 
 
+def get_fair_value(ticker, growth):
+    try:
+        eps_trend = yf.Ticker(ticker).eps_trend
+        current_year = eps_trend['current']['0y']
+        next_year = eps_trend['current']['+1y']
+        growth_value_estimate = (next_year / current_year - 1.0) * 100.0
+        if growth_value_estimate is None or growth_value_estimate <= 0.0 or math.isnan(growth_value_estimate):
+            growth_value_estimate = 40.0
+    except:
+        growth_value_estimate = 40.0
+
+    try:
+        growth_value = ((growth[-1] / growth[0]) ** (1.0 / 10.0) - 1.0) * 100.0
+        growth_value = min(growth_value, growth_value_estimate)
+        eps = yf.Ticker(ticker).info.get("trailingEps")
+        if eps is None or eps <= 0.0 or math.isnan(eps) or growth_value <= 0.0:
+            return None
+        return eps * growth_value
+    except:
+        return None
+
 
 if __name__ == '__main__':
-    print(get_peg_ratio('AAPL'))
+    print(get_fair_value('AAPL', [30.0, 40.0]))

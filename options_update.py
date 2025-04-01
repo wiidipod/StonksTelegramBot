@@ -18,8 +18,10 @@ if __name__ == '__main__':
     tickers = ticker_service.get_all_tickers()
     future = 250
 
+    fair_values = {}
     upsides = {}
     peg_ratios = {}
+    one_year_estimates = {}
     all_plot_with_ta_paths = {}
     all_plot_paths = {}
     all_message_paths = {}
@@ -44,20 +46,34 @@ if __name__ == '__main__':
             if macd_diff[-1] < 0.0:
                 continue
 
-            growth, lower_growth, upper_growth, lower_border, upper_border = regression_utility.get_growths(close, future=future)
-            if growth[-future] >= growth[-1] or lower_growth[-future] <= close[-1]:
-                continue
-
-            upside = min(lower_growth[-future], lower_border[-1]) / close[-1] - 1.0
-            if upside < 0.0:
-                continue
-
             peg_ratio = yfinance_service.get_peg_ratio(ticker)
             if peg_ratio is None or peg_ratio > 1.0:
                 continue
 
+            growth, lower_growth, upper_growth, lower_border, upper_border = regression_utility.get_growths(close, future=future)
+            if growth[-future] >= growth[-1]:  # or lower_growth[-future] <= close[-1]:
+                continue
+
+            # upside = min(lower_growth[-future], lower_border[-1]) / close[-1] - 1.0
+            # if upside < 0.0:
+            #     continue
+
+            fair_value = yfinance_service.get_fair_value(ticker, growth[:-future])
+            if fair_value is None or fair_value <= 0.0:
+                continue
+
+            one_year_estimate = min(lower_growth[-1], fair_value)
+            if one_year_estimate <= close[-1]:
+                continue
+
+            upside = one_year_estimate / close[-1] - 1.0
+            if upside <= 0.0:
+                continue
+
+            fair_values[ticker] = fair_value
             upsides[ticker] = upside
             peg_ratios[ticker] = peg_ratio
+            one_year_estimates[ticker] = one_year_estimate
 
             name = f'{yfinance_service.get_name(ticker)}'
             growths = [lower_border, lower_growth, growth, upper_growth, upper_border]
@@ -107,7 +123,7 @@ if __name__ == '__main__':
 
     sorted_upsides = sorted(upsides.items(), key=lambda x: x[1], reverse=True)
     for ticker, upside in sorted_upsides[:10]:
-        print(f"{ticker} - Upside: {upside:.2%} - PEG Ratio: {peg_ratios[ticker]:.2f}")
+        print(f"{ticker}\n    Upside: {upside:.2%}\n    PEG Ratio: {peg_ratios[ticker]:.2f}\n    Fair Value: {fair_values[ticker]:.2f}\n    One Year Estimate: {one_year_estimates[ticker]:.2f}")
         plot_paths.append(all_plot_with_ta_paths[ticker])
         plot_paths.append(all_plot_paths[ticker])
         message_paths.append(all_message_paths[ticker])
