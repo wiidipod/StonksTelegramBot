@@ -38,7 +38,11 @@ if __name__ == '__main__':
         macd, macd_signal, macd_diff = ta_utility.calculate_macd(close)
         name = yfinance_service.get_name(ticker)
 
+        one_year_estimate = min(lower_border[-1], lower_growth[-future])
+        upside = one_year_estimate / close[-1] - 1.0
+
         growths = [lower_border, lower_growth, growth, upper_growth, upper_border]
+
         plot_with_ta_path = plot_utility.plot_with_ta(
             ticker,
             name,
@@ -73,6 +77,8 @@ if __name__ == '__main__':
             macd=macd,
             macd_signal=macd_signal,
             macd_diff=macd_diff,
+            one_year_estimate=one_year_estimate,
+            upside=upside,
         )
 
         plot_paths.append(plot_with_ta_path)

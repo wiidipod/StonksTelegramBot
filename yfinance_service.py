@@ -43,11 +43,17 @@ def get_peg_ratio(ticker):
         return None
 
 
-def get_fair_value(ticker, growth):
+def get_fair_value(ticker, growth, backtest=False):
     try:
-        eps_trend = yf.Ticker(ticker).eps_trend
-        current_year = eps_trend['current']['0y']
-        next_year = eps_trend['current']['+1y']
+        if backtest:
+            earnings_history = yf.Ticker(ticker).earnings_history
+            current_year = earnings_history['epsActual'].iloc[0]
+            next_year = earnings_history['epsActual'].iloc[-1]
+        else:
+            eps_trend = yf.Ticker(ticker).eps_trend
+            current_year = eps_trend['current']['0y']
+            next_year = eps_trend['current']['+1y']
+
         growth_value_estimate = (next_year / current_year - 1.0) * 100.0
         if growth_value_estimate is None or growth_value_estimate <= 0.0 or math.isnan(growth_value_estimate):
             growth_value_estimate = 40.0
@@ -66,4 +72,4 @@ def get_fair_value(ticker, growth):
 
 
 if __name__ == '__main__':
-    print(get_fair_value('AAPL', [30.0, 40.0]))
+    print(yf.Ticker('AAPL').info)

@@ -17,6 +17,7 @@ def chunk_list(lst, chunk_size):
 if __name__ == '__main__':
     tickers = ticker_service.get_all_tickers()
     future = 250
+    backtest = False
 
     fair_values = {}
     upsides = {}
@@ -30,35 +31,41 @@ if __name__ == '__main__':
 
     for i, ticker_chunk in enumerate(ticker_chunks):
         print(f'Processing chunk {i + 1} of {len(tickers) // 100 + 1}...')
-        closes = yfinance_service.get_closes(ticker_chunk, period='10y', interval='1d')
+
+        if backtest:
+            period = 'max'
+            start_index = -2500 - future
+            end_index = -future
+        else:
+            period = '10y'
+            start_index = 0
+            end_index = -1
+
+        closes = yfinance_service.get_closes(ticker_chunk, period=period, interval='1d')
 
         for ticker in tqdm(ticker_chunk):
-            close = closes[ticker]
+            close = closes[ticker][start_index:end_index]
 
             if len(close) < 2500:
                 continue
 
             rsi, rsi_sma = ta_utility.calculate_rsi(close)
-            if rsi[-1] > 70.0 or rsi_sma[-1] > 70.0:
+            if (rsi[-1] > 70.0 or rsi_sma[-1] > 70.0) and not backtest:
                 continue
 
             macd, macd_signal, macd_diff = ta_utility.calculate_macd(close)
-            if macd_diff[-1] < 0.0:
+            if macd_diff[-1] < 0.0 and not backtest:
                 continue
 
             peg_ratio = yfinance_service.get_peg_ratio(ticker)
-            if peg_ratio is None or peg_ratio > 1.0:
+            if peg_ratio is None or peg_ratio > 1.0 and not backtest:
                 continue
 
             growth, lower_growth, upper_growth, lower_border, upper_border = regression_utility.get_growths(close, future=future)
-            if growth[-future] >= growth[-1]:  # or lower_growth[-future] <= close[-1]:
+            if growth[-future] >= growth[-1]:
                 continue
 
-            # upside = min(lower_growth[-future], lower_border[-1]) / close[-1] - 1.0
-            # if upside < 0.0:
-            #     continue
-
-            fair_value = yfinance_service.get_fair_value(ticker, growth[:-future])
+            fair_value = yfinance_service.get_fair_value(ticker, growth[:-future], backtest=backtest)
             if fair_value is None or fair_value <= 0.0:
                 continue
 
@@ -112,6 +119,10 @@ if __name__ == '__main__':
                 macd=macd,
                 macd_signal=macd_signal,
                 macd_diff=macd_diff,
+                peg_ratio=peg_ratio,
+                fair_value=fair_value,
+                one_year_estimate=one_year_estimate,
+                upside=upside,
             )
 
             all_plot_with_ta_paths[ticker] = plot_with_ta_path
@@ -123,17 +134,10 @@ if __name__ == '__main__':
 
     sorted_upsides = sorted(upsides.items(), key=lambda x: x[1], reverse=True)
     for ticker, upside in sorted_upsides[:10]:
-        print(f"{ticker}\n    Upside: {upside:.2%}\n    PEG Ratio: {peg_ratios[ticker]:.2f}\n    Fair Value: {fair_values[ticker]:.2f}\n    One Year Estimate: {one_year_estimates[ticker]:.2f}")
+        print(f"{ticker}\n    Upside: {upside:.2%}\n    PEG Ratio: {peg_ratios[ticker]:.2f}\n    Fair Value: {fair_values[ticker]:.2f}\n    One Year Estimate: {one_year_estimates[ticker]:.2f}\n")
         plot_paths.append(all_plot_with_ta_paths[ticker])
         plot_paths.append(all_plot_paths[ticker])
         message_paths.append(all_message_paths[ticker])
-
-        # name = yfinance_service.get_name(ticker)
-        # close = yfinance_service.get_closes([ticker])[ticker]
-        # fit, lower_fit, upper_fit, lower_border, upper_border = regression_utility.get_growths(close, future=0)
-        # growths = [lower_border, lower_fit, fit, upper_fit, upper_border]
-        # plot_with_ta_path = plot_utility.plot(ticker, name, close, growths)
-        # plot_paths.append(plot_with_ta_path)
 
     application = telegram_service.get_application()
     asyncio.run(telegram_service.send_all(plot_paths, message_paths, application))
