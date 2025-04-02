@@ -1,10 +1,43 @@
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.patches import Rectangle
 import matplotlib.gridspec as gridspec
 
 import regression_utility
 import yfinance_service
+
+
+def plot_prediction(
+        ticker,
+        name,
+        series,
+        predictions,
+):
+    last_data_point = series.iloc[-1]
+
+    fig = plt.figure(figsize=(9.0, 9.0), dpi=100)
+    fig.suptitle(name)
+
+    price_subplot = fig.add_subplot(111)
+    price_subplot.set_ylabel('Price')
+    price_subplot.grid(True)
+    price_subplot.set_yscale('linear')
+    price_subplot.plot(series['ds'], series['y'], label='Actual')
+    for column in predictions.columns:
+        if column != 'ds' and column != 'unique_id':
+            concatenated_ds = pd.concat([pd.Series([last_data_point['ds']]), predictions['ds']]).reset_index(drop=True)
+            concatenated_column = pd.concat([pd.Series([last_data_point['y']]), predictions[column]]).reset_index(drop=True)
+            price_subplot.plot(concatenated_ds, concatenated_column, label=column)
+
+    price_subplot.legend()
+
+    plt.tight_layout()
+    image_path = f'{ticker}_prediction_plot.png'
+    plt.savefig(image_path)
+    plt.show()
+
+    # return image_path
 
 
 def plot(
@@ -40,8 +73,6 @@ def plot(
     plt.tight_layout()
     image_path = f'{ticker}_plot.png'
     plt.savefig(image_path)
-    # plt.close(fig)
-    # plt.show()
 
     return image_path
 
@@ -111,8 +142,6 @@ def plot_with_ta(
     plt.tight_layout()
     image_path = f'{ticker}_plot_with_ta.png'
     plt.savefig(image_path)
-    # plt.close(fig)
-    # plt.show()
 
     return image_path
 

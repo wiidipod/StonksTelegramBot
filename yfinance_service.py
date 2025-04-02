@@ -1,3 +1,4 @@
+import pandas as pd
 import yfinance as yf
 import math
 
@@ -15,6 +16,16 @@ def get_closes(tickers, period='10y', interval='1d'):
         except:
             pass
     return closes
+
+
+def get_close_as_series(ticker, period='10y', interval='1d'):
+    data = yf.Ticker(ticker).history(period=period, interval=interval)
+    data = data.reset_index()
+    data['Date'] = pd.to_datetime(data['Date'].dt.date)
+    data = data.rename(columns={'Date': 'ds', 'Close': 'y'})
+    data['unique_id'] = ticker
+    data = data[['unique_id', 'ds', 'y']]
+    return data
 
 
 def get_name(ticker):
@@ -72,4 +83,4 @@ def get_fair_value(ticker, growth, backtest=False):
 
 
 if __name__ == '__main__':
-    print(yf.Ticker('AAPL').info)
+    print(get_close_as_series('AAPL'))
