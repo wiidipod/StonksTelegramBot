@@ -10,8 +10,8 @@ from tqdm import tqdm
 
 
 def chunk_list(lst, chunk_size):
-    for i in range(0, len(lst), chunk_size):
-        yield lst[i:i + chunk_size]
+    for list_index in range(0, len(lst), chunk_size):
+        yield lst[list_index:list_index + chunk_size]
 
 
 if __name__ == '__main__':
@@ -96,7 +96,7 @@ if __name__ == '__main__':
                 macd_diff=macd_diff,
             )
 
-            plot_path = plot_utility.plot(
+            plot_path = plot_utility.plot_with_growths(
                 ticker,
                 name,
                 close,

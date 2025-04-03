@@ -85,7 +85,7 @@ def plot_prediction(
     # return image_path
 
 
-def plot(
+def plot_with_growths(
         ticker,
         name,
         close,
@@ -142,8 +142,6 @@ def plot_with_ta(
         macd_signal=None,
         macd_diff=None
 ):
-    length = end_index - start_index
-
     fig = plt.figure(figsize=(9.0, 9.0), dpi=300)
     fig.suptitle(name)
     gs = gridspec.GridSpec(3, 1, height_ratios=[3, 1, 1])
@@ -233,14 +231,14 @@ def get_colors(macd_diff):
 
 
 if __name__ == '__main__':
-    ticker = 'PUM.DE'
-    name = yfinance_service.get_name(ticker)
-    close = yfinance_service.get_closes([ticker])[ticker]
-    fit, lower_fit, upper_fit, lower_border, upper_border = regression_utility.get_growths(close, future=250)
+    main_ticker = 'PUM.DE'
+    main_name = yfinance_service.get_name(main_ticker)
+    main_close = yfinance_service.get_closes([main_ticker])[main_ticker]
+    fit, lower_fit, upper_fit, lower_border, upper_border = regression_utility.get_growths(main_close, future=250)
 
     plot(
-        ticker,
-        name,
-        close,
+        main_ticker,
+        main_name,
+        main_close,
         [lower_border, lower_fit, fit, upper_fit, upper_border],
     )

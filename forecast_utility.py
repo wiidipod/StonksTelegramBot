@@ -1,6 +1,5 @@
 from neuralforecast.auto import AutoNBEATSx, AutoNHITS, AutoDeepNPTS, AutoMLP, AutoNBEATS, AutoNLinear, AutoTiDE, \
     AutoPatchTST, AutoAutoformer, AutoFEDformer, AutoInformer, AutoTFT, AutoVanillaTransformer
-from neuralforecast.models import NBEATS
 
 import plot_utility
 import yfinance_service

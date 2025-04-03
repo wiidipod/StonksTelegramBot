@@ -75,7 +75,7 @@ if __name__ == '__main__':
             macd_diff=macd_diff,
         )
 
-        plot_path = plot_utility.plot(
+        plot_path = plot_utility.plot_with_growths(
             ticker,
             name,
             close,

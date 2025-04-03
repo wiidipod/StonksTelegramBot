@@ -107,5 +107,5 @@ def get_application():
 
 
 if __name__ == "__main__":
-    application = get_application()
-    asyncio.run(set_commands(application))
+    main_application = get_application()
+    asyncio.run(set_commands(main_application))
