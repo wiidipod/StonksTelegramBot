@@ -58,7 +58,7 @@ def write_message(
         else:
             value_emoji = bearish_emoji
 
-    message = f" **{name}** \n ".replace('.', '\.')
+    message = f" **{name}** \n ".replace('.', '\.').replace('=', '\=')
     message += f" \n {sma_emoji} **Price** ``` "
     message += f"Close:   {close[-1]:16.8f} \n "
     message += f"SMA-220: {sma_220[-1]:16.8f} ``` "
