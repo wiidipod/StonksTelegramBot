@@ -79,7 +79,7 @@ def write_message(
     message += f"MACD Signal: {macd_signal[-1]:16.8f} \n "
     message += f"MACD Diff:   {macd_diff[-1]:16.8f} ``` "
 
-    message += f" \n {value_emoji} **Value Investing** ``` "
+    message += f" \n {value_emoji} **Value** ``` "
     if value_investing:
         message += f"PEG Ratio:    {peg_ratio:16.8f} \n "
         message += f"Fair Value:   {fair_value:16.8f} \n "

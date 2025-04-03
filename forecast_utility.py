@@ -1,4 +1,5 @@
-from neuralforecast.auto import AutoNBEATSx, AutoNHITS, AutoDeepNPTS, AutoMLP, AutoNBEATS, AutoNLinear, AutoTiDE
+from neuralforecast.auto import AutoNBEATSx, AutoNHITS, AutoDeepNPTS, AutoMLP, AutoNBEATS, AutoNLinear, AutoTiDE, \
+    AutoPatchTST, AutoAutoformer, AutoFEDformer, AutoInformer, AutoTFT, AutoVanillaTransformer
 from neuralforecast.models import NBEATS
 
 import plot_utility
@@ -6,9 +7,9 @@ import yfinance_service
 from neuralforecast import NeuralForecast
 
 if __name__ == "__main__":
-    ticker = '^NDX'
+    ticker = '^GSPC'
 
-    close = yfinance_service.get_close_as_series(ticker, period='10y', interval='1d')
+    close = yfinance_service.get_close_as_series(ticker, period='max', interval='1d')
 
     # input_size = 250
     horizon = 5
@@ -16,6 +17,7 @@ if __name__ == "__main__":
     nf = NeuralForecast(
         models = [
             # NBEATS(input_size=250, h=horizon),
+
             AutoNBEATSx(h=horizon),
             AutoNHITS(h=horizon),
             AutoDeepNPTS(h=horizon),
@@ -23,6 +25,13 @@ if __name__ == "__main__":
             AutoNBEATS(h=horizon),
             AutoNLinear(h=horizon),
             AutoTiDE(h=horizon),
+
+            AutoAutoformer(h=horizon),
+            AutoFEDformer(h=horizon),
+            AutoInformer(h=horizon),
+            AutoPatchTST(h=horizon),
+            AutoTFT(h=horizon),
+            AutoVanillaTransformer(h=horizon),
         ],
         freq = 'D'
     )
@@ -36,6 +45,6 @@ if __name__ == "__main__":
     plot_utility.plot_prediction(
         ticker,
         ticker,
-        close.tail(horizon),
+        close.tail(2 * horizon),
         predictions,
     )

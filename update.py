@@ -19,29 +19,47 @@ if __name__ == '__main__':
         '^TECDAX',
         '^FCHI',
         '^FTSE',
-        'BTC-EUR',
-        'GME',
-        'GC=F',
+        # 'BTC-EUR',
+        # 'GME',
+        # 'GC=F',
     ]
     future = 250
 
     closes = yfinance_service.get_closes(tickers, period='10y', interval='1d')
 
-    plot_paths = []
-    message_paths = []
+    upsides = {}
+    all_plot_with_ta_paths = {}
+    all_plot_paths = {}
+    all_message_paths = {}
 
     for ticker in tickers:
         close = closes[ticker]
 
-        growth, lower_growth, upper_growth, lower_border, upper_border = regression_utility.get_growths(close, future=future)
-        sma_220 = ta_utility.calculate_sma_220(close)
+        if len(close) < 2500:
+            continue
+
         rsi, rsi_sma = ta_utility.calculate_rsi(close)
+        if rsi[-1] > 70.0 or rsi_sma[-1] > 70.0:
+            continue
+
         macd, macd_signal, macd_diff = ta_utility.calculate_macd(close)
-        name = yfinance_service.get_name(ticker)
+        if macd_diff[-1] < 0.0:
+            continue
+
+        growth, lower_growth, upper_growth, lower_border, upper_border = regression_utility.get_growths(close, future=future)
+        if growth[-future] >= growth[-1]:
+            continue
+
+        if lower_growth[-1] < close[-1]:
+            continue
 
         one_year_estimate = min(lower_border[-1], lower_growth[-future])
         upside = one_year_estimate / close[-1] - 1.0
 
+        upsides[ticker] = upside
+
+        sma_220 = ta_utility.calculate_sma_220(close)
+        name = yfinance_service.get_name(ticker)
         growths = [lower_border, lower_growth, growth, upper_growth, upper_border]
 
         plot_with_ta_path = plot_utility.plot_with_ta(
@@ -82,9 +100,19 @@ if __name__ == '__main__':
             upside=upside,
         )
 
-        plot_paths.append(plot_with_ta_path)
-        plot_paths.append(plot_path)
-        message_paths.append(message_path)
+        all_plot_with_ta_paths[ticker] = plot_with_ta_path
+        all_plot_paths[ticker] = plot_path
+        all_message_paths[ticker] = message_path
+
+    plot_paths = []
+    message_paths = []
+
+    sorted_upsides = sorted(upsides.items(), key=lambda x: x[1], reverse=True)
+    for ticker, upside in sorted_upsides:
+        print(f"{ticker}\n    Upside: {upside:.2%}")
+        plot_paths.append(all_plot_with_ta_paths[ticker])
+        plot_paths.append(all_plot_paths[ticker])
+        message_paths.append(all_message_paths[ticker])
 
     application = telegram_service.get_application()
     asyncio.run(telegram_service.send_all(plot_paths, message_paths, application))
