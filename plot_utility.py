@@ -236,7 +236,7 @@ if __name__ == '__main__':
     main_close = yfinance_service.get_closes([main_ticker])[main_ticker]
     fit, lower_fit, upper_fit, lower_border, upper_border = regression_utility.get_growths(main_close, future=250)
 
-    plot(
+    plot_with_growths(
         main_ticker,
         main_name,
         main_close,
