@@ -19,9 +19,9 @@ if __name__ == '__main__':
         '^TECDAX',
         '^FCHI',
         '^FTSE',
-        # 'BTC-EUR',
-        # 'GME',
-        # 'GC=F',
+        'BTC-EUR',
+        'GME',
+        'GC=F',
     ]
     future = 250
 
@@ -38,12 +38,8 @@ if __name__ == '__main__':
         if len(close) < 2500:
             continue
 
-        rsi, rsi_sma = ta_utility.calculate_rsi(close)
-        if rsi[-1] > 70.0 or rsi_sma[-1] > 70.0:
-            continue
-
-        macd, macd_signal, macd_diff = ta_utility.calculate_macd(close)
-        if macd_diff[-1] < 0.0:
+        technicals = ta_utility.get_technicals(close)
+        if technicals is None:
             continue
 
         growth, lower_growth, upper_growth, lower_border, upper_border = regression_utility.get_growths(close, future=future)
@@ -53,12 +49,14 @@ if __name__ == '__main__':
         if lower_growth[-1] < close[-1]:
             continue
 
+        rsi, rsi_sma, macd, macd_signal, macd_diff = technicals
+
         one_year_estimate = min(lower_border[-1], lower_growth[-future])
         upside = one_year_estimate / close[-1] - 1.0
 
         upsides[ticker] = upside
 
-        sma_220 = ta_utility.calculate_sma_220(close)
+        sma_220 = ta_utility.get_sma(close)
         name = yfinance_service.get_name(ticker)
         growths = [lower_border, lower_growth, growth, upper_growth, upper_border]
 

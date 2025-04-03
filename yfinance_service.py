@@ -66,7 +66,7 @@ def get_fair_value(ticker, growth, backtest=False):
             next_year = eps_trend['current']['+1y']
 
         growth_value_estimate = (next_year / current_year - 1.0) * 100.0
-        if growth_value_estimate is None or growth_value_estimate <= 0.0 or math.isnan(growth_value_estimate):
+        if growth_value_estimate is None or growth_value_estimate < 0.0 or math.isnan(growth_value_estimate):
             growth_value_estimate = 40.0
     except:
         growth_value_estimate = 40.0

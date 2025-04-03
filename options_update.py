@@ -49,12 +49,8 @@ if __name__ == '__main__':
             if len(close) < 2500:
                 continue
 
-            rsi, rsi_sma = ta_utility.calculate_rsi(close)
-            if (rsi[-1] > 70.0 or rsi_sma[-1] > 70.0) and not backtest:
-                continue
-
-            macd, macd_signal, macd_diff = ta_utility.calculate_macd(close)
-            if macd_diff[-1] < 0.0 and not backtest:
+            rsi, rsi_sma, macd, macd_signal, macd_diff = ta_utility.get_technicals(close)
+            if rsi is None and not backtest:
                 continue
 
             peg_ratio = yfinance_service.get_peg_ratio(ticker)
@@ -89,7 +85,7 @@ if __name__ == '__main__':
                 ticker,
                 name,
                 close,
-                ta_utility.calculate_sma_220(close),
+                ta_utility.get_sma(close),
                 growths,
                 start_index=len(close) - future,
                 end_index=len(close),
@@ -111,7 +107,7 @@ if __name__ == '__main__':
                 ticker,
                 name,
                 close,
-                ta_utility.calculate_sma_220(close),
+                ta_utility.get_sma(close),
                 growths,
                 future=future,
                 rsi=rsi,

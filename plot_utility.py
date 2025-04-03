@@ -8,6 +8,51 @@ import regression_utility
 import yfinance_service
 
 
+def plot_with_constants(
+        ticker,
+        name,
+        close,
+        constants,
+        yscale='linear',
+        rsi=None,
+        rsi_sma=None,
+        macd=None,
+        macd_signal=None,
+        macd_diff=None
+):
+    length = len(close)
+    fourths = [[constant] * length for constant in constants]
+
+    fig = plt.figure(figsize=(9.0, 9.0), dpi=300)
+    fig.suptitle(name)
+
+    gs = gridspec.GridSpec(3, 1, height_ratios=[3, 1, 1])
+
+    price_subplot = fig.add_subplot(gs[0])
+    plot_with_colors(close, price_subplot, fourths, yscale)
+
+    macd_subplot = fig.add_subplot(gs[1])
+    plot_macd(
+        macd[-length:],
+        macd_diff[-length-1:],
+        macd_signal[-length:],
+        macd_subplot,
+    )
+
+    rsi_subplot = fig.add_subplot(gs[2])
+    plot_rsi(
+        rsi[-length:],
+        rsi_sma[-length:],
+        rsi_subplot,
+    )
+
+    fig.tight_layout()
+    image_path = f'{ticker}_prediction_plot.png'
+    fig.savefig(image_path)
+    return image_path
+    # fig.show()
+
+
 def plot_prediction(
         ticker,
         name,
@@ -32,10 +77,10 @@ def plot_prediction(
 
     price_subplot.legend()
 
-    plt.tight_layout()
+    fig.tight_layout()
     image_path = f'{ticker}_prediction_plot.png'
-    plt.savefig(image_path)
-    plt.show()
+    fig.savefig(image_path)
+    fig.show()
 
     # return image_path
 
@@ -51,11 +96,22 @@ def plot(
     fig.suptitle(name)
 
     price_subplot = fig.add_subplot(111)
-    price_subplot.set_yscale(yscale)
-    price_subplot.set_ylabel('Price')
-    price_subplot.plot(close)
-    price_subplot.grid(True)
-    for i, growth in enumerate(growths):
+
+    plot_with_colors(close, price_subplot, growths, yscale)
+
+    plt.tight_layout()
+    image_path = f'{ticker}_plot.png'
+    plt.savefig(image_path)
+
+    return image_path
+
+
+def plot_with_colors(close, plot, five_colors, yscale):
+    plot.set_yscale(yscale)
+    plot.set_ylabel('Price')
+    plot.plot(close)
+    plot.grid(True)
+    for i, growth in enumerate(five_colors):
         if i == 0:
             color = 'tab:red'
         elif i == 1:
@@ -69,12 +125,6 @@ def plot(
         else:
             color = 'tab:gray'
         plt.plot(growth, color=color, linestyle='dashed')
-
-    plt.tight_layout()
-    image_path = f'{ticker}_plot.png'
-    plt.savefig(image_path)
-
-    return image_path
 
 
 def plot_with_ta(
@@ -119,18 +169,33 @@ def plot_with_ta(
 
     # MACD
     macd_subplot = fig.add_subplot(gs[1])
-    macd_subplot.set_ylabel('MACD')
-    macd_subplot.plot(macd[start_index:])
-    macd_subplot.plot(macd_signal[start_index:])
-    colors = get_colors(macd_diff, start_index)
-    macd_subplot.bar(np.arange(length), macd_diff[start_index:], color=colors)
-    macd_subplot.grid(True)
+    plot_macd(
+        macd[start_index:],
+        macd_diff[start_index-1:],
+        macd_signal[start_index:],
+        macd_subplot,
+    )
 
     # RSI
     rsi_subplot = fig.add_subplot(gs[2])
+    plot_rsi(
+        rsi[start_index:],
+        rsi_sma[start_index:],
+        rsi_subplot,
+    )
+
+    fig.tight_layout()
+    image_path = f'{ticker}_plot_with_ta.png'
+    fig.savefig(image_path)
+
+    return image_path
+
+
+def plot_rsi(rsi, rsi_sma, rsi_subplot):
+    length = len(rsi)
     rsi_subplot.set_ylabel('RSI')
-    rsi_subplot.plot(rsi[start_index:])
-    rsi_subplot.plot(rsi_sma[start_index:])
+    rsi_subplot.plot(rsi)
+    rsi_subplot.plot(rsi_sma)
     color = 'tab:gray'
     rsi_subplot.plot([70] * length, color=color, linestyle='dashed')
     rsi_subplot.plot([50] * length, color=color, linestyle='dashed')
@@ -139,20 +204,23 @@ def plot_with_ta(
     rsi_subplot.add_patch(rect)
     rsi_subplot.grid(True)
 
-    plt.tight_layout()
-    image_path = f'{ticker}_plot_with_ta.png'
-    plt.savefig(image_path)
 
-    return image_path
+def plot_macd(macd, macd_diff, macd_signal, macd_subplot):
+    macd_subplot.set_ylabel('MACD')
+    macd_subplot.plot(macd)
+    macd_subplot.plot(macd_signal)
+    colors = get_colors(macd_diff)
+    macd_subplot.bar(np.arange(len(macd)), macd_diff[1:], color=colors)
+    macd_subplot.grid(True)
 
 
-def get_colors(macd_diff, start_index):
+def get_colors(macd_diff):
     green = (0.0, 0.5, 0.0)
     red = (1.0, 0.0, 0.0)
     green2 = (0.0, 0.5, 0.0, 0.5)
     red2 = (1.0, 0.0, 0.0, 0.5)
     colors = []
-    for macd0, macd1 in zip(macd_diff[start_index-1:-1], macd_diff[start_index:]):
+    for macd0, macd1 in zip(macd_diff[:-1], macd_diff[1:]):
         if macd0 <= macd1 >= 0:
             colors.append(green)
         if 0 <= macd1 < macd0:
