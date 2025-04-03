@@ -20,7 +20,7 @@ if __name__ == '__main__':
         '^FCHI',
         '^FTSE',
         'BTC-EUR',
-        'GME'
+        'GME',
         'GC=F',
     ]
     future = 250
