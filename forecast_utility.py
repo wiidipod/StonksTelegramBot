@@ -25,8 +25,8 @@ if __name__ == "__main__":
             AutoNLinear(h=horizon),
             AutoTiDE(h=horizon),
 
-            AutoAutoformer(h=horizon),
-            AutoFEDformer(h=horizon),
+            # AutoAutoformer(h=horizon),
+            # AutoFEDformer(h=horizon),
             AutoInformer(h=horizon),
             AutoPatchTST(h=horizon),
             AutoTFT(h=horizon),

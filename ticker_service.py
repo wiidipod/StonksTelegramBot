@@ -101,7 +101,7 @@ def get_tecdax_tickers():
     name = 'zusammensetzung'
     column = 2
     exchange = 'DE'
-    tickers = get_tickers(source, attribute='name', name=name, column=column, exchange=exchange)
+    tickers = get_tickers(source, name=name, column=column, exchange=exchange)
     # tickers.append('^TECDAX')
     return tickers
 
@@ -214,6 +214,6 @@ def get_all_tickers():
 
 
 if __name__ == '__main__':
-    main_tickers = get_all_tickers()
+    main_tickers = get_tecdax_tickers()
     print(main_tickers)
     print(len(main_tickers))
