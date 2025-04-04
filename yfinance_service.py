@@ -31,7 +31,8 @@ def get_close_as_series(ticker, period='10y', interval='1d'):
 def get_name(ticker):
     info = yf.Ticker(ticker).info
     name = info["shortName"] or info["longName"]
-    return f'{name} ({ticker})'
+    currency = info["currency"]
+    return f'{name} ({ticker}) - {currency}'
 
 
 def get_pe_ratio(ticker):
