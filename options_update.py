@@ -49,9 +49,10 @@ if __name__ == '__main__':
             if len(close) < 2500:
                 continue
 
-            rsi, rsi_sma, macd, macd_signal, macd_diff = ta_utility.get_technicals(close)
-            if rsi is None and not backtest:
+            technicals = ta_utility.get_technicals(close)
+            if technicals is None and not backtest:
                 continue
+            rsi, rsi_sma, macd, macd_signal, macd_diff = technicals
 
             peg_ratio = yfinance_service.get_peg_ratio(ticker)
             if peg_ratio is None or peg_ratio > 1.0 and not backtest:
