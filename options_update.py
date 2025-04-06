@@ -50,23 +50,26 @@ if __name__ == '__main__':
                 continue
 
             technicals = ta_utility.get_technicals(close)
-            if technicals is None and not backtest:
+            bullish, rsi, rsi_sma, macd, macd_signal, macd_diff = technicals
+            if not bullish and not backtest:
                 continue
-            rsi, rsi_sma, macd, macd_signal, macd_diff = technicals
 
             peg_ratio = yfinance_service.get_peg_ratio(ticker)
             if peg_ratio is None or peg_ratio > 1.0 and not backtest:
                 continue
 
-            growth, lower_growth, upper_growth, lower_border, upper_border = regression_utility.get_growths(close, future=future)
+            growth, lower_growth, upper_growth, double_lower_growth, double_upper_growth = regression_utility.get_growths(close, future=future)
             if growth[-future] >= growth[-1]:
+                continue
+
+            if lower_growth[-future] < close[-1]:
                 continue
 
             fair_value = yfinance_service.get_fair_value(ticker, growth[:-future], backtest=backtest)
             if fair_value is None or fair_value <= 0.0:
                 continue
 
-            one_year_estimate = min(lower_growth[-1], fair_value)
+            one_year_estimate = min(growth[-1], fair_value)
             if one_year_estimate <= close[-1]:
                 continue
 
@@ -80,7 +83,7 @@ if __name__ == '__main__':
             one_year_estimates[ticker] = one_year_estimate
 
             name = f'{yfinance_service.get_name(ticker)}'
-            growths = [lower_border, lower_growth, growth, upper_growth, upper_border]
+            growths = [double_lower_growth, lower_growth, growth, upper_growth, double_upper_growth]
 
             plot_with_ta_path = plot_utility.plot_with_ta(
                 ticker,

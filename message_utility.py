@@ -137,11 +137,11 @@ def write_message(
     message += f"SMA-200: {sma_200[-1]:16.8f} ``` "
 
     message += f" \n {growth_emoji} **Growth** ``` "
-    message += f"Highest Fit: {growths[4][-future]:16.8f} \n "
+    message += f"Upper Fit 2: {growths[4][-future]:16.8f} \n "
     message += f"Upper Fit:   {growths[3][-future]:16.8f} \n "
     message += f"Fit:         {growths[2][-future]:16.8f} \n "
     message += f"Lower Fit:   {growths[1][-future]:16.8f} \n "
-    message += f"Lowest Fit:  {growths[0][-future]:16.8f} ``` "
+    message += f"Lower Fit 2: {growths[0][-future]:16.8f} ``` "
 
     message = add_macd_message(
         message=message,
@@ -164,11 +164,11 @@ def write_message(
         message += f"Fair Value:   {fair_value:16.8f} \n "
     message += f"52w Estimate: {one_year_estimate:16.8f} \n "
     message += f"Upside:       {upside*100.0:16.8f} % \n "
-    message += f"Highest Fit:  {growths[4][-1]:16.8f} \n "
+    message += f"Upper Fit 2:  {growths[4][-1]:16.8f} \n "
     message += f"Upper Fit:    {growths[3][-1]:16.8f} \n "
     message += f"Fit:          {growths[2][-1]:16.8f} \n "
     message += f"Lower Fit:    {growths[1][-1]:16.8f} \n "
-    message += f"Lowest Fit:   {growths[0][-1]:16.8f} ``` "
+    message += f"Lower Fit 2:  {growths[0][-1]:16.8f} ``` "
 
     return save_message(message, ticker)
 

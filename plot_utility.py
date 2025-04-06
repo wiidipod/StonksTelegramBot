@@ -125,13 +125,14 @@ def plot_with_colors(close, plot, five_colors, yscale):
         else:
             color = 'tab:gray'
         plt.plot(growth, color=color, linestyle='dashed')
+    # plt.plot(five_colors[2], color='tab:blue', linestyle='dashed')
 
 
 def plot_with_ta(
         ticker,
         name,
         close,
-        sma_220,
+        sma_200,
         growths,
         yscale='linear',
         start_index=0,
@@ -152,7 +153,7 @@ def plot_with_ta(
     price_subplot.set_yscale(yscale)
     price_subplot.set_ylabel('Price')
     price_subplot.plot(close[start_index:end_index])
-    price_subplot.plot(sma_220[start_index:end_index])
+    price_subplot.plot(sma_200[start_index:end_index])
     price_subplot.grid(True)
     for i, growth in enumerate(growths[1:-1]):
         if i == 0:
@@ -234,11 +235,11 @@ if __name__ == '__main__':
     main_ticker = 'PUM.DE'
     main_name = yfinance_service.get_name(main_ticker)
     main_close = yfinance_service.get_closes([main_ticker])[main_ticker]
-    fit, lower_fit, upper_fit, lower_border, upper_border = regression_utility.get_growths(main_close, future=250)
+    fit, lower_fit, upper_fit, double_lower_fit, double_upper_fit = regression_utility.get_growths(main_close, future=250)
 
     plot_with_growths(
         main_ticker,
         main_name,
         main_close,
-        [lower_border, lower_fit, fit, upper_fit, upper_border],
+        [double_lower_fit, lower_fit, fit, upper_fit, double_upper_fit],
     )
