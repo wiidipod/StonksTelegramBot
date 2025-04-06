@@ -1,6 +1,13 @@
+from enum import Enum
+
 import pandas as pd
 import yfinance as yf
 import math
+
+
+def get_price(ticker, period='1d', interval='1m'):
+    data = yf.Ticker(ticker).history(period=period, interval=interval)
+    return data["Close"].iloc[-1]
 
 
 def get_closes(tickers, period='10y', interval='1d'):
@@ -83,5 +90,31 @@ def get_fair_value(ticker, growth, backtest=False):
         return None
 
 
+def get_price_in_currency(ticker, to_convert=None, target_currency='EUR'):
+    price = get_price(ticker)
+    currency = get_currency(ticker)
+
+    if currency == target_currency:
+        return price
+
+    if currency == 'USD':
+        currency = ''
+
+    conversion_rate = get_price(f'{currency}{target_currency}=X')
+
+    if to_convert is None:
+        return price * conversion_rate
+    else:
+        return price * conversion_rate, to_convert * conversion_rate
+
+
+def get_currency(ticker):
+    info = yf.Ticker(ticker).info
+    return info["currency"]
+
+
 if __name__ == '__main__':
-    print(get_close_as_series('AAPL'))
+    # print(get_close_as_series('AAPL'))
+    print(get_price('AAPL'))
+    # print(convert([1.0, 2.0]))
+    print(get_price_in_currency('AAPL'))
