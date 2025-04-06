@@ -1,6 +1,7 @@
 bearish_emoji = "📉"
 bullish_emoji = "📈"
 rocket_emoji = "🚀"
+skull_emoji = "💀"
 
 
 def write_hype_message(
@@ -18,8 +19,10 @@ def write_hype_message(
         hype_emoji = rocket_emoji
     elif constants[2] > close[-1]:
         hype_emoji = bullish_emoji
-    else:
+    elif constants[2] > close[-1]:
         hype_emoji = bearish_emoji
+    else:
+        hype_emoji = skull_emoji
 
     rsi_emoji = get_rsi_emoji(rsi, rsi_sma)
 
@@ -55,17 +58,23 @@ def write_hype_message(
 
 
 def get_macd_emoji(macd_diff):
-    if macd_diff[-1] > 0.0:
+    if macd_diff[-2] < macd_diff[-1] > 0.0:
+        macd_emoji = rocket_emoji
+    elif macd_diff[-1] > 0.0:
         macd_emoji = bullish_emoji
-    else:
+    elif macd_diff[-2] > macd_diff[-1]:
         macd_emoji = bearish_emoji
+    else:
+        macd_emoji = skull_emoji
     return macd_emoji
 
 
 def get_rsi_emoji(rsi, rsi_sma):
     if rsi[-1] < 30.0 or rsi_sma[-1] < 30.0:
         rsi_emoji = rocket_emoji
-    elif rsi[-1] < 70.0 and rsi_sma[-1] < 70.0:
+    elif rsi[-1] > 70.0 or rsi_sma[-1] > 70.0:
+        rsi_emoji = skull_emoji
+    elif rsi[-1] < 50.0:
         rsi_emoji = bullish_emoji
     else:
         rsi_emoji = bearish_emoji
@@ -76,7 +85,7 @@ def write_message(
     ticker,
     name,
     close,
-    sma_220,
+    sma_200,
     growths,
     future=None,
     rsi=None,
@@ -91,7 +100,7 @@ def write_message(
 ):
     value_investing = peg_ratio is not None and fair_value is not None
 
-    if sma_220[-1] <= close[-1]:
+    if sma_200[-1] <= close[-1]:
         sma_emoji = bullish_emoji
     else:
         sma_emoji = bearish_emoji
@@ -112,6 +121,8 @@ def write_message(
             value_emoji = rocket_emoji
         elif peg_ratio <= 2.0 and upside > 0.0:
             value_emoji = bullish_emoji
+        elif peg_ratio > 2.0 and upside <= 0.0:
+            value_emoji = skull_emoji
         else:
             value_emoji = bearish_emoji
     else:
@@ -123,7 +134,7 @@ def write_message(
     message = start_message(name)
     message += f" \n {sma_emoji} **Price** ``` "
     message += f"Close:   {close[-1]:16.8f} \n "
-    message += f"SMA-220: {sma_220[-1]:16.8f} ``` "
+    message += f"SMA-200: {sma_200[-1]:16.8f} ``` "
 
     message += f" \n {growth_emoji} **Growth** ``` "
     message += f"Highest Fit: {growths[4][-future]:16.8f} \n "
