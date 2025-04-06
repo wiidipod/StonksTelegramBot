@@ -8,6 +8,8 @@ import message_utility
 
 
 if __name__ == '__main__':
+    default = '^GSPC'
+
     tickers = [
         '^GDAXI',
         '^NDX',
@@ -25,7 +27,7 @@ if __name__ == '__main__':
     ]
     future = 250
 
-    closes = yfinance_service.get_closes(tickers, period='10y', interval='1d')
+    closes = yfinance_service.get_closes(tickers, period='max', interval='1d')
 
     upsides = {}
     all_plot_with_ta_paths = {}
@@ -34,37 +36,37 @@ if __name__ == '__main__':
 
     for ticker in tickers:
         close = closes[ticker]
+        is_default = ticker == default
 
-        if len(close) < 2500:
+        if len(close) < 2500 and not is_default:
             continue
 
         technicals = ta_utility.get_technicals(close)
-        if technicals is None:
+        bullish, rsi, rsi_sma, macd, macd_signal, macd_diff = technicals
+        if not bullish and not is_default:
             continue
 
-        growth, lower_growth, upper_growth, lower_border, upper_border = regression_utility.get_growths(close, future=future)
-        if growth[-future] >= growth[-1]:
+        growth, lower_growth, upper_growth, double_lower_growth, upper_border = regression_utility.get_growths(close, future=future)
+        if growth[-future] >= growth[-1] and not is_default:
             continue
 
-        if lower_growth[-1] < close[-1]:
+        if lower_growth[-1] < close[-1] and not is_default:
             continue
 
-        rsi, rsi_sma, macd, macd_signal, macd_diff = technicals
-
-        one_year_estimate = min(lower_border[-1], lower_growth[-future])
+        one_year_estimate = min(double_lower_growth[-1], lower_growth[-future])
         upside = one_year_estimate / close[-1] - 1.0
 
         upsides[ticker] = upside
 
-        sma_220 = ta_utility.get_sma(close)
+        sma_200 = ta_utility.get_sma(close)
         name = yfinance_service.get_name(ticker)
-        growths = [lower_border, lower_growth, growth, upper_growth, upper_border]
+        growths = [double_lower_growth, lower_growth, growth, upper_growth, upper_border]
 
         plot_with_ta_path = plot_utility.plot_with_ta(
             ticker,
             name,
             close,
-            sma_220,
+            sma_200,
             growths,
             start_index=len(close) - future,
             end_index=len(close),
@@ -86,7 +88,7 @@ if __name__ == '__main__':
             ticker,
             name,
             close,
-            sma_220,
+            sma_200,
             growths,
             future=future,
             rsi=rsi,
