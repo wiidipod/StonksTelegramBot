@@ -11,6 +11,7 @@ if __name__ == '__main__':
     defaults = [
         '^GSPC',
         'BTC-EUR',
+        'GC=F',
     ]
 
     tickers = [
