@@ -8,7 +8,10 @@ import message_utility
 
 
 if __name__ == '__main__':
-    default = '^GSPC'
+    defaults = [
+        '^GSPC',
+        'BTC-EUR',
+    ]
 
     tickers = [
         '^GDAXI',
@@ -36,7 +39,7 @@ if __name__ == '__main__':
 
     for ticker in tickers:
         close = closes[ticker]
-        is_default = ticker == default
+        is_default = ticker in defaults
 
         if len(close) < 2500 and not is_default:
             continue
