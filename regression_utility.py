@@ -1,5 +1,7 @@
 import numpy as np
 from scipy.optimize import linprog
+from scipy.sparse import vstack, hstack, eye, csr_matrix
+
 
 
 def get_fit(closes):
@@ -14,13 +16,13 @@ def get_fit(closes):
 
     X = np.vstack([np.arange(len(closes)), np.ones(len(closes))]).T
     c = np.hstack([np.zeros(2), np.ones(len(closes))])
-    A_ub = np.hstack([-X, -np.eye(len(closes))])
-    A_lb = np.hstack([X, -np.eye(len(closes))])
+    A_ub = hstack([-X, -eye(len(closes))])
+    A_lb = hstack([X, -eye(len(closes))])
     b_ub = -np.log(closes)
     b_lb = np.log(closes)
-    A = np.vstack([A_ub, A_lb])
+    A = vstack([A_ub, A_lb])
     b = np.hstack([b_ub, b_lb])
-    res = linprog(c, A_ub=A, b_ub=b, method='highs')
+    res = linprog(c, A_ub=csr_matrix(A), b_ub=b, method='highs')
 
     if res.success:
         m, c = res.x[:2]
