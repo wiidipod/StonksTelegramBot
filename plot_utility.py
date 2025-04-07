@@ -93,7 +93,7 @@ def plot_with_growths(
         yscale='log',
 ):
     fig = plt.figure(figsize=(9.0, 9.0), dpi=300)
-    fig.suptitle(name)
+    fig.suptitle(f'{name}: 10 years')
 
     price_subplot = fig.add_subplot(111)
 
@@ -144,7 +144,7 @@ def plot_with_ta(
         macd_diff=None
 ):
     fig = plt.figure(figsize=(9.0, 9.0), dpi=300)
-    fig.suptitle(name)
+    fig.suptitle(f'{name}: 1 year')
     gs = gridspec.GridSpec(3, 1, height_ratios=[3, 1, 1])
 
     # Price

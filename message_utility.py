@@ -62,7 +62,7 @@ def get_macd_emoji(macd_diff):
         macd_emoji = rocket_emoji
     elif macd_diff[-1] > 0.0:
         macd_emoji = bullish_emoji
-    elif macd_diff[-2] > macd_diff[-1]:
+    elif macd_diff[-2] < macd_diff[-1]:
         macd_emoji = bearish_emoji
     else:
         macd_emoji = skull_emoji

@@ -50,7 +50,7 @@ if __name__ == '__main__':
         if not bullish and not is_default:
             continue
 
-        growth, lower_growth, upper_growth, double_lower_growth, upper_border = regression_utility.get_growths(close, future=future)
+        growth, lower_growth, upper_growth, double_lower_growth, double_upper_growth = regression_utility.get_growths(close, future=future)
         if growth[-future] >= growth[-1] and not is_default:
             continue
 
@@ -67,7 +67,20 @@ if __name__ == '__main__':
 
         sma_200 = ta_utility.get_sma(close)
         name = yfinance_service.get_name(ticker)
-        growths = [double_lower_growth, lower_growth, growth, upper_growth, upper_border]
+
+        close = close[-2500:]
+        double_lower_growth = double_lower_growth[-2500 - future:]
+        lower_growth = lower_growth[-2500 - future:]
+        growth = growth[-2500 - future:]
+        upper_growth = upper_growth[-2500 - future:]
+        double_upper_growth = double_upper_growth[-2500 - future:]
+        macd = macd[-2500:]
+        macd_signal = macd_signal[-2500:]
+        macd_diff = macd_diff[-2500:]
+        rsi = rsi[-2500:]
+        rsi_sma = rsi_sma[-2500:]
+        sma_200 = sma_200[-2500:]
+        growths = [double_lower_growth, lower_growth, growth, upper_growth, double_upper_growth]
 
         plot_with_ta_path = plot_utility.plot_with_ta(
             ticker,
