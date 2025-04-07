@@ -105,10 +105,12 @@ def write_message(
     else:
         sma_emoji = bearish_emoji
 
-    if close[-1] <= growths[1][-future]:
+    if close[-1] < growths[1][-future]:
         growth_emoji = rocket_emoji
-    elif close[-1] <= growths[2][-future]:
+    elif close[-1] < growths[2][-future]:
         growth_emoji = bullish_emoji
+    elif close[-1] > growths[3][-future]:
+        growth_emoji = skull_emoji
     else:
         growth_emoji = bearish_emoji
 
