@@ -56,6 +56,9 @@ if __name__ == '__main__':
         one_year_estimate = growth[-1]
         upside = one_year_estimate / close[-1] - 1.0
 
+        if one_year_estimate <= close[-1] and not is_default:
+            continue
+
         upsides[ticker] = upside
 
         sma_200 = ta_utility.get_sma(close)
