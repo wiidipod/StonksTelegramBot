@@ -1,4 +1,5 @@
 import asyncio
+from tqdm import tqdm
 import regression_utility
 import ta_utility
 import telegram_service
@@ -38,7 +39,7 @@ if __name__ == '__main__':
     all_plot_paths = {}
     all_message_paths = {}
 
-    for ticker in tickers:
+    for ticker in tqdm(tickers):
         close = closes[ticker]
         is_default = ticker in defaults
 
