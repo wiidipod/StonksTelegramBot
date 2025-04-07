@@ -53,7 +53,7 @@ if __name__ == '__main__':
         if lower_growth[-1] < close[-1] and not is_default:
             continue
 
-        one_year_estimate = min(double_lower_growth[-1], lower_growth[-future])
+        one_year_estimate = growth[-1]
         upside = one_year_estimate / close[-1] - 1.0
 
         upsides[ticker] = upside
