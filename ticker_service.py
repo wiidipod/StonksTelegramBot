@@ -192,6 +192,36 @@ def get_precious_metals_tickers():
     return get_tickers(source, attribute=attribute, name=name, table_index=table_index, column=column, is_future=True)
 
 
+def get_etf_tickers(index_ticker):
+    if index_ticker == '^GSPC':
+        return [
+            "CSSPX.MI",
+            "XS2D.L",
+            "3USL.L",
+        ]
+
+    if index_ticker == "^NDX":
+        return [
+            "SXRV.DE",
+            "LQQ.PA",
+            "QQQ3.L",
+        ]
+
+    if index_ticker == "^GDAXI":
+        return [
+            "DBXD.DE",
+            "DEL2.DE",
+            "3DEL.L",
+        ]
+
+    if index_ticker == "BTC-USD":
+        return [
+            "BTC-USD",
+            "BTC-USD",
+            "BTC-USD",
+        ]
+
+
 def get_all_tickers():
     tickers = []
     tickers.extend(get_dax_tickers())  # Germany

@@ -67,12 +67,13 @@ if __name__ == '__main__':
         upper_fourth = ath - fourth
 
         name = yfinance_service.get_name(ticker)
+        constants = [low, lower_fourth, center, upper_fourth, ath]
 
         plot_path = plot_utility.plot_with_constants(
             ticker,
             name,
             close[2*ath_index-low_index:],
-            [low, lower_fourth, center, upper_fourth, ath],
+            constants,
             rsi=rsi,
             rsi_sma=rsi_sma,
             macd=macd,
@@ -84,7 +85,7 @@ if __name__ == '__main__':
             ticker,
             name,
             close,
-            [low, lower_fourth, center, upper_fourth, ath],
+            constants,
             rsi=rsi,
             rsi_sma=rsi_sma,
             macd=macd,

@@ -27,6 +27,15 @@ if __name__ == '__main__':
     all_plot_paths = {}
     all_message_paths = {}
 
+    too_short = 0
+    not_bullish = 0
+    peg_ratio_too_high = 0
+    no_growth = 0
+    close_too_high = 0
+    no_fair_value = 0
+    one_year_estimate_too_low = 0
+    upside_negative = 0
+
     ticker_chunks = chunk_list(tickers, 100)
 
     for i, ticker_chunk in enumerate(ticker_chunks):
@@ -47,34 +56,42 @@ if __name__ == '__main__':
             close = closes[ticker][start_index:end_index]
 
             if len(close) < 2500:
+                too_short += 1
                 continue
 
             technicals = ta_utility.get_technicals(close)
             bullish, rsi, rsi_sma, macd, macd_signal, macd_diff = technicals
             if not bullish and not backtest:
+                not_bullish += 1
                 continue
 
             peg_ratio = yfinance_service.get_peg_ratio(ticker)
-            if peg_ratio is None or peg_ratio > 1.0 and not backtest:
+            if peg_ratio is None or peg_ratio > 2.0 and not backtest:
+                peg_ratio_too_high += 1
                 continue
 
             growth, lower_growth, upper_growth, double_lower_growth, double_upper_growth = regression_utility.get_growths(close, future=future)
             if growth[-future] >= growth[-1]:
+                no_growth += 1
                 continue
 
             if lower_growth[-future] < close[-1]:
+                close_too_high += 1
                 continue
 
             fair_value = yfinance_service.get_fair_value(ticker, growth[:-future], backtest=backtest)
             if fair_value is None or fair_value <= 0.0:
+                no_fair_value += 1
                 continue
 
             one_year_estimate = min(growth[-1], fair_value)
             if one_year_estimate <= close[-1]:
+                one_year_estimate_too_low += 1
                 continue
 
             upside = one_year_estimate / close[-1] - 1.0
             if upside <= 0.0:
+                upside_negative += 1
                 continue
 
             fair_values[ticker] = fair_value
@@ -89,8 +106,7 @@ if __name__ == '__main__':
                 ticker,
                 name,
                 close,
-                ta_utility.get_sma(close),
-                growths,
+                growths=growths,
                 start_index=len(close) - future,
                 end_index=len(close),
                 rsi=rsi,
@@ -112,7 +128,7 @@ if __name__ == '__main__':
                 name,
                 close,
                 ta_utility.get_sma(close),
-                growths,
+                growths=growths,
                 future=future,
                 rsi=rsi,
                 rsi_sma=rsi_sma,
@@ -131,6 +147,15 @@ if __name__ == '__main__':
 
     plot_paths = []
     message_paths = []
+
+    print(f'\n\nToo short: {too_short}')
+    print(f'Not bullish: {not_bullish}')
+    print(f'PEG ratio too high: {peg_ratio_too_high}')
+    print(f'No growth: {no_growth}')
+    print(f'Close too high: {close_too_high}')
+    print(f'No fair value: {no_fair_value}')
+    print(f'One year estimate too low: {one_year_estimate_too_low}')
+    print(f'Upside negative: {upside_negative}')
 
     sorted_upsides = sorted(upsides.items(), key=lambda x: x[1], reverse=True)
     for ticker, upside in sorted_upsides[:10]:

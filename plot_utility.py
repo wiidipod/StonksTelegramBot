@@ -1,3 +1,5 @@
+from cProfile import label
+
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -132,8 +134,8 @@ def plot_with_ta(
         ticker,
         name,
         close,
-        sma_200,
-        growths,
+        smas=None,
+        growths=None,
         yscale='linear',
         start_index=0,
         end_index=250,
@@ -143,6 +145,12 @@ def plot_with_ta(
         macd_signal=None,
         macd_diff=None
 ):
+    if smas is None:
+        smas = []
+
+    if growths is None:
+        growths = []
+
     fig = plt.figure(figsize=(9.0, 9.0), dpi=300)
     fig.suptitle(f'{name}: 1 year')
     gs = gridspec.GridSpec(3, 1, height_ratios=[3, 1, 1])
@@ -152,8 +160,7 @@ def plot_with_ta(
 
     price_subplot.set_yscale(yscale)
     price_subplot.set_ylabel('Price')
-    price_subplot.plot(close[start_index:end_index])
-    price_subplot.plot(sma_200[start_index:end_index])
+
     price_subplot.grid(True)
     for i, growth in enumerate(growths[1:-1]):
         if i == 0:
@@ -165,6 +172,19 @@ def plot_with_ta(
         else:
             color = 'tab:gray'
         plt.plot(growth[start_index:end_index], color=color, linestyle='dashed')
+
+    price_subplot.plot(close[start_index:end_index], label='Close')
+
+    for i, sma in enumerate(smas):
+        if i == 0:
+            label = 'SMA-200'
+        elif i == 1:
+            label = 'SMA-325'
+        else:
+            label = 'SMA-50'
+        price_subplot.plot(sma[start_index:end_index], label=label)
+
+    price_subplot.legend()
 
     # MACD
     macd_subplot = fig.add_subplot(gs[1])
@@ -193,24 +213,26 @@ def plot_with_ta(
 def plot_rsi(rsi, rsi_sma, rsi_subplot):
     length = len(rsi)
     rsi_subplot.set_ylabel('RSI')
-    rsi_subplot.plot(rsi)
-    rsi_subplot.plot(rsi_sma)
-    color = 'tab:gray'
-    rsi_subplot.plot([70] * length, color=color, linestyle='dashed')
-    rsi_subplot.plot([50] * length, color=color, linestyle='dashed')
-    rsi_subplot.plot([30] * length, color=color, linestyle='dashed')
-    rect = Rectangle((0, 30), length, 40, color=color, alpha=0.3)
+    rsi_subplot.plot(rsi, label='RSI')
+    rsi_subplot.plot(rsi_sma, label='SMA')
+    gray = 'tab:gray'
+    rsi_subplot.plot([70] * length, color='tab:red', linestyle='dashed', label='Overbought')
+    rsi_subplot.plot([50] * length, color=gray, linestyle='dashed')
+    rsi_subplot.plot([30] * length, color='tab:green', linestyle='dashed', label='Oversold')
+    rect = Rectangle((0, 30), length, 40, color=gray, alpha=0.3)
     rsi_subplot.add_patch(rect)
     rsi_subplot.grid(True)
+    rsi_subplot.legend()
 
 
 def plot_macd(macd, macd_diff, macd_signal, macd_subplot):
     macd_subplot.set_ylabel('MACD')
-    macd_subplot.plot(macd)
-    macd_subplot.plot(macd_signal)
+    macd_subplot.plot(macd, label='MACD')
+    macd_subplot.plot(macd_signal, label='Signal')
     colors = get_colors(macd_diff)
     macd_subplot.bar(np.arange(len(macd)), macd_diff[1:], color=colors)
     macd_subplot.grid(True)
+    macd_subplot.legend()
 
 
 def get_colors(macd_diff):

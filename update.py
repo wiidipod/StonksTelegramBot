@@ -66,6 +66,8 @@ if __name__ == '__main__':
         upsides[ticker] = upside
 
         sma_200 = ta_utility.get_sma(close)
+        sma_325 = ta_utility.get_sma(close, window=325)
+        sma_50 = ta_utility.get_sma(close, window=50)
         name = yfinance_service.get_name(ticker)
 
         close = close[-2500:]
@@ -80,14 +82,17 @@ if __name__ == '__main__':
         rsi = rsi[-2500:]
         rsi_sma = rsi_sma[-2500:]
         sma_200 = sma_200[-2500:]
+        sma_325 = sma_325[-2500:]
+        sma_50 = sma_50[-2500:]
         growths = [double_lower_growth, lower_growth, growth, upper_growth, double_upper_growth]
+        smas = [sma_200, sma_325, sma_50]
 
         plot_with_ta_path = plot_utility.plot_with_ta(
             ticker,
             name,
             close,
-            sma_200,
-            growths,
+            smas=smas,
+            growths=growths,
             start_index=len(close) - future,
             end_index=len(close),
             rsi=rsi,
@@ -108,8 +113,8 @@ if __name__ == '__main__':
             ticker,
             name,
             close,
-            sma_200,
-            growths,
+            smas=smas,
+            growths=growths,
             future=future,
             rsi=rsi,
             rsi_sma=rsi_sma,

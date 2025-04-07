@@ -85,8 +85,8 @@ def write_message(
     ticker,
     name,
     close,
-    sma_200,
-    growths,
+    smas=None,
+    growths=None,
     future=None,
     rsi=None,
     rsi_sma=None,
@@ -100,10 +100,22 @@ def write_message(
 ):
     value_investing = peg_ratio is not None and fair_value is not None
 
-    if sma_200[-1] <= close[-1]:
-        sma_emoji = bullish_emoji
+    if growths is None:
+        growths = []
+
+    if smas:
+        close_above_sma_200 = smas[0][-1] <= close[-1]
+        sma_50_above_sma_325 = smas[1][-1] <= smas[2][-1]
+        if close_above_sma_200 and sma_50_above_sma_325:
+            sma_emoji = rocket_emoji
+        elif close_above_sma_200 or sma_50_above_sma_325:
+            sma_emoji = bullish_emoji
+        elif not close_above_sma_200 and not sma_50_above_sma_325:
+            sma_emoji = skull_emoji
+        else:
+            sma_emoji = bearish_emoji
     else:
-        sma_emoji = bearish_emoji
+        sma_emoji = ''
 
     if close[-1] < growths[1][-future]:
         growth_emoji = rocket_emoji
@@ -135,8 +147,14 @@ def write_message(
 
     message = start_message(name)
     message += f" \n {sma_emoji} **Price** ``` "
-    message += f"Close:   {close[-1]:16.8f} \n "
-    message += f"SMA-200: {sma_200[-1]:16.8f} ``` "
+    message += f"Close:   {close[-1]:16.8f}"
+    if smas:
+        message += " \n "
+        message += f"SMA-200: {smas[0][-1]:16.8f} \n "
+        message += f"SMA-325: {smas[1][-1]:16.8f} \n "
+        message += f"SMA-50:  {smas[2][-1]:16.8f} ``` "
+    else:
+        message += " ``` "
 
     message += f" \n {growth_emoji} **Growth** ``` "
     message += f"Upper Fit 2: {growths[4][-future]:16.8f} \n "
