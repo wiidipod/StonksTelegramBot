@@ -16,23 +16,24 @@ if __name__ == '__main__':
     ]
 
     tickers = [
-        '^GDAXI',
-        '^NDX',
+        # '^GDAXI',
+        # '^NDX',
         '^GSPC',
-        '^DJI',
-        '^MDAXI',
-        '^STOXX50E',
-        '^N225',
-        '^TECDAX',
-        '^FCHI',
-        '^FTSE',
-        'BTC-EUR',
-        'GME',
-        'GC=F',
+        # '^DJI',
+        # '^MDAXI',
+        # '^STOXX50E',
+        # '^N225',
+        # '^TECDAX',
+        # '^FCHI',
+        # '^FTSE',
+        # 'BTC-EUR',
+        # 'GME',
+        # 'GC=F',
     ]
     future = 250
 
-    closes = yfinance_service.get_closes(tickers, period='max', interval='1d')
+    # closes = yfinance_service.get_closes(tickers, period='max', interval='1d')
+    highs, lows, closes = yfinance_service.get_prices(tickers, period='max', interval='1d')
 
     upsides = {}
     all_plot_with_ta_paths = {}
@@ -40,6 +41,8 @@ if __name__ == '__main__':
     all_message_paths = {}
 
     for ticker in tqdm(tickers):
+        high = highs[ticker]
+        low = lows[ticker]
         close = closes[ticker]
         is_default = ticker in defaults
 
@@ -50,6 +53,8 @@ if __name__ == '__main__':
         bullish, rsi, rsi_sma, macd, macd_signal, macd_diff = technicals
         if not bullish and not is_default:
             continue
+
+        upperband, lowerband = ta_utility.get_supertrend(high, low, close, window=14, multiplier=2)
 
         growth, lower_growth, upper_growth, double_lower_growth, double_upper_growth = regression_utility.get_growths(close, future=future)
         if growth[-future] >= growth[-1] and not is_default:
@@ -85,6 +90,8 @@ if __name__ == '__main__':
         sma_200 = sma_200[-2500:]
         sma_325 = sma_325[-2500:]
         sma_50 = sma_50[-2500:]
+        upperband = upperband[-2500:]
+        lowerband = lowerband[-2500:]
         growths = [double_lower_growth, lower_growth, growth, upper_growth, double_upper_growth]
         smas = [sma_200, sma_325, sma_50]
 
@@ -101,6 +108,8 @@ if __name__ == '__main__':
             macd=macd,
             macd_signal=macd_signal,
             macd_diff=macd_diff,
+            upperband=upperband,
+            lowerband=lowerband,
         )
 
         plot_path = plot_utility.plot_with_growths(
@@ -122,6 +131,8 @@ if __name__ == '__main__':
             macd=macd,
             macd_signal=macd_signal,
             macd_diff=macd_diff,
+            upperband=upperband,
+            lowerband=lowerband,
             one_year_estimate=one_year_estimate,
             upside=upside,
         )

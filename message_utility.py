@@ -57,6 +57,14 @@ def write_hype_message(
     return save_message(message, ticker)
 
 
+def get_supertrend_emoji(upperband, lowerband, close):
+    if lowerband[-1] is None:
+        return bearish_emoji
+
+    return bullish_emoji
+
+
+
 def get_macd_emoji(macd_diff):
     if macd_diff[-2] < macd_diff[-1] > 0.0:
         macd_emoji = rocket_emoji
@@ -93,6 +101,8 @@ def write_message(
     macd=None,
     macd_signal=None,
     macd_diff=None,
+    upperband=None,
+    lowerband=None,
     peg_ratio=None,
     fair_value=None,
     one_year_estimate=None,
@@ -125,6 +135,8 @@ def write_message(
         growth_emoji = skull_emoji
     else:
         growth_emoji = bearish_emoji
+
+    supertrend_emoji = get_supertrend_emoji(upperband, lowerband, close)
 
     macd_emoji = get_macd_emoji(macd_diff)
 
@@ -162,6 +174,13 @@ def write_message(
     message += f"Fit:         {growths[2][-future]:16.8f} \n "
     message += f"Lower Fit:   {growths[1][-future]:16.8f} \n "
     message += f"Lower Fit 2: {growths[0][-future]:16.8f} ``` "
+
+    message = add_supertrend_message(
+        message=message,
+        supertrend_emoji=supertrend_emoji,
+        upperband=upperband,
+        lowerband=lowerband,
+    )
 
     message = add_macd_message(
         message=message,
@@ -203,6 +222,19 @@ def save_message(message, ticker):
 
 def start_message(name):
     message = f" **{name}** \n ".replace('.', '\.').replace('=', '\=')
+    return message
+
+
+def add_supertrend_message(message, supertrend_emoji, upperband, lowerband):
+    message += f" \n {supertrend_emoji} **Supertrend** ``` "
+    if upperband[-1] is not None:
+        message += f"Upperband: {upperband[-1]:16.8f}"
+    if lowerband[-1] is not None:
+        if upperband[-1] is not None:
+            message += " \n "
+        message += f"Lowerband: {lowerband[-1]:16.8f} ``` "
+    else:
+        message += " ``` "
     return message
 
 

@@ -1,6 +1,7 @@
 from ta.momentum import RSIIndicator
 from ta.trend import MACD
 from ta.trend import SMAIndicator
+from ta.volatility import AverageTrueRange
 import pandas as pd
 
 
@@ -31,3 +32,47 @@ def get_technicals(close):
         bullish = False
 
     return bullish, rsi, rsi_sma, macd, macd_signal, macd_diff
+
+
+def get_supertrend(high, low, close, window=14, multiplier=2):
+    atr = AverageTrueRange(pd.Series(high), pd.Series(low), pd.Series(close), window=window).average_true_range().tolist()
+    price = (high[0] + low[0]) / 2
+    offset = multiplier * atr[0]
+    upperband = [price + offset]
+    lowerband = [price - offset]
+    if close[0] < lowerband[0]:
+        uptrend = False
+    elif close[0] > upperband[0]:
+        uptrend = True
+    else:
+        uptrend = None
+
+    for i in range(1, len(atr)):
+        price = (high[i] + low[i]) / 2
+        offset = multiplier * atr[i]
+
+        if uptrend is None:
+            upperband.append(min(price + offset, upperband[-1]))
+            lowerband.append(max(price - offset, lowerband[-1]))
+            if close[i] < lowerband[-1]:
+                uptrend = False
+            if close[i] > upperband[-1]:
+                uptrend = True
+
+        if uptrend is True:
+            lowerband.append(max(price - offset, lowerband[-1]))
+            if close[i] < lowerband[-1]:
+                uptrend = False
+                upperband.append(price + offset)
+            else:
+                upperband.append(None)
+
+        if uptrend is False:
+            upperband.append(min(price + offset, upperband[-1]))
+            if close[i] > upperband[-1]:
+                uptrend = True
+                lowerband.append(price - offset)
+            else:
+                lowerband.append(None)
+
+    return upperband, lowerband

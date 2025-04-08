@@ -10,6 +10,29 @@ def get_price(ticker, period='1d', interval='1m'):
     return data["Close"].iloc[-1]
 
 
+def get_prices(tickers, period='10y', interval='1d'):
+    data = yf.download(tickers=tickers, period=period, interval=interval)
+    highs = {}
+    lows = {}
+    closes = {}
+    high_all = data["High"]
+    low_all = data["Low"]
+    close_all = data["Close"]
+    for ticker in tickers:
+        highs[ticker] = []
+        lows[ticker] = []
+        closes[ticker] = []
+        try:
+            for high, low, close in zip(high_all[ticker], low_all[ticker], close_all[ticker]):
+                if high != 0.0 and not math.isnan(high) and low != 0.0 and not math.isnan(low) and close != 0.0 and not math.isnan(close):
+                    highs[ticker].append(high)
+                    lows[ticker].append(low)
+                    closes[ticker].append(close)
+        except:
+            pass
+    return highs, lows, closes
+
+
 def get_closes(tickers, period='10y', interval='1d'):
     data = yf.download(tickers, period=period, interval=interval, auto_adjust=True)
     closes = {}
@@ -17,8 +40,8 @@ def get_closes(tickers, period='10y', interval='1d'):
     for ticker in tickers:
         closes[ticker] = []
         try:
-            for i, close in enumerate(close_all[ticker]):
-                if close != 0 and not math.isnan(close):
+            for close in close_all[ticker]:
+                if close != 0.0 and not math.isnan(close):
                     closes[ticker].append(close)
         except:
             pass
