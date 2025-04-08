@@ -60,19 +60,21 @@ def get_supertrend(high, low, close, window=14, multiplier=2):
                 uptrend = True
 
         if uptrend is True:
-            lowerband.append(max(price - offset, lowerband[-1]))
             if close[i] < lowerband[-1]:
                 uptrend = False
                 upperband.append(price + offset)
+                lowerband.append(None)
             else:
+                lowerband.append(max(price - offset, lowerband[-1]))
                 upperband.append(None)
 
         if uptrend is False:
-            upperband.append(min(price + offset, upperband[-1]))
             if close[i] > upperband[-1]:
                 uptrend = True
                 lowerband.append(price - offset)
+                upperband.append(None)
             else:
+                upperband.append(min(price + offset, upperband[-1]))
                 lowerband.append(None)
 
     return upperband, lowerband

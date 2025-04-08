@@ -16,19 +16,19 @@ if __name__ == '__main__':
     ]
 
     tickers = [
-        # '^GDAXI',
-        # '^NDX',
+        '^GDAXI',
+        '^NDX',
         '^GSPC',
-        # '^DJI',
-        # '^MDAXI',
-        # '^STOXX50E',
-        # '^N225',
-        # '^TECDAX',
-        # '^FCHI',
-        # '^FTSE',
-        # 'BTC-EUR',
-        # 'GME',
-        # 'GC=F',
+        '^DJI',
+        '^MDAXI',
+        '^STOXX50E',
+        '^N225',
+        '^TECDAX',
+        '^FCHI',
+        '^FTSE',
+        'BTC-EUR',
+        'GME',
+        'GC=F',
     ]
     future = 250
 
