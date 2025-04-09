@@ -137,7 +137,7 @@ async def set_commands(context: ContextTypes.DEFAULT_TYPE):
     commands = [
         BotCommand(command='start', description='Subscribe to daily updates'),
         BotCommand(command='end', description='Unsubscribe from daily updates'),
-        BotCommand(command='stoploss', description='Compute stop loss by supertrend strategy. /stoploss option_close [ticker_symbol] [option_delta]'),
+        BotCommand(command='stoploss', description='/stoploss option_close [ticker_symbol] [option_delta]'),
     ]
     await context.bot.set_my_commands(commands)
 
