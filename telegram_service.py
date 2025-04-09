@@ -158,7 +158,7 @@ async def set_commands(context: ContextTypes.DEFAULT_TYPE):
 
 def get_application():
     token = get_token()
-    application = ApplicationBuilder().token(token).connection_pool_size(50).build()  # Increase pool size
+    application = ApplicationBuilder().token(token).connection_pool_size(50).pool_timeout(10).build()
 
     start_handler = CommandHandler('start', start)
     application.add_handler(start_handler)
