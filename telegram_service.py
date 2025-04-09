@@ -51,46 +51,24 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=chat_id, text=message)
 
 
-async def long(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def handle_stop_loss(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
-        if len(context.args) != 1:
-            await update.message.reply_text("Please provide a valid option close value, e.g., /long 1.23")
+        if len(context.args) < 1:
+            await update.message.reply_text("Invalid input. Try /stoploss 1.23 or /stoploss 1.23 ^GSPC")
             return
 
-        option_close = float(context.args[0])
+        option_close, ticker = extract_option_close_and_ticker(context)
 
-        ticker = '^GSPC'
-        high, low, close = yfinance_service.get_high_low_close([ticker], period='1y')
-        upperband, lowerband = ta_utility.get_supertrend(high, low, close)
-
-        stop_loss = option_utility.get_stop_loss(
-            option_close=option_close,
-            supertrend=lowerband[-1],
-        )
-
-        await update.message.reply_text(f"Stop Loss: {stop_loss}")
-    except ValueError:
-        await update.message.reply_text("Invalid input. Please provide a valid number.")
-    except Exception as e:
-        await update.message.reply_text(f"An error occurred: {str(e)}")
-
-
-async def short(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    try:
-        if len(context.args) != 1:
-            await update.message.reply_text("Please provide a valid option close value, e.g., /short 1.23")
-            return
-
-        option_close = float(context.args[0])
-
-        ticker = '^GSPC'
         high, low, close = yfinance_service.get_high_low_close(ticker, period='1y')
         upperband, lowerband = ta_utility.get_supertrend(high, low, close)
+        if upperband[-1] is None:
+            supertrend = lowerband[-1]
+        else:
+            supertrend = upperband[-1]
 
         stop_loss = option_utility.get_stop_loss(
             option_close=option_close,
-            supertrend=upperband[-1],
-            short=True,
+            supertrend=supertrend,
         )
 
         await update.message.reply_text(f"Stop Loss: {stop_loss}")
@@ -98,6 +76,15 @@ async def short(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Invalid input. Please provide a valid number.")
     except Exception as e:
         await update.message.reply_text(f"An error occurred: {str(e)}")
+
+
+def extract_option_close_and_ticker(context):
+    option_close = float(context.args[0])
+    if len(context.args) > 1:
+        ticker = context.args[1]
+    else:
+        ticker = '^GSPC'
+    return option_close, ticker
 
 
 async def end(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -156,11 +143,8 @@ def get_application():
     end_handler = CommandHandler('end', end)
     application.add_handler(end_handler)
 
-    long_handler = CommandHandler('long', long)
+    long_handler = CommandHandler('stoploss', handle_stop_loss)
     application.add_handler(long_handler)
-
-    short_handler = CommandHandler('short', short)
-    application.add_handler(short_handler)
 
     return application
 
