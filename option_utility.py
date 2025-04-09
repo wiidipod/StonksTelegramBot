@@ -94,6 +94,21 @@ def get_paths(ticker):
     return [plot_with_ta_path, plot_path,], [message_path]
 
 
+def get_stop_loss(
+        option_close,
+        supertrend,
+        short=False,
+        ticker='^GSPC',
+        option_currency='EUR',
+):
+    underlying_close, supertrend = yfinance_service.get_price_in_currency(ticker, to_convert=supertrend, target_currency=option_currency)
+    print(f'{underlying_close = }')
+    print(f'{supertrend = }')
+    if short:
+        return option_close * underlying_close / supertrend
+    return option_close / underlying_close * supertrend
+
+
 if __name__ == '__main__':
     main_ticker = '^GSPC'
 
@@ -101,10 +116,23 @@ if __name__ == '__main__':
     # application = telegram_service.get_application()
     # asyncio.run(telegram_service.send_all(plot_paths, message_paths, application))
 
-    target = get_target(
-        ticker=main_ticker,
-        strike_price=5800.0,
-        option_price=0.29,
-        delta=0.12,
+    # target = get_target(
+    #     ticker=main_ticker,
+    #     strike_price=5800.0,
+    #     option_price=0.29,
+    #     delta=0.12,
+    # )
+    # print(target)
+
+    # stop_loss = get_stop_loss(
+    #     ticker=main_ticker,
+    #     option_price=5.79,
+    #     delta=-.74,
+    #     supertrend=5331.59,
+    # )
+    stop_loss = get_stop_loss(
+        option_close=2.82,
+        supertrend=5331.58725504,
+        short=False,
     )
-    print(target)
+    print(stop_loss)

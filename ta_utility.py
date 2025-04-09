@@ -47,7 +47,7 @@ def get_supertrend(high, low, close, window=14, multiplier=2):
     else:
         uptrend = None
 
-    for i in range(1, len(atr)):
+    for i in range(len(atr)):
         price = (high[i] + low[i]) / 2
         offset = multiplier * atr[i]
 
@@ -58,8 +58,7 @@ def get_supertrend(high, low, close, window=14, multiplier=2):
                 uptrend = False
             if close[i] > upperband[-1]:
                 uptrend = True
-
-        if uptrend is True:
+        elif uptrend is True:
             if close[i] < lowerband[-1]:
                 uptrend = False
                 upperband.append(price + offset)
@@ -67,8 +66,7 @@ def get_supertrend(high, low, close, window=14, multiplier=2):
             else:
                 lowerband.append(max(price - offset, lowerband[-1]))
                 upperband.append(None)
-
-        if uptrend is False:
+        elif uptrend is False:
             if close[i] > upperband[-1]:
                 uptrend = True
                 lowerband.append(price - offset)

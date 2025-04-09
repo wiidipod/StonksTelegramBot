@@ -10,6 +10,16 @@ def get_price(ticker, period='1d', interval='1m'):
     return data["Close"].iloc[-1]
 
 
+def get_high_low(ticker, period='1d', interval='1m'):
+    data = yf.Ticker(ticker).history(period=period, interval=interval)
+    return data["High"].iloc[-1], data["Low"].iloc[-1]
+
+
+def get_high_low_close(ticker, period='1y', interval='1d'):
+    highs, lows, closes = get_prices([ticker], period=period, interval=interval)
+    return highs[ticker], lows[ticker], closes[ticker]
+
+
 def get_prices(tickers, period='10y', interval='1d'):
     data = yf.download(tickers=tickers, period=period, interval=interval)
     highs = {}
@@ -113,6 +123,22 @@ def get_fair_value(ticker, growth, backtest=False):
         return None
 
 
+def get_high_low_in_currency(ticker, to_convert=None, target_currency='EUR'):
+    high, low = get_high_low(ticker)
+    currency = get_currency(ticker)
+
+    if currency == target_currency:
+        return high, low
+
+    conversion_ticker = f'{currency}{target_currency}=X' if currency != 'USD' else f'{target_currency}=X'
+    conversion_rate = get_price(conversion_ticker)
+
+    if to_convert is None:
+        return high * conversion_rate, low * conversion_rate
+    else:
+        return high * conversion_rate, low * conversion_rate, to_convert * conversion_rate
+
+
 def get_price_in_currency(ticker, to_convert=None, target_currency='EUR'):
     price = get_price(ticker)
     currency = get_currency(ticker)
@@ -120,10 +146,8 @@ def get_price_in_currency(ticker, to_convert=None, target_currency='EUR'):
     if currency == target_currency:
         return price
 
-    if currency == 'USD':
-        currency = ''
-
-    conversion_rate = get_price(f'{currency}{target_currency}=X')
+    conversion_ticker = f'{currency}{target_currency}=X' if currency != 'USD' else f'{target_currency}=X'
+    conversion_rate = get_price(conversion_ticker)
 
     if to_convert is None:
         return price * conversion_rate
