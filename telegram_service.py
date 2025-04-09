@@ -54,7 +54,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def handle_stop_loss(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         if len(context.args) < 1:
-            await update.message.reply_text("Invalid input. Try /stoploss 1.23 or /stoploss 1.23 ^GSPC")
+            await update.message.reply_text("Invalid input. Try /stoploss 1.23")
             return
 
         option_close, delta, ticker = extract_option_close_delta_and_ticker(context)
