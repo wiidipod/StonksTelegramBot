@@ -1,7 +1,8 @@
 import asyncio
 import logging
 from telegram import Update, InputMediaPhoto, BotCommand
-from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
+from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, ConversationHandler, MessageHandler, filters
+from telegram.request import HTTPXRequest
 
 import option_utility
 import ta_utility
@@ -51,14 +52,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def long(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id, user_response = await get_option_close(context, update)
-
-    if not user_response or not user_response[-1].message.text:
-        await context.bot.send_message(chat_id=chat_id, text="Timeout.")
-        return
-
     try:
-        option_close = float(user_response[-1].message.text)
+        if len(context.args) != 1:
+            await update.message.reply_text("Please provide a valid option close value, e.g., /long 1.23")
+            return
+
+        option_close = float(context.args[0])
 
         ticker = '^GSPC'
         high, low, close = yfinance_service.get_high_low_close([ticker], period='1y')
@@ -69,25 +68,23 @@ async def long(update: Update, context: ContextTypes.DEFAULT_TYPE):
             supertrend=lowerband[-1],
         )
 
-        await context.bot.send_message(chat_id=chat_id, text=f"Stop Loss: {stop_loss}")
+        await update.message.reply_text(f"Stop Loss: {stop_loss}")
     except ValueError:
-        await context.bot.send_message(chat_id=chat_id, text="Invalid input.")
+        await update.message.reply_text("Invalid input. Please provide a valid number.")
     except Exception as e:
-        await context.bot.send_message(chat_id=chat_id, text=f"An error occurred: {str(e)}")
+        await update.message.reply_text(f"An error occurred: {str(e)}")
 
 
 async def short(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id, user_response = await get_option_close(context, update)
-
-    if not user_response or not user_response[-1].message.text:
-        await context.bot.send_message(chat_id=chat_id, text="Timeout.")
-        return
-
     try:
-        option_close = float(user_response[-1].message.text)
+        if len(context.args) != 1:
+            await update.message.reply_text("Please provide a valid option close value, e.g., /short 1.23")
+            return
+
+        option_close = float(context.args[0])
 
         ticker = '^GSPC'
-        high, low, close = yfinance_service.get_high_low_close([ticker], period='1y')
+        high, low, close = yfinance_service.get_high_low_close(ticker, period='1y')
         upperband, lowerband = ta_utility.get_supertrend(high, low, close)
 
         stop_loss = option_utility.get_stop_loss(
@@ -96,18 +93,11 @@ async def short(update: Update, context: ContextTypes.DEFAULT_TYPE):
             short=True,
         )
 
-        await context.bot.send_message(chat_id=chat_id, text=f"Stop Loss: {stop_loss}")
+        await update.message.reply_text(f"Stop Loss: {stop_loss}")
     except ValueError:
-        await context.bot.send_message(chat_id=chat_id, text="Invalid input.")
+        await update.message.reply_text("Invalid input. Please provide a valid number.")
     except Exception as e:
-        await context.bot.send_message(chat_id=chat_id, text=f"An error occurred: {str(e)}")
-
-
-async def get_option_close(context, update):
-    chat_id = str(update.effective_chat.id)
-    await context.bot.send_message(chat_id=chat_id, text="Option Close?")
-    user_response = await context.bot.get_updates(timeout=30)
-    return chat_id, user_response
+        await update.message.reply_text(f"An error occurred: {str(e)}")
 
 
 async def end(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -158,7 +148,7 @@ async def set_commands(context: ContextTypes.DEFAULT_TYPE):
 
 def get_application():
     token = get_token()
-    application = ApplicationBuilder().token(token).connection_pool_size(50).pool_timeout(10).build()
+    application = ApplicationBuilder().token(token).build()
 
     start_handler = CommandHandler('start', start)
     application.add_handler(start_handler)
