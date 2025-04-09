@@ -80,6 +80,28 @@ async def handle_stop_loss(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"An error occurred: {str(e)}")
 
 
+async def handle_fivex(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        high, low, close = yfinance_service.get_high_low_close('^GSPC', period='1y')
+        upperband, lowerband = ta_utility.get_supertrend(high, low, close)
+
+        if upperband[-1] is None:
+            supertrend = lowerband[-1]
+            message = "Long "
+            ticker = 'US5L.DE'
+            price = yfinance_service.get_price(ticker)
+            stop_loss = ((supertrend / close[-1] - 1.0) * 5.0 + 1.0) * price
+        else:
+            supertrend = upperband[-1]
+            message = "Short "
+            ticker = 'US5S.DE'
+            price = yfinance_service.get_price(ticker)
+            stop_loss = price / ((supertrend / close[-1] - 1.0) * 5.0 + 1.0)
+
+        await update.message.reply_text(f"{ticker} {message} {stop_loss:.3f}")
+    except Exception as e:
+        await update.message.reply_text(f"An error occurred: {str(e)}")
+
 def extract_option_close_delta_and_ticker(context):
     option_close = float(context.args[0])
 
@@ -137,7 +159,8 @@ async def set_commands(context: ContextTypes.DEFAULT_TYPE):
     commands = [
         BotCommand(command='start', description='Subscribe to daily updates'),
         BotCommand(command='end', description='Unsubscribe from daily updates'),
-        BotCommand(command='stoploss', description='/stoploss option_close [ticker_symbol] [option_delta]'),
+        # BotCommand(command='stoploss', description='/stoploss option_close [ticker_symbol] [option_delta]'),
+        BotCommand(command='fivex', description='S&P 500 5x Daily')
     ]
     await context.bot.set_my_commands(commands)
 
@@ -152,8 +175,11 @@ def get_application():
     end_handler = CommandHandler('end', end)
     application.add_handler(end_handler)
 
-    long_handler = CommandHandler('stoploss', handle_stop_loss)
-    application.add_handler(long_handler)
+    # long_handler = CommandHandler('stoploss', handle_stop_loss)
+    # application.add_handler(long_handler)
+
+    fivex_handler = CommandHandler('fivex', handle_fivex)
+    application.add_handler(fivex_handler)
 
     return application
 
