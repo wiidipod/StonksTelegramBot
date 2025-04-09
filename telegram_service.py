@@ -57,7 +57,7 @@ async def handle_stop_loss(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("Invalid input. Try /stoploss 1.23 or /stoploss 1.23 ^GSPC")
             return
 
-        option_close, ticker = extract_option_close_and_ticker(context)
+        option_close, delta, ticker = extract_option_close_delta_and_ticker(context)
 
         high, low, close = yfinance_service.get_high_low_close(ticker, period='1y')
         upperband, lowerband = ta_utility.get_supertrend(high, low, close)
@@ -69,6 +69,8 @@ async def handle_stop_loss(update: Update, context: ContextTypes.DEFAULT_TYPE):
         stop_loss = option_utility.get_stop_loss(
             option_close=option_close,
             supertrend=supertrend,
+            delta=delta,
+            ticker=ticker,
         )
 
         await update.message.reply_text(f"Stop Loss: {stop_loss}")
@@ -78,13 +80,19 @@ async def handle_stop_loss(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"An error occurred: {str(e)}")
 
 
-def extract_option_close_and_ticker(context):
+def extract_option_close_delta_and_ticker(context):
     option_close = float(context.args[0])
+
     if len(context.args) > 1:
+        delta = float(context.args[1])
+    else:
+        delta = 0.0
+
+    if len(context.args) > 2:
         ticker = context.args[1]
     else:
         ticker = '^GSPC'
-    return option_close, ticker
+    return option_close, delta, ticker
 
 
 async def end(update: Update, context: ContextTypes.DEFAULT_TYPE):
