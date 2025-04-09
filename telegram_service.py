@@ -54,7 +54,7 @@ async def long(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id, user_response = await get_option_close(context, update)
 
     if not user_response or not user_response[-1].message.text:
-        await context.bot.send_message(chat_id=chat_id, text="Timout.")
+        await context.bot.send_message(chat_id=chat_id, text="Timeout.")
         return
 
     try:
@@ -80,7 +80,7 @@ async def short(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id, user_response = await get_option_close(context, update)
 
     if not user_response or not user_response[-1].message.text:
-        await context.bot.send_message(chat_id=chat_id, text="Timout.")
+        await context.bot.send_message(chat_id=chat_id, text="Timeout.")
         return
 
     try:
@@ -158,7 +158,7 @@ async def set_commands(context: ContextTypes.DEFAULT_TYPE):
 
 def get_application():
     token = get_token()
-    application = ApplicationBuilder().token(token).build()
+    application = ApplicationBuilder().token(token).connection_pool_size(50).build()  # Increase pool size
 
     start_handler = CommandHandler('start', start)
     application.add_handler(start_handler)
