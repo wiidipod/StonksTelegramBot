@@ -127,7 +127,6 @@ if __name__ == '__main__':
                 ticker,
                 name,
                 close,
-                ta_utility.get_sma(close),
                 growths=growths,
                 future=future,
                 rsi=rsi,

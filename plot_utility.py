@@ -144,8 +144,8 @@ def plot_with_ta(
         macd=None,
         macd_signal=None,
         macd_diff=None,
-        upperband=None,
-        lowerband=None,
+        # upperband=None,
+        # lowerband=None,
 ):
     if smas is None:
         smas = []
@@ -175,12 +175,12 @@ def plot_with_ta(
             color = 'tab:gray'
         plt.plot(growth[start_index:end_index], color=color, linestyle='dashed')
 
-    if upperband and lowerband:
-        plot_supertrend(
-            upperband[start_index:],
-            lowerband[start_index:],
-            price_subplot,
-        )
+    # if upperband and lowerband:
+    #     plot_supertrend(
+    #         upperband[start_index:],
+    #         lowerband[start_index:],
+    #         price_subplot,
+    #     )
 
     price_subplot.plot(close[start_index:end_index], label='Close')
 
@@ -219,9 +219,9 @@ def plot_with_ta(
     return image_path
 
 
-def plot_supertrend(upperband, lowerband, subplot):
-    subplot.plot(upperband, color='tab:red', label='Upperband')
-    subplot.plot(lowerband, color='tab:green', label='Lowerband')
+# def plot_supertrend(upperband, lowerband, subplot):
+#     subplot.plot(upperband, color='tab:red', label='Upperband')
+#     subplot.plot(lowerband, color='tab:green', label='Lowerband')
 
 
 def plot_rsi(rsi, rsi_sma, rsi_subplot):

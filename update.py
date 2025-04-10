@@ -54,7 +54,7 @@ if __name__ == '__main__':
         if not bullish and not is_default:
             continue
 
-        upperband, lowerband = ta_utility.get_supertrend(high, low, close, window=14, multiplier=2)
+        # upperband, lowerband = ta_utility.get_supertrend(high, low, close, window=14, multiplier=2)
 
         growth, lower_growth, upper_growth, double_lower_growth, double_upper_growth = regression_utility.get_growths(close, future=future)
         if growth[-future] >= growth[-1] and not is_default:
@@ -72,8 +72,8 @@ if __name__ == '__main__':
         upsides[ticker] = upside
 
         sma_200 = ta_utility.get_sma(close)
-        sma_325 = ta_utility.get_sma(close, window=325)
-        sma_50 = ta_utility.get_sma(close, window=50)
+        sma_long = ta_utility.get_sma(close, window=250)
+        sma_short = ta_utility.get_sma(close, window=10)
         name = yfinance_service.get_name(ticker)
 
         close = close[-2500:]
@@ -88,12 +88,12 @@ if __name__ == '__main__':
         rsi = rsi[-2500:]
         rsi_sma = rsi_sma[-2500:]
         sma_200 = sma_200[-2500:]
-        sma_325 = sma_325[-2500:]
-        sma_50 = sma_50[-2500:]
-        upperband = upperband[-2500:]
-        lowerband = lowerband[-2500:]
+        sma_long = sma_long[-2500:]
+        sma_short = sma_short[-2500:]
+        # upperband = upperband[-2500:]
+        # lowerband = lowerband[-2500:]
         growths = [double_lower_growth, lower_growth, growth, upper_growth, double_upper_growth]
-        smas = [sma_200, sma_325, sma_50]
+        smas = [sma_200, sma_long, sma_short]
 
         plot_with_ta_path = plot_utility.plot_with_ta(
             ticker,
@@ -108,8 +108,8 @@ if __name__ == '__main__':
             macd=macd,
             macd_signal=macd_signal,
             macd_diff=macd_diff,
-            upperband=upperband,
-            lowerband=lowerband,
+            # upperband=upperband,
+            # lowerband=lowerband,
         )
 
         plot_path = plot_utility.plot_with_growths(
@@ -131,8 +131,8 @@ if __name__ == '__main__':
             macd=macd,
             macd_signal=macd_signal,
             macd_diff=macd_diff,
-            upperband=upperband,
-            lowerband=lowerband,
+            # upperband=upperband,
+            # lowerband=lowerband,
             one_year_estimate=one_year_estimate,
             upside=upside,
         )

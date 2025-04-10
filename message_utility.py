@@ -57,12 +57,11 @@ def write_hype_message(
     return save_message(message, ticker)
 
 
-def get_supertrend_emoji(upperband, lowerband, close):
-    if lowerband[-1] is None:
-        return bearish_emoji
-
-    return bullish_emoji
-
+# def get_supertrend_emoji(upperband, lowerband, close):
+#     if lowerband[-1] is None:
+#         return bearish_emoji
+#
+#     return bullish_emoji
 
 
 def get_macd_emoji(macd_diff):
@@ -101,8 +100,8 @@ def write_message(
     macd=None,
     macd_signal=None,
     macd_diff=None,
-    upperband=None,
-    lowerband=None,
+    # upperband=None,
+    # lowerband=None,
     peg_ratio=None,
     fair_value=None,
     one_year_estimate=None,
@@ -115,12 +114,12 @@ def write_message(
 
     if smas:
         close_above_sma_200 = smas[0][-1] <= close[-1]
-        sma_50_above_sma_325 = smas[1][-1] <= smas[2][-1]
-        if close_above_sma_200 and sma_50_above_sma_325:
+        sma_short_above_sma_long = smas[1][-1] <= smas[2][-1]
+        if close_above_sma_200 and sma_short_above_sma_long:
             sma_emoji = rocket_emoji
-        elif close_above_sma_200 or sma_50_above_sma_325:
+        elif close_above_sma_200 or sma_short_above_sma_long:
             sma_emoji = bullish_emoji
-        elif not close_above_sma_200 and not sma_50_above_sma_325:
+        elif not close_above_sma_200 and not sma_short_above_sma_long:
             sma_emoji = skull_emoji
         else:
             sma_emoji = bearish_emoji
@@ -136,7 +135,7 @@ def write_message(
     else:
         growth_emoji = bearish_emoji
 
-    supertrend_emoji = get_supertrend_emoji(upperband, lowerband, close)
+    # supertrend_emoji = get_supertrend_emoji(upperband, lowerband, close)
 
     macd_emoji = get_macd_emoji(macd_diff)
 
@@ -175,12 +174,12 @@ def write_message(
     message += f"Lower Fit:   {growths[1][-future]:16.8f} \n "
     message += f"Lower Fit 2: {growths[0][-future]:16.8f} ``` "
 
-    message = add_supertrend_message(
-        message=message,
-        supertrend_emoji=supertrend_emoji,
-        upperband=upperband,
-        lowerband=lowerband,
-    )
+    # message = add_supertrend_message(
+    #     message=message,
+    #     supertrend_emoji=supertrend_emoji,
+    #     upperband=upperband,
+    #     lowerband=lowerband,
+    # )
 
     message = add_macd_message(
         message=message,
@@ -225,17 +224,17 @@ def start_message(name):
     return message
 
 
-def add_supertrend_message(message, supertrend_emoji, upperband, lowerband):
-    message += f" \n {supertrend_emoji} **Supertrend** ``` "
-    if upperband[-1] is not None:
-        message += f"Upperband: {upperband[-1]:16.8f}"
-    if lowerband[-1] is not None:
-        if upperband[-1] is not None:
-            message += " \n "
-        message += f"Lowerband: {lowerband[-1]:16.8f} ``` "
-    else:
-        message += " ``` "
-    return message
+# def add_supertrend_message(message, supertrend_emoji, upperband, lowerband):
+#     message += f" \n {supertrend_emoji} **Supertrend** ``` "
+#     if upperband[-1] is not None:
+#         message += f"Upperband: {upperband[-1]:16.8f}"
+#     if lowerband[-1] is not None:
+#         if upperband[-1] is not None:
+#             message += " \n "
+#         message += f"Lowerband: {lowerband[-1]:16.8f} ``` "
+#     else:
+#         message += " ``` "
+#     return message
 
 
 def add_macd_message(message, macd_emoji, macd, macd_signal, macd_diff):
