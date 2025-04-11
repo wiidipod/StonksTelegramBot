@@ -34,6 +34,25 @@ def get_technicals(close):
     return bullish, rsi, rsi_sma, macd, macd_signal, macd_diff
 
 
+def get_reversal(highs, lows, closes, opens):
+    h_today = highs[-1]
+    h_yesterday = highs[-2]
+    l_today = lows[-1]
+    l_yesterday = lows[-2]
+    c = closes[-1]
+    o = opens[-1]
+    if h_yesterday > h_today and l_yesterday > l_today and o > c:
+        # us5l = yf.Ticker('US5L.DE').history(period='1d', interval='1d')
+        # message = f"Long\nGSPC@{h_today:.2f}\nUS5L@{us5l['High'].iloc[-1]:.2f}"
+        return True, h_today
+    elif h_yesterday < h_today and l_yesterday < l_today and o < c:
+        # us5s = yf.Ticker('US5S.DE').history(period='1d', interval='1d')
+        # message = f"Long\nGSPC@{l_today:.2f}\nUS5S@{us5s['High'].iloc[-1]:.2f}"
+        return False, l_today
+    else:
+        return None, None
+
+
 def get_supertrend(high, low, close, window=14, multiplier=2):
     atr = AverageTrueRange(pd.Series(high), pd.Series(low), pd.Series(close), window=window).average_true_range().tolist()
     price = (high[0] + low[0]) / 2

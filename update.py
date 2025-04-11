@@ -33,7 +33,7 @@ if __name__ == '__main__':
     future = 250
 
     # closes = yfinance_service.get_closes(tickers, period='max', interval='1d')
-    highs, lows, closes = yfinance_service.get_prices(tickers, period='max', interval='1d')
+    highs, lows, closes, opens = yfinance_service.get_prices(tickers, period='max', interval='1d')
 
     upsides = {}
     all_plot_with_ta_paths = {}
@@ -44,29 +44,38 @@ if __name__ == '__main__':
         high = highs[ticker]
         low = lows[ticker]
         close = closes[ticker]
-        is_default = ticker in defaults
+        open = opens[ticker]
+        long, entry = ta_utility.get_reversal(high, low, close, open)
+        has_signal = ticker in defaults or long is not None
 
-        if len(close) < 2500 and not is_default:
+        etf_entry = None
+        if ticker == '^GSPC':
+            if long is True:
+                etf_entry, _ = yfinance_service.get_high_low('US5L.DE', period='1d', interval='1d')
+            elif long is False:
+                _, etf_entry = yfinance_service.get_high_low('US5S.DE', period='1d', interval='1d')
+
+        if len(close) < 2500 and not has_signal:
             continue
 
         technicals = ta_utility.get_technicals(close)
         bullish, rsi, rsi_sma, macd, macd_signal, macd_diff = technicals
-        if not bullish and not is_default:
+        if not bullish and not has_signal:
             continue
 
         # upperband, lowerband = ta_utility.get_supertrend(high, low, close, window=14, multiplier=2)
 
         growth, lower_growth, upper_growth, double_lower_growth, double_upper_growth = regression_utility.get_growths(close, future=future)
-        if growth[-future] >= growth[-1] and not is_default:
+        if growth[-future] >= growth[-1] and not has_signal:
             continue
 
-        if lower_growth[-1] < close[-1] and not is_default:
+        if lower_growth[-1] < close[-1] and not has_signal:
             continue
 
         one_year_estimate = growth[-1]
         upside = one_year_estimate / close[-1] - 1.0
 
-        if one_year_estimate <= close[-1] and not is_default:
+        if one_year_estimate <= close[-1] and not has_signal:
             continue
 
         upsides[ticker] = upside
@@ -126,6 +135,9 @@ if __name__ == '__main__':
             smas=smas,
             growths=growths,
             future=future,
+            reversal_long=long,
+            entry=entry,
+            etf_entry=etf_entry,
             rsi=rsi,
             rsi_sma=rsi_sma,
             macd=macd,

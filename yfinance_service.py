@@ -16,7 +16,7 @@ def get_high_low(ticker, period='1d', interval='1m'):
 
 
 def get_high_low_close(ticker, period='1y', interval='1d'):
-    highs, lows, closes = get_prices([ticker], period=period, interval=interval)
+    highs, lows, closes, opens = get_prices([ticker], period=period, interval=interval)
     return highs[ticker], lows[ticker], closes[ticker]
 
 
@@ -25,22 +25,35 @@ def get_prices(tickers, period='10y', interval='1d'):
     highs = {}
     lows = {}
     closes = {}
+    opens = {}
     high_all = data["High"]
     low_all = data["Low"]
     close_all = data["Close"]
+    open_all = data["Open"]
     for ticker in tickers:
         highs[ticker] = []
         lows[ticker] = []
         closes[ticker] = []
+        opens[ticker] = []
         try:
-            for high, low, close in zip(high_all[ticker], low_all[ticker], close_all[ticker]):
-                if high != 0.0 and not math.isnan(high) and low != 0.0 and not math.isnan(low) and close != 0.0 and not math.isnan(close):
-                    highs[ticker].append(high)
-                    lows[ticker].append(low)
-                    closes[ticker].append(close)
+            for h, l, c, o in zip(high_all[ticker], low_all[ticker], close_all[ticker], open_all[ticker]):
+                if (
+                        h != 0.0
+                        and not math.isnan(h)
+                        and l != 0.0
+                        and not math.isnan(l)
+                        and c != 0.0
+                        and not math.isnan(c)
+                        and o != 0.0
+                        and not math.isnan(o)
+                ):
+                    highs[ticker].append(h)
+                    lows[ticker].append(l)
+                    closes[ticker].append(c)
+                    opens[ticker].append(o)
         except:
             pass
-    return highs, lows, closes
+    return highs, lows, closes, opens
 
 
 def get_closes(tickers, period='10y', interval='1d'):

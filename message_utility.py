@@ -64,6 +64,15 @@ def write_hype_message(
 #     return bullish_emoji
 
 
+def get_reversal_emoji(reversal_long):
+    if reversal_long is None:
+        return ''
+    elif reversal_long:
+        return rocket_emoji
+    else:
+        return skull_emoji
+
+
 def get_macd_emoji(macd_diff):
     if macd_diff[-2] < macd_diff[-1] > 0.0:
         macd_emoji = rocket_emoji
@@ -95,6 +104,9 @@ def write_message(
     smas=None,
     growths=None,
     future=None,
+    reversal_long=None,
+    entry=None,
+    etf_entry=None,
     rsi=None,
     rsi_sma=None,
     macd=None,
@@ -134,6 +146,8 @@ def write_message(
         growth_emoji = skull_emoji
     else:
         growth_emoji = bearish_emoji
+
+    reversal_emoji = get_reversal_emoji(reversal_long)
 
     # supertrend_emoji = get_supertrend_emoji(upperband, lowerband, close)
 
@@ -180,6 +194,14 @@ def write_message(
     #     upperband=upperband,
     #     lowerband=lowerband,
     # )
+
+    if reversal_long is not None:
+        message = add_reversal_message(
+            message=message,
+            reversal_emoji=reversal_emoji,
+            entry=entry,
+            etf_entry=etf_entry,
+        )
 
     message = add_macd_message(
         message=message,
@@ -236,6 +258,15 @@ def start_message(name):
 #         message += " ``` "
 #     return message
 
+
+def add_reversal_message(message, reversal_emoji, entry, etf_entry=None):
+    message += f" \n {reversal_emoji} **Reversal** ``` "
+    message += f"Entry:      {entry:16.8f} \n "
+    if etf_entry is not None:
+        message += f"S&P 500 5X: {etf_entry:16.8f} ``` "
+    else:
+        message += " ``` "
+    return message
 
 def add_macd_message(message, macd_emoji, macd, macd_signal, macd_diff):
     message += f" \n {macd_emoji} **MACD** ``` "
