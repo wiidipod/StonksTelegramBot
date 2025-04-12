@@ -177,7 +177,7 @@ def write_message(
         message += " \n "
         message += f"SMA-200: {smas[0][-1]:16.8f} \n "
         message += f"SMA-325: {smas[1][-1]:16.8f} \n "
-        message += f"SMA-50:  {smas[2][-1]:16.8f} ``` "
+        message += f"SMA-22:  {smas[2][-1]:16.8f} ``` "
     else:
         message += " ``` "
 

@@ -11,7 +11,8 @@ import message_utility
 if __name__ == '__main__':
     defaults = [
         '^GSPC',
-        'BTC-EUR',
+        '^NDX',
+        # 'BTC-EUR',
         'GC=F',
     ]
 
@@ -27,7 +28,7 @@ if __name__ == '__main__':
         '^FCHI',
         '^FTSE',
         'BTC-EUR',
-        'GME',
+        # 'GME',
         'GC=F',
     ]
     future = 250
@@ -81,8 +82,8 @@ if __name__ == '__main__':
         upsides[ticker] = upside
 
         sma_200 = ta_utility.get_sma(close)
-        sma_long = ta_utility.get_sma(close, window=250)
-        sma_short = ta_utility.get_sma(close, window=14)
+        sma_long = ta_utility.get_sma(close, window=325)
+        sma_short = ta_utility.get_sma(close, window=22)
         name = yfinance_service.get_name(ticker)
 
         close = close[-2500:]
