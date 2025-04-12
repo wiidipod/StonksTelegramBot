@@ -90,6 +90,12 @@ async def handle_reversal(update: Update, context: ContextTypes.DEFAULT_TYPE):
         l_yesterday = gspc['Low'].iloc[-2]
         c = gspc['Close'].iloc[-1]
         o = gspc['Open'].iloc[-1]
+        print(f'h_today: {h_today}')
+        print(f'h_yesterday: {h_yesterday}')
+        print(f'l_today: {l_today}')
+        print(f'l_yesterday: {l_yesterday}')
+        print(f'c: {c}')
+        print(f'o: {o}')
         if h_yesterday > h_today and l_yesterday > l_today and o > c:
             us5l = yf.Ticker('US5L.DE').history(period='1d', interval='1d')
             message = f"Long\nGSPC@{h_today:.2f}\nUS5L@{us5l['High'].iloc[-1]:.2f}"
