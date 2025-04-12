@@ -95,7 +95,7 @@ async def handle_reversal(update: Update, context: ContextTypes.DEFAULT_TYPE):
             message = f"Long\nGSPC@{h_today:.2f}\nUS5L@{us5l['High'].iloc[-1]:.2f}"
         elif h_yesterday < h_today and l_yesterday < l_today and o < c:
             us5s = yf.Ticker('US5S.DE').history(period='1d', interval='1d')
-            message = f"Long\nGSPC@{l_today:.2f}\nUS5S@{us5s['High'].iloc[-1]:.2f}"
+            message = f"Short\nGSPC@{l_today:.2f}\nUS5S@{us5s['High'].iloc[-1]:.2f}"
         else:
             message = "Reversal signal not met."
         await update.message.reply_text(message)
