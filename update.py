@@ -82,7 +82,7 @@ if __name__ == '__main__':
 
         sma_200 = ta_utility.get_sma(close)
         sma_long = ta_utility.get_sma(close, window=250)
-        sma_short = ta_utility.get_sma(close, window=10)
+        sma_short = ta_utility.get_sma(close, window=14)
         name = yfinance_service.get_name(ticker)
 
         close = close[-2500:]

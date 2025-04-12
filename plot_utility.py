@@ -188,9 +188,9 @@ def plot_with_ta(
         if i == 0:
             label = 'SMA-200'
         elif i == 1:
-            label = 'SMA-325'
+            label = 'SMA-250'
         else:
-            label = 'SMA-50'
+            label = 'SMA-14'
         price_subplot.plot(sma[start_index:end_index], label=label)
 
     price_subplot.legend()
