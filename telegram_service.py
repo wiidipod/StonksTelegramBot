@@ -90,21 +90,29 @@ async def handle_reversal(update: Update, context: ContextTypes.DEFAULT_TYPE):
         l_yesterday = gspc['Low'].iloc[-2]
         c = gspc['Close'].iloc[-1]
         o = gspc['Open'].iloc[-1]
-        print(f'h_today: {h_today}')
-        print(f'h_yesterday: {h_yesterday}')
-        print(f'l_today: {l_today}')
-        print(f'l_yesterday: {l_yesterday}')
-        print(f'c: {c}')
-        print(f'o: {o}')
         if h_yesterday > h_today and l_yesterday > l_today and o > c:
-            us5l = yf.Ticker('US5L.DE').history(period='1d', interval='1d')
-            message = f"Long\nGSPC@{h_today:.2f}\nUS5L@{us5l['High'].iloc[-1]:.2f}"
+            us5l = yf.Ticker('US5L.DE').history(period='5d', interval='1d')
+            message = f"Long\nGSPC ``` "
+            message += f"Buy:         {h_today:16.8f} \n "
+            message += f"Stop Loss:   {l_today:16.8f} \n "
+            message += f"Price Alarm: {h_yesterday:16.8f} ``` "
+            message += f"US5L ``` "
+            message += f"Buy:         {us5l['High'].iloc[-1]:16.8f} \n "
+            message += f"Stop Loss:   {us5l['Low'].iloc[-1]:16.8f} \n "
+            message += f"Price Alarm: {us5l['High'].iloc[-2]:16.8f} ``` "
         elif h_yesterday < h_today and l_yesterday < l_today and o < c:
-            us5s = yf.Ticker('US5S.DE').history(period='1d', interval='1d')
-            message = f"Short\nGSPC@{l_today:.2f}\nUS5S@{us5s['High'].iloc[-1]:.2f}"
+            us5s = yf.Ticker('US5S.DE').history(period='5d', interval='1d')
+            message = f"Short\nGSPC ``` "
+            message += f"Buy:         {l_today:16.8f} \n "
+            message += f"Stop Loss:   {h_today:16.8f} \n "
+            message += f"Price Alarm: {l_yesterday:16.8f} ``` "
+            message += f"US5L ``` "
+            message += f"Buy:         {us5s['High'].iloc[-1]:16.8f} \n "
+            message += f"Stop Loss:   {us5s['Low'].iloc[-1]:16.8f} \n "
+            message += f"Price Alarm: {us5s['High'].iloc[-2]:16.8f} ``` "
         else:
             message = "Reversal signal not met."
-        await update.message.reply_text(message)
+        await update.message.reply_text(message, parse_mode='MarkdownV2')
     except Exception as e:
         await update.message.reply_text(f"An error occurred: {str(e)}")
 

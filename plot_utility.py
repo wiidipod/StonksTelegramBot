@@ -130,6 +130,36 @@ def plot_with_colors(close, plot, five_colors, yscale):
     # plt.plot(five_colors[2], color='tab:blue', linestyle='dashed')
 
 
+def plot_bands(
+        ticker,
+        name,
+        high,
+        low,
+        graphs,
+        labels,
+        yscale='linear',
+):
+    fig = plt.figure(figsize=(9.0, 9.0), dpi=300)
+    fig.suptitle(f'{name}')
+    price_subplot = fig.add_subplot(111)
+
+    price_subplot.set_yscale(yscale)
+    price_subplot.set_ylabel('Price')
+    x = np.arange(len(high))
+    for i, label in enumerate(reversed(labels)):
+        price_subplot.fill_between(x, graphs[-2*i-1], graphs[-2*i-2], label=label)
+    price_subplot.fill_between(x, high, low)
+
+    price_subplot.grid(True)
+    price_subplot.legend()
+
+    fig.tight_layout()
+    image_path = f'{ticker}_plot_bands.png'
+    fig.savefig(image_path)
+
+    return image_path
+
+
 def plot_with_ta(
         ticker,
         name,
