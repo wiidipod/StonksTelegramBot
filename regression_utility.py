@@ -37,6 +37,18 @@ def get_fit(closes):
     return 0, 0, 0
 
 
+def get_daily_growths(prices, start_index):
+    growth = []
+    upper_growth = []
+    lower_growth = []
+    for i in range(start_index, len(prices)):
+        factor, base, error_factor = get_fit(prices[:i])
+        growth.append(factor * base ** i)
+        upper_growth.append(factor * base ** i * error_factor)
+        lower_growth.append(factor * base ** i / error_factor)
+    return growth, upper_growth, lower_growth
+
+
 def get_growth(length, factor, base, multiplier=1.0):
     return [factor * base ** i * multiplier for i in range(length)]
 

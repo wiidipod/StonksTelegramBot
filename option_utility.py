@@ -41,7 +41,8 @@ def get_target(
 
 def get_paths(ticker):
     future = 250
-    close = yfinance_service.get_closes([ticker], period='10y', interval='1d')[ticker]
+    # close = yfinance_service.get_closes([ticker], period='10y', interval='1d')[ticker]
+    high, low, close, _ = yfinance_service.get_prices([ticker], period='10y', interval='1d')[ticker]
     rsi, rsi_sma = ta_utility.get_rsi(close)
     macd, macd_signal, macd_diff = ta_utility.get_macd(close)
     sma_200 = ta_utility.get_sma(close)
@@ -57,6 +58,8 @@ def get_paths(ticker):
         ticker,
         name,
         close,
+        high,
+        low,
         sma_200,
         growths,
         start_index=len(close) - future,

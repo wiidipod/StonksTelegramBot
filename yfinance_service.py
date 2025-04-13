@@ -108,7 +108,7 @@ def get_peg_ratio(ticker):
         return None
 
 
-def get_fair_value(ticker, growth, backtest=False):
+def get_fair_value(ticker, growth_10y, backtest=False):
     try:
         if backtest:
             earnings_history = yf.Ticker(ticker).earnings_history
@@ -126,7 +126,7 @@ def get_fair_value(ticker, growth, backtest=False):
         growth_value_estimate = 40.0
 
     try:
-        growth_value = ((growth[-1] / growth[0]) ** (1.0 / 10.0) - 1.0) * 100.0
+        growth_value = ((growth_10y[-1] / growth_10y[0]) ** (1.0 / 10.0) - 1.0) * 100.0
         growth_value = min(growth_value, growth_value_estimate)
         eps = yf.Ticker(ticker).info.get("trailingEps")
         if eps is None or eps <= 0.0 or math.isnan(eps) or growth_value <= 0.0:
@@ -175,6 +175,7 @@ def get_currency(ticker):
 
 if __name__ == '__main__':
     # print(get_close_as_series('AAPL'))
-    print(get_price('AAPL'))
+    # print(get_price('AAPL'))
     # print(convert([1.0, 2.0]))
-    print(get_price_in_currency('AAPL'))
+    # print(get_price_in_currency('AAPL'))
+    print(yf.Ticker('VOW.DE').info)

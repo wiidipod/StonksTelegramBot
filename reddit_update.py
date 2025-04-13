@@ -8,17 +8,17 @@ import plot_utility
 
 
 def analyze_golden_cross():
-    nasdaq100 = '^NDX'
-    window_long = 250
-    window_short = 14
-    high, lows, _, _ = yfinance_service.get_prices([nasdaq100], period='max', interval='1d')
-    high = high[nasdaq100]
-    low = lows[nasdaq100]
+    gspc = '^GSPC'
+    window_long = 325
+    window_short = 10
+    high, lows, _, _ = yfinance_service.get_prices([gspc], period='max', interval='1d')
+    high = high[gspc]
+    low = lows[gspc]
     high_sma_long = ta_utility.get_sma(high, window=window_long)
     low_sma_long = ta_utility.get_sma(low, window=window_long)
     high_sma_short = ta_utility.get_sma(high, window=window_short)
     low_sma_short = ta_utility.get_sma(low, window=window_short)
-    name = yfinance_service.get_name(nasdaq100)
+    name = yfinance_service.get_name(gspc)
 
     if low_sma_short[-1] > high_sma_long[-1]:
         name += ': Buy'
@@ -42,7 +42,7 @@ def analyze_golden_cross():
     graphs, labels = get_growth_graphs_and_labels(graphs, high, labels, low, window_long)
 
     plot_path = plot_utility.plot_bands(
-        '3xnasdaq100',
+        '3xSP500',
         name,
         high[-window_long:],
         low[-window_long:],
@@ -55,10 +55,10 @@ def analyze_golden_cross():
 
 
 def get_growth_graphs_and_labels(graphs, high, labels, low, window):
-    h_growth, h_lower_growth, h_upper_growth, h_double_lower_growth, h_double_upper_growth = regression_utility.get_growths(
-        high)
-    l_growth, l_lower_growth, l_upper_growth, l_double_lower_growth, l_double_upper_growth = regression_utility.get_growths(
-        low)
+    h_growth, h_lower_growth, h_upper_growth, h_double_lower_growth, h_double_upper_growth = regression_utility.get_daily_growths(
+        high, start_index=window)
+    l_growth, l_lower_growth, l_upper_growth, l_double_lower_growth, l_double_upper_growth = regression_utility.get_daily_growths(
+        low, start_index=window)
     graphs += [
         h_growth[-window:],
         l_growth[-window:],
@@ -117,7 +117,10 @@ def analyze_amumbo():
 
 
 if __name__ == '__main__':
-    plot_paths = [analyze_amumbo(), analyze_golden_cross()]
+    plot_paths = [
+        analyze_amumbo(),
+        analyze_golden_cross()
+    ]
 
     application = telegram_service.get_application()
     asyncio.run(telegram_service.send_all(plot_paths, [], application))

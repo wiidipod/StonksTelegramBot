@@ -14,6 +14,8 @@ def plot_with_constants(
         ticker,
         name,
         close,
+        high,
+        low,
         constants,
         yscale='linear',
         rsi=None,
@@ -31,7 +33,7 @@ def plot_with_constants(
     gs = gridspec.GridSpec(3, 1, height_ratios=[3, 1, 1])
 
     price_subplot = fig.add_subplot(gs[0])
-    plot_with_colors(close, price_subplot, fourths, yscale)
+    plot_with_colors(close, high, low, price_subplot, fourths, fourths, yscale)
 
     macd_subplot = fig.add_subplot(gs[1])
     plot_macd(
@@ -91,7 +93,10 @@ def plot_with_growths(
         ticker,
         name,
         close,
-        growths,
+        high,
+        low,
+        growths_high,
+        growths_low,
         yscale='log',
 ):
     fig = plt.figure(figsize=(9.0, 9.0), dpi=300)
@@ -99,7 +104,7 @@ def plot_with_growths(
 
     price_subplot = fig.add_subplot(111)
 
-    plot_with_colors(close, price_subplot, growths, yscale)
+    plot_with_colors(close, high, low, price_subplot, growths_high, growths_low, yscale)
 
     plt.tight_layout()
     image_path = f'{ticker}_plot.png'
@@ -108,12 +113,12 @@ def plot_with_growths(
     return image_path
 
 
-def plot_with_colors(close, plot, five_colors, yscale):
+def plot_with_colors(close, high, low, plot, five_colors_high, five_colors_low, yscale):
     plot.set_yscale(yscale)
     plot.set_ylabel('Price')
-    plot.plot(close)
+    plot.fill_between(np.arange(len(close)), high, low)
     plot.grid(True)
-    for i, growth in enumerate(five_colors):
+    for i, (growth_high, growth_low) in enumerate(zip(five_colors_high, five_colors_low)):
         if i == 0:
             color = 'tab:red'
         elif i == 1:
@@ -126,7 +131,7 @@ def plot_with_colors(close, plot, five_colors, yscale):
             color = 'tab:green'
         else:
             color = 'tab:gray'
-        plt.plot(growth, color=color, linestyle='dashed')
+        plt.fill_between(np.arange(len(growth_high)), growth_high, growth_low, color=color, linestyle='dashed')
     # plt.plot(five_colors[2], color='tab:blue', linestyle='dashed')
 
 
@@ -164,8 +169,13 @@ def plot_with_ta(
         ticker,
         name,
         close,
+        high,
+        low,
         smas=None,
-        growths=None,
+        window_long=None,
+        window_short=None,
+        growths_high=None,
+        growths_low=None,
         yscale='linear',
         start_index=0,
         end_index=250,
@@ -180,8 +190,11 @@ def plot_with_ta(
     if smas is None:
         smas = []
 
-    if growths is None:
-        growths = []
+    if growths_high is None or growths_low is None:
+        growths_high = []
+        growths_low = []
+
+    x = np.arange(end_index - start_index)
 
     fig = plt.figure(figsize=(9.0, 9.0), dpi=300)
     fig.suptitle(f'{name}: 1 year')
@@ -194,7 +207,7 @@ def plot_with_ta(
     price_subplot.set_ylabel('Price')
 
     price_subplot.grid(True)
-    for i, growth in enumerate(growths[1:-1]):
+    for i, (growth_high, growth_low) in enumerate(zip(growths_high[1:-1], growths_low[1:-1])):
         if i == 0:
             color = 'tab:purple'
         elif i == 1:
@@ -203,7 +216,8 @@ def plot_with_ta(
             color = 'tab:cyan'
         else:
             color = 'tab:gray'
-        plt.plot(growth[start_index:end_index], color=color, linestyle='dashed')
+        # plt.plot(growth[start_index:end_index], color=color, linestyle='dashed')
+        plt.fill_between(x, growth_high[start_index:end_index], growth_low[start_index:end_index], color=color, linestyle='dashed')
 
     # if upperband and lowerband:
     #     plot_supertrend(
@@ -212,15 +226,16 @@ def plot_with_ta(
     #         price_subplot,
     #     )
 
-    price_subplot.plot(close[start_index:end_index], label='Close')
+    # price_subplot.plot(close[start_index:end_index], label='Close')
+    price_subplot.fill_between(x, high[start_index:end_index], low[start_index:end_index])
 
     for i, sma in enumerate(smas):
         if i == 0:
             label = 'SMA-200'
         elif i == 1:
-            label = 'SMA-325'
+            label = f'SMA-{window_long}'
         else:
-            label = 'SMA-22'
+            label = f'SMA-{window_short}'
         price_subplot.plot(sma[start_index:end_index], label=label)
 
     price_subplot.legend()
@@ -266,7 +281,7 @@ def plot_rsi(rsi, rsi_sma, rsi_subplot):
     rect = Rectangle((0, 30), length, 40, color=gray, alpha=0.3)
     rsi_subplot.add_patch(rect)
     rsi_subplot.grid(True)
-    rsi_subplot.legend()
+    rsi_subplot.legend(loc='upper left')
 
 
 def plot_macd(macd, macd_diff, macd_signal, macd_subplot):
@@ -276,7 +291,7 @@ def plot_macd(macd, macd_diff, macd_signal, macd_subplot):
     colors = get_colors(macd_diff)
     macd_subplot.bar(np.arange(len(macd)), macd_diff[1:], color=colors)
     macd_subplot.grid(True)
-    macd_subplot.legend()
+    macd_subplot.legend(loc='upper left')
 
 
 def get_colors(macd_diff):

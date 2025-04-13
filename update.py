@@ -61,19 +61,20 @@ if __name__ == '__main__':
 
         technicals = ta_utility.get_technicals(close)
         bullish, rsi, rsi_sma, macd, macd_signal, macd_diff = technicals
-        if not bullish and not has_signal:
-            continue
+        # if not bullish and not has_signal:
+        #     continue
 
         # upperband, lowerband = ta_utility.get_supertrend(high, low, close, window=14, multiplier=2)
 
-        growth, lower_growth, upper_growth, double_lower_growth, double_upper_growth = regression_utility.get_growths(close, future=future)
-        if growth[-future] >= growth[-1] and not has_signal:
+        growth_high, lower_growth_high, upper_growth_high, double_lower_growth_high, double_upper_growth_high = regression_utility.get_growths(high, future=future)
+        growth_low, lower_growth_low, upper_growth_low, double_lower_growth_low, double_upper_growth_low = regression_utility.get_growths(low, future=future)
+        if growth_high[-future] >= growth_low[-1] and not has_signal:
             continue
 
-        if lower_growth[-1] < close[-1] and not has_signal:
+        if lower_growth_low[-future] < high[-1] and not has_signal:
             continue
 
-        one_year_estimate = growth[-1]
+        one_year_estimate = growth_low[-1]
         upside = one_year_estimate / close[-1] - 1.0
 
         if one_year_estimate <= close[-1] and not has_signal:
@@ -81,17 +82,27 @@ if __name__ == '__main__':
 
         upsides[ticker] = upside
 
+        window_long = 250
+        window_short = 14
+
         sma_200 = ta_utility.get_sma(close)
-        sma_long = ta_utility.get_sma(close, window=325)
-        sma_short = ta_utility.get_sma(close, window=22)
+        sma_long = ta_utility.get_sma(close, window=window_long)
+        sma_short = ta_utility.get_sma(close, window=window_short)
         name = yfinance_service.get_name(ticker)
 
         close = close[-2500:]
-        double_lower_growth = double_lower_growth[-2500 - future:]
-        lower_growth = lower_growth[-2500 - future:]
-        growth = growth[-2500 - future:]
-        upper_growth = upper_growth[-2500 - future:]
-        double_upper_growth = double_upper_growth[-2500 - future:]
+        high = high[-2500:]
+        low = low[-2500:]
+        double_lower_growth_high = double_lower_growth_high[-2500 - future:]
+        double_lower_growth_low = double_lower_growth_low[-2500 - future:]
+        lower_growth_high = lower_growth_high[-2500 - future:]
+        lower_growth_low = lower_growth_low[-2500 - future:]
+        growth_high = growth_high[-2500 - future:]
+        growth_low = growth_low[-2500 - future:]
+        upper_growth_high = upper_growth_high[-2500 - future:]
+        upper_growth_low = upper_growth_low[-2500 - future:]
+        double_upper_growth_high = double_upper_growth_high[-2500 - future:]
+        double_upper_growth_low = double_upper_growth_low[-2500 - future:]
         macd = macd[-2500:]
         macd_signal = macd_signal[-2500:]
         macd_diff = macd_diff[-2500:]
@@ -102,15 +113,21 @@ if __name__ == '__main__':
         sma_short = sma_short[-2500:]
         # upperband = upperband[-2500:]
         # lowerband = lowerband[-2500:]
-        growths = [double_lower_growth, lower_growth, growth, upper_growth, double_upper_growth]
+        growths_high = [double_lower_growth_high, lower_growth_high, growth_high, upper_growth_high, double_upper_growth_high]
+        growths_low = [double_lower_growth_low, lower_growth_low, growth_low, upper_growth_low, double_upper_growth_low]
         smas = [sma_200, sma_long, sma_short]
 
         plot_with_ta_path = plot_utility.plot_with_ta(
             ticker,
             name,
             close,
+            high,
+            low,
             smas=smas,
-            growths=growths,
+            window_long=window_long,
+            window_short=window_short,
+            growths_high=growths_high,
+            growths_low=growths_low,
             start_index=len(close) - future,
             end_index=len(close),
             rsi=rsi,
@@ -126,7 +143,10 @@ if __name__ == '__main__':
             ticker,
             name,
             close,
-            growths,
+            high,
+            low,
+            growths_high,
+            growths_low,
         )
 
         message_path = message_utility.write_message(
@@ -134,7 +154,9 @@ if __name__ == '__main__':
             name,
             close,
             smas=smas,
-            growths=growths,
+            window_long=window_long,
+            window_short=window_short,
+            growths=growths_high,
             future=future,
             reversal_long=long,
             entry=entry,
