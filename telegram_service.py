@@ -106,7 +106,7 @@ async def handle_reversal(update: Update, context: ContextTypes.DEFAULT_TYPE):
             message += f"Buy:         {l_today:16.8f} \n "
             message += f"Stop Loss:   {h_today:16.8f} \n "
             message += f"Price Alarm: {l_yesterday:16.8f} ``` "
-            message += f"US5L ``` "
+            message += f"US5S ``` "
             message += f"Buy:         {us5s['High'].iloc[-1]:16.8f} \n "
             message += f"Stop Loss:   {us5s['Low'].iloc[-1]:16.8f} \n "
             message += f"Price Alarm: {us5s['High'].iloc[-2]:16.8f} ``` "
