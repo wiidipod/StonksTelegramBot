@@ -93,23 +93,23 @@ async def handle_reversal(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if h_yesterday > h_today and l_yesterday > l_today and o > c:
             us5l = yf.Ticker('US5L.DE').history(period='5d', interval='1d')
             message = f"Long\nGSPC ``` "
-            message += f"Buy:         {h_today:16.8f} \n "
-            message += f"Stop Loss:   {l_today:16.8f} \n "
-            message += f"Price Alarm: {h_yesterday:16.8f} ``` "
+            message += f"Buy@high0 {h_today:16.8f} \n "
+            message += f"SL@low0 {l_today:16.8f} \n "
+            message += f"PA@high-1 {h_yesterday:16.8f} ``` "
             message += f"US5L ``` "
-            message += f"Buy:         {us5l['High'].iloc[-1]:16.8f} \n "
-            message += f"Stop Loss:   {us5l['Low'].iloc[-1]:16.8f} \n "
-            message += f"Price Alarm: {us5l['High'].iloc[-2]:16.8f} ``` "
+            message += f"Buy@high0 {us5l['High'].iloc[-1]:16.8f} \n "
+            message += f"SL@low0 {us5l['Low'].iloc[-1]:16.8f} \n "
+            message += f"PA@high-1 {us5l['High'].iloc[-2]:16.8f} ``` "
         elif h_yesterday < h_today and l_yesterday < l_today and o < c:
             us5s = yf.Ticker('US5S.DE').history(period='5d', interval='1d')
             message = f"Short\nGSPC ``` "
-            message += f"Buy:         {l_today:16.8f} \n "
-            message += f"Stop Loss:   {h_today:16.8f} \n "
-            message += f"Price Alarm: {l_yesterday:16.8f} ``` "
+            message += f"Buy@high0 {l_today:16.8f} \n "
+            message += f"SL@low0   {h_today:16.8f} \n "
+            message += f"PA@high-1 {l_yesterday:16.8f} ``` "
             message += f"US5S ``` "
-            message += f"Buy:         {us5s['High'].iloc[-1]:16.8f} \n "
-            message += f"Stop Loss:   {us5s['Low'].iloc[-1]:16.8f} \n "
-            message += f"Price Alarm: {us5s['High'].iloc[-2]:16.8f} ``` "
+            message += f"Buy@high0 {us5s['High'].iloc[-1]:16.8f} \n "
+            message += f"SL@low0   {us5s['Low'].iloc[-1]:16.8f} \n "
+            message += f"PA@high-1 {us5s['High'].iloc[-2]:16.8f} ``` "
         else:
             message = "Reversal signal not met."
         await update.message.reply_text(message, parse_mode='MarkdownV2')
