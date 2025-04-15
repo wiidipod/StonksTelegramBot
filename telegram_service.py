@@ -111,7 +111,7 @@ async def handle_reversal(update: Update, context: ContextTypes.DEFAULT_TYPE):
             message += f"SL@low0   {us5s['Low'].iloc[-1]:16.8f} \n "
             message += f"PA@high-1 {us5s['High'].iloc[-2]:16.8f} ``` "
         else:
-            message = "Reversal signal not met."
+            message = "Reversal signal not met"
         await update.message.reply_text(message, parse_mode='MarkdownV2')
     except Exception as e:
         await update.message.reply_text(f"An error occurred: {str(e)}")

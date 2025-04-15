@@ -178,8 +178,8 @@ def write_message(
     if smas:
         message += " \n "
         message += f"SMA-200: {smas[0][-1]:16.8f} \n "
-        message += f"SMA-{window_long:3.0f}: {smas[1][-1]:16.8f} \n "
-        message += f"SMA-{window_short:3.0f}:  {smas[2][-1]:16.8f} ``` "
+        message += f"EMA-{window_long:3.0f}: {smas[1][-1]:16.8f} \n "
+        message += f"EMA-{window_short:3.0f}: {smas[2][-1]:16.8f} ``` "
     else:
         message += " ``` "
 

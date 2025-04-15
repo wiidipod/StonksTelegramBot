@@ -8,109 +8,88 @@ import plot_utility
 
 
 def analyze_golden_cross():
-    gspc = '^GSPC'
-    window_long = 325
-    window_short = 10
-    high, lows, _, _ = yfinance_service.get_prices([gspc], period='max', interval='1d')
-    high = high[gspc]
-    low = lows[gspc]
-    high_sma_long = ta_utility.get_sma(high, window=window_long)
-    low_sma_long = ta_utility.get_sma(low, window=window_long)
-    high_sma_short = ta_utility.get_sma(high, window=window_short)
-    low_sma_short = ta_utility.get_sma(low, window=window_short)
-    name = yfinance_service.get_name(gspc)
+    nasdaq100 = '^NDX'
+    tqqq = 'QQQ3.MI'
+    window_short = 14
+    window_long = 250
+    nasdaq100_high, nasdaq100_low, _ = yfinance_service.get_high_low_close(nasdaq100, period='2y', interval='1d')
+    tqqq_high, tqqq_low, _ = yfinance_service.get_high_low_close(tqqq, period='2y', interval='1d')
+    sma_short_high = ta_utility.get_sma(nasdaq100_high, window=window_short)
+    sma_short_low = ta_utility.get_sma(nasdaq100_low, window=window_short)
+    sma_long_high = ta_utility.get_sma(nasdaq100_high, window=window_long)
+    sma_long_low = ta_utility.get_sma(nasdaq100_low, window=window_long)
+    nasdaq100_name = yfinance_service.get_name(nasdaq100)
+    stop_sell = 1.0 / 118.0 * (7.0 * sum(tqqq_low[-249:]) - 125.0 * sum(tqqq_high[-13:]))
+    stop_buy = 1.0 / 118.0 * (7.0 * sum(tqqq_high[-249:]) - 125.0 * sum(tqqq_low[-13:]))
 
-    if low_sma_short[-1] > high_sma_long[-1]:
-        name += ': Buy'
-    elif high_sma_short[-1] < low_sma_long[-1]:
-        name += ': Sell'
+    if sma_short_low[-1] > sma_long_high[-1]:
+        title = f'{nasdaq100_name}: Buy TQQQ (Stop Sell @ {stop_sell:.8f})'
+    elif sma_short_high[-1] < sma_long_low[-1]:
+        title = f'{nasdaq100_name}: Sell TQQQ (Stop Buy @ {stop_buy:.8f})'
     else:
-        name += ': Neutral'
+        title = f'{nasdaq100_name}: Neutral TQQQ (Stop Sell @ {stop_sell:.8f} / Stop Buy @ {stop_buy:.8f})'
 
     graphs = [
-        high_sma_long[-window_long:],
-        low_sma_long[-window_long:],
-        high_sma_short[-window_long:],
-        low_sma_short[-window_long:]
+        sma_short_high[-window_long:],
+        sma_short_low[-window_long:],
+        sma_long_high[-window_long:],
+        sma_long_low[-window_long:],
     ]
 
     labels = [
-        f'SMA-{window_long}',
         f'SMA-{window_short}',
+        f'SMA-{window_long}',
     ]
 
-    graphs, labels = get_growth_graphs_and_labels(graphs, high, labels, low, window_long)
-
     plot_path = plot_utility.plot_bands(
-        '3xSP500',
-        name,
-        high[-window_long:],
-        low[-window_long:],
-        graphs=graphs,
-        labels=labels,
-        yscale='log',
+        'tqqq',
+        title,
+        nasdaq100_high[-window_long:],
+        nasdaq100_low[-window_long:],
+        graphs,
+        labels,
+        yscale='linear'
     )
 
     return plot_path
 
 
-def get_growth_graphs_and_labels(graphs, high, labels, low, window):
-    h_growth, h_lower_growth, h_upper_growth, h_double_lower_growth, h_double_upper_growth = regression_utility.get_daily_growths(
-        high, start_index=window)
-    l_growth, l_lower_growth, l_upper_growth, l_double_lower_growth, l_double_upper_growth = regression_utility.get_daily_growths(
-        low, start_index=window)
-    graphs += [
-        h_growth[-window:],
-        l_growth[-window:],
-        h_lower_growth[-window:],
-        l_lower_growth[-window:],
-        h_upper_growth[-window:],
-        l_upper_growth[-window:],
-    ]
-    labels += [
-        'Growth',
-        'Lower Growth',
-        'Upper Growth',
-    ]
-    return graphs, labels
-
-
 def analyze_amumbo():
     sp500 = '^GSPC'
+    amumbo = 'CL2.PA'
     window = 200
-    highs, lows, _, _ = yfinance_service.get_prices([sp500], period='max', interval='1d')
-    high = highs[sp500]
-    low = lows[sp500]
-    high_sma_200 = ta_utility.get_sma(high, window=window)
-    low_sma_200 = ta_utility.get_sma(low, window=window)
-    name = yfinance_service.get_name(sp500)
+    sp500_high, sp500_low, _ = yfinance_service.get_high_low_close(sp500, period='2y', interval='1d')
+    amumbo_high, amumbo_low, _ = yfinance_service.get_high_low_close(amumbo, period='1y', interval='1d')
+    sma_200_high = ta_utility.get_sma(sp500_high, window=window)
+    sma_200_low = ta_utility.get_sma(sp500_low, window=window)
+    sp500_name = yfinance_service.get_name(sp500)
 
-    if low[-1] > high_sma_200[-1]:
-        name += ': Buy'
-    elif high[-1] < low_sma_200[-1]:
-        name += ': Sell'
+    if sp500_low[-1] > sma_200_high[-1]:
+        stop_sell = sum(amumbo_low[-window:]) / window
+        title = f'{sp500_name}: Buy Amumbo (Stop Sell @ {stop_sell:.8f})'
+    elif sp500_high[-1] < sma_200_low[-1]:
+        stop_buy = sum(amumbo_high[-window:]) / window
+        title = f'{sp500_name}: Sell Amumbo (Stop Buy @ {stop_buy:.8f})'
     else:
-        name += ': Neutral'
+        title = f'{sp500_name}: Neutral Amumbo'
 
     graphs = [
-        high_sma_200[-window:],
-        low_sma_200[-window:],
+        sma_200_high[-window:],
+        sma_200_low[-window:],
     ]
 
     labels = [
         f'SMA-{window}',
     ]
 
-    graphs, labels = get_growth_graphs_and_labels(graphs, high, labels, low, window)
-
     plot_path = plot_utility.plot_bands(
         'amumbo',
-        name,
-        high[-window:],
-        low[-window:],
+        title,
+        sp500_high[-window:],
+        sp500_low[-window:],
         graphs,
         labels,
-        yscale='log'
+        yscale='linear'
     )
 
     return plot_path
@@ -124,3 +103,4 @@ if __name__ == '__main__':
 
     application = telegram_service.get_application()
     asyncio.run(telegram_service.send_all(plot_paths, [], application))
+    # asyncio.run(telegram_service.send_all(analyze_amumbo(), [], application))

@@ -1,5 +1,5 @@
 from ta.momentum import RSIIndicator
-from ta.trend import MACD
+from ta.trend import MACD, EMAIndicator
 from ta.trend import SMAIndicator
 from ta.volatility import AverageTrueRange
 import pandas as pd
@@ -14,6 +14,11 @@ def get_rsi(close):
 def get_macd(close):
     macd = MACD(pd.Series(close))
     return macd.macd().tolist(), macd.macd_signal().tolist(), macd.macd_diff().tolist()
+
+
+def get_ema(close, window=200):
+    ema = EMAIndicator(pd.Series(close), window=window).ema_indicator()
+    return ema.tolist()
 
 
 def get_sma(close, window=200):

@@ -82,12 +82,14 @@ if __name__ == '__main__':
 
         upsides[ticker] = upside
 
-        window_long = 250
-        window_short = 14
+        window_long = 500
+        window_short = 250
 
         sma_200 = ta_utility.get_sma(close)
-        sma_long = ta_utility.get_sma(close, window=window_long)
-        sma_short = ta_utility.get_sma(close, window=window_short)
+        # ema_long = ta_utility.get_sma(close, window=window_long)
+        # ema_short = ta_utility.get_sma(close, window=window_short)
+        ema_long = ta_utility.get_ema(close, window=window_long)
+        ema_short = ta_utility.get_ema(close, window=window_short)
         name = yfinance_service.get_name(ticker)
 
         close = close[-2500:]
@@ -109,13 +111,13 @@ if __name__ == '__main__':
         rsi = rsi[-2500:]
         rsi_sma = rsi_sma[-2500:]
         sma_200 = sma_200[-2500:]
-        sma_long = sma_long[-2500:]
-        sma_short = sma_short[-2500:]
+        ema_long = ema_long[-2500:]
+        ema_short = ema_short[-2500:]
         # upperband = upperband[-2500:]
         # lowerband = lowerband[-2500:]
         growths_high = [double_lower_growth_high, lower_growth_high, growth_high, upper_growth_high, double_upper_growth_high]
         growths_low = [double_lower_growth_low, lower_growth_low, growth_low, upper_growth_low, double_upper_growth_low]
-        smas = [sma_200, sma_long, sma_short]
+        smas = [sma_200, ema_long, ema_short]
 
         plot_with_ta_path = plot_utility.plot_with_ta(
             ticker,

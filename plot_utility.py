@@ -98,6 +98,7 @@ def plot_with_growths(
         growths_high,
         growths_low,
         yscale='log',
+        show=False,
 ):
     fig = plt.figure(figsize=(9.0, 9.0), dpi=300)
     fig.suptitle(f'{name}: 10 years')
@@ -109,6 +110,9 @@ def plot_with_growths(
     plt.tight_layout()
     image_path = f'{ticker}_plot.png'
     plt.savefig(image_path)
+
+    if show:
+        plt.show()
 
     return image_path
 
@@ -137,7 +141,7 @@ def plot_with_colors(close, high, low, plot, five_colors_high, five_colors_low, 
 
 def plot_bands(
         ticker,
-        name,
+        title,
         high,
         low,
         graphs,
@@ -145,7 +149,7 @@ def plot_bands(
         yscale='linear',
 ):
     fig = plt.figure(figsize=(9.0, 9.0), dpi=300)
-    fig.suptitle(f'{name}')
+    fig.suptitle(f'{title}')
     price_subplot = fig.add_subplot(111)
 
     price_subplot.set_yscale(yscale)
@@ -233,9 +237,9 @@ def plot_with_ta(
         if i == 0:
             label = 'SMA-200'
         elif i == 1:
-            label = f'SMA-{window_long}'
+            label = f'EMA-{window_long}'
         else:
-            label = f'SMA-{window_short}'
+            label = f'EMA-{window_short}'
         price_subplot.plot(sma[start_index:end_index], label=label)
 
     price_subplot.legend()
@@ -313,14 +317,25 @@ def get_colors(macd_diff):
 
 
 if __name__ == '__main__':
-    main_ticker = 'PUM.DE'
+    main_ticker = 'FSLR'
     main_name = yfinance_service.get_name(main_ticker)
-    main_close = yfinance_service.get_closes([main_ticker])[main_ticker]
-    fit, lower_fit, upper_fit, double_lower_fit, double_upper_fit = regression_utility.get_growths(main_close, future=250)
+    main_high, main_low, main_close = yfinance_service.get_high_low_close(main_ticker, period='10y')
+    fit_high, lower_fit_high, upper_fit_high, double_lower_fit_high, double_upper_fit_high, final_growth_high = regression_utility.get_daily_growths(main_high)
+    fit_low, lower_fit_low, upper_fit_low, double_lower_fit_low, double_upper_fit_low, final_growth_low = regression_utility.get_daily_growths(main_low)
+    fit_high_2, _, _, _, _, growth_of_fit_high = regression_utility.get_daily_growths(fit_high)
+    fit_low_2, _, _, _, _, growth_of_fit_low = regression_utility.get_daily_growths(fit_low)
+    fit_high_3, _, _, _, _, _ = regression_utility.get_daily_growths(fit_high_2)
+    fit_low_3, _, _, _, _, _ = regression_utility.get_daily_growths(fit_low_2)
 
     plot_with_growths(
         main_ticker,
         main_name,
         main_close,
-        [double_lower_fit, lower_fit, fit, upper_fit, double_upper_fit],
+        main_high,
+        main_low,
+        # [double_lower_fit_high, lower_fit_high, fit_high, upper_fit_high, double_upper_fit_high],
+        # [double_lower_fit_low, lower_fit_low, fit_low, upper_fit_low, double_upper_fit_low],
+        [fit_high, fit_high_2, fit_high_3],
+        [fit_low, fit_low_2, fit_low_3],
+        show=False,
     )
