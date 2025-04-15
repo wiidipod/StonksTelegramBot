@@ -1,8 +1,16 @@
+import enum
 from enum import Enum
 
 import pandas as pd
 import yfinance as yf
 import math
+
+
+class P(Enum):
+    O = 'Open'
+    H = 'High'
+    L = 'Low'
+    C = 'Close'
 
 
 def get_price(ticker, period='1d', interval='1m'):

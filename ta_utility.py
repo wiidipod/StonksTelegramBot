@@ -3,6 +3,7 @@ from ta.trend import MACD, EMAIndicator
 from ta.trend import SMAIndicator
 from ta.volatility import AverageTrueRange
 import pandas as pd
+from yfinance_service import P
 
 
 def get_rsi(close):
@@ -37,6 +38,14 @@ def get_technicals(close):
         bullish = False
 
     return bullish, rsi, rsi_sma, macd, macd_signal, macd_diff
+
+
+def get_reversal_by_dataframe(df):
+    return (
+        df[P.H.value].iat[-2] > df[P.H.value].iat[-1]
+        and df[P.L.value].iat[-2] > df[P.L.value].iat[-1]
+        and df[P.O.value].iat[-1] > df[P.C.value][-1]
+    )
 
 
 def get_reversal(highs, lows, closes, opens):

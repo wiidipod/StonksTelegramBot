@@ -5,6 +5,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.patches import Rectangle
 import matplotlib.gridspec as gridspec
+import mplfinance as mpf
 
 import regression_utility
 import yfinance_service
@@ -314,6 +315,22 @@ def get_colors(macd_diff):
         if 0 > macd1 > macd0:
             colors.append(red2)
     return colors
+
+
+def plot_reversal(df, ticker):
+    fname = f'{ticker}_reversal_plot.png'
+    title = yfinance_service.get_name(ticker)
+    mpf.plot(
+        df.iloc[-5:],
+        volume=False,
+        style='yahoo',
+        type='candle',
+        savefig=dict(fname=fname, dpi=300, pad_inches=0.25),
+        title=title,
+        tight_layout=True,
+        figsize=(9.0, 9.0),
+    )
+    return fname
 
 
 if __name__ == '__main__':
