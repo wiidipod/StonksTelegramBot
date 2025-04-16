@@ -8,16 +8,17 @@ import yfinance_service
 if __name__ == '__main__':
     tickers = [
         'RHM.DE',
-        'LDO.MI',
-        'SAAB-B.ST',
-        'BA.L',
-        'HO.PA',
-        'RR.L',
-        'AIR.PA',
-        'SAF.PA',
-        'KOG.OL',
-        'MRO.L',
+        # 'LDO.MI',
+        # 'SAAB-B.ST',
+        # 'BA.L',
+        # 'HO.PA',
+        # 'RR.L',
+        # 'AIR.PA',
+        # 'SAF.PA',
+        # 'KOG.OL',
+        # 'MRO.L',
         'GC=F',
+        'GME',
     ]
 
     # closes = yfinance_service.get_closes(tickers, period='10y', interval='1d')
