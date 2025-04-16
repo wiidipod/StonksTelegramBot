@@ -1,4 +1,6 @@
 import asyncio
+from time import sleep
+
 import message_utility
 import plot_utility
 import regression_utility
@@ -39,6 +41,7 @@ if __name__ == '__main__':
     ticker_chunks = chunk_list(tickers, 100)
 
     for i, ticker_chunk in enumerate(ticker_chunks):
+        sleep(60.0)
         print(f'Processing chunk {i + 1} of {len(tickers) // 100 + 1}...')
 
         if backtest:

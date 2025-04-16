@@ -19,6 +19,9 @@ if __name__ == '__main__':
         # 'MRO.L',
         'GC=F',
         'GME',
+        'TSLA',
+        'NVDA',
+        'AAPL',
     ]
 
     # closes = yfinance_service.get_closes(tickers, period='10y', interval='1d')
@@ -36,21 +39,22 @@ if __name__ == '__main__':
             print(f'{ticker} has less than 2500 data points.')
             continue
 
-        ath = max(close)
-        if ath == close[-1]:
+        ath = max(high)
+        if ath <= high[-1]:
             print(f'{ticker} is ATH.')
             continue
 
-        ath_index = close.index(ath)
-        atl = min(close[ath_index:])
-        if atl == close[-1]:
+        ath_index = high.index(ath)
+        atl = min(low[ath_index:])
+        if atl >= low[-1]:
             print(f'{ticker} is LOW.')
             continue
 
         fourth = (ath - atl) / 4
         lower_fourth = atl + fourth
-        if close[-1] > lower_fourth:
-            print(f'{ticker} is above center.')
+        upper_fourth = ath - fourth
+        if lower_fourth < low[-1] and high[-1] < upper_fourth:
+            print(f'{ticker} is central.')
             continue
 
         # technicals = ta_utility.get_technicals(close)
@@ -66,7 +70,7 @@ if __name__ == '__main__':
         rsi, rsi_sma = ta_utility.get_rsi(close)
         macd, macd_signal, macd_diff = ta_utility.get_macd(close)
 
-        low_index = close[ath_index:].index(atl) + ath_index
+        low_index = low[ath_index:].index(atl) + ath_index
         center = ath - 2 * fourth
         upper_fourth = ath - fourth
 
@@ -91,6 +95,8 @@ if __name__ == '__main__':
             ticker,
             name,
             close,
+            high,
+            low,
             constants,
             rsi=rsi,
             rsi_sma=rsi_sma,

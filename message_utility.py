@@ -8,6 +8,8 @@ def write_hype_message(
         ticker,
         name,
         close,
+        high,
+        low,
         constants,
         rsi=None,
         rsi_sma=None,
@@ -30,7 +32,9 @@ def write_hype_message(
 
     message = start_message(name)
     message += f" \n **Price** ``` "
-    message += f"Close: {close[-1]:16.8f} ``` "
+    message += f"High:  {high[-1]:16.8f} \n "
+    message += f"Close: {close[-1]:16.8f} \n "
+    message += f"Low:   {low[-1]:16.8f} ``` "
 
     message += f" \n {hype_emoji} **Quarters** ``` "
     message += f"ATH:    {constants[4]:16.8f} \n "
