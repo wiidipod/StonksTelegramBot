@@ -30,11 +30,11 @@ def get_sma(close, window=200):
 def get_technicals(close):
     bullish = True
     rsi, rsi_sma = get_rsi(close)
-    if rsi[-1] > 70.0 or rsi_sma[-1] > 70.0:
+    if rsi[-1] > 100.0 / 3.0 and rsi_sma[-1] > 100.0 / 3.0:
         bullish = False
 
     macd, macd_signal, macd_diff = get_macd(close)
-    if macd_diff[-1] < 0.0 or macd_diff[-1] < macd_diff[-2]:
+    if macd_diff[-1] < 0.0 or macd_diff[-2] > macd_diff[-1]:
         bullish = False
 
     return bullish, rsi, rsi_sma, macd, macd_signal, macd_diff
@@ -44,7 +44,7 @@ def get_reversal_by_dataframe(df):
     return (
         df[P.H.value].iat[-2] > df[P.H.value].iat[-1]
         and df[P.L.value].iat[-2] > df[P.L.value].iat[-1]
-        and df[P.O.value].iat[-1] > df[P.C.value][-1]
+        and df[P.O.value].iat[-1] > df[P.C.value].iat[-1]
     )
 
 
@@ -109,3 +109,13 @@ def get_supertrend(high, low, close, window=14, multiplier=2):
                 lowerband.append(None)
 
     return upperband, lowerband
+
+
+def add_smas(df, window):
+    sma_high = SMAIndicator(df[P.H.value], window=window, fillna=True)
+    df[f"SMA-{window} (High)"] = sma_high.sma_indicator()
+
+    sma_low = SMAIndicator(df[P.L.value], window=window, fillna=True)
+    df[f"SMA-{window} (Low)"] = sma_low.sma_indicator()
+
+    return df

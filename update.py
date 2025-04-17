@@ -10,10 +10,10 @@ import message_utility
 
 if __name__ == '__main__':
     defaults = [
-        '^GSPC',
-        '^NDX',
+        #'^GSPC',
+        #'^NDX',
         # 'BTC-EUR',
-        'GC=F',
+        #'GC=F',
     ]
 
     tickers = [
@@ -47,7 +47,7 @@ if __name__ == '__main__':
         close = closes[ticker]
         open = opens[ticker]
         long, entry = ta_utility.get_reversal(high, low, close, open)
-        has_signal = ticker in defaults or long is not None
+        has_signal = ticker in defaults or long is True
 
         etf_entry = None
         if ticker == '^GSPC':
@@ -61,8 +61,8 @@ if __name__ == '__main__':
 
         technicals = ta_utility.get_technicals(close)
         bullish, rsi, rsi_sma, macd, macd_signal, macd_diff = technicals
-        # if not bullish and not has_signal:
-        #     continue
+        if not bullish and not has_signal:
+            continue
 
         # upperband, lowerband = ta_utility.get_supertrend(high, low, close, window=14, multiplier=2)
 
@@ -75,9 +75,9 @@ if __name__ == '__main__':
             continue
 
         one_year_estimate = growth_low[-1]
-        upside = one_year_estimate / close[-1] - 1.0
+        upside = one_year_estimate / high[-1] - 1.0
 
-        if one_year_estimate <= close[-1] and not has_signal:
+        if one_year_estimate <= high[-1] and not has_signal:
             continue
 
         upsides[ticker] = upside

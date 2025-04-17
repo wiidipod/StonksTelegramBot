@@ -26,70 +26,74 @@ def analyze_reversal():
         '^FTSE',
     ]
 
-    # highs, lows, closes, opens = yfinance_service.get_prices(tickers, period='5d', interval='1d')
     df = yf.download(tickers, period='5d', interval='1d')
-    # message = 'Reversals\n\n'
-    zero_reversals = True
     plot_paths = []
 
     for ticker in tickers:
         ticker_df = df.xs(key=ticker, axis=1, level=1)
 
-
         reversal = ta_utility.get_reversal_by_dataframe(ticker_df)
 
         if reversal is True:
             plot_paths.append(plot_utility.plot_reversal(ticker_df, ticker))
-            zero_reversals = False
-            # message += f'{ticker} ``` {ticker_df[P.H.value].iat[-1]:16.8f} \n {ticker_df[P.L.value].iat[-1]:16.8f} ``` \n'
 
-    # if zero_reversals:
-    #     message += 'None found'
-
-    return plot_paths #message_utility.save_message(message, 'reversal')
+    return plot_paths
 
 def analyze_golden_cross():
     nasdaq100 = '^NDX'
     tqqq = 'QQQ3.MI'
     window_short = 14
     window_long = 250
-    nasdaq100_high, nasdaq100_low, _ = yfinance_service.get_high_low_close(nasdaq100, period='2y', interval='1d')
-    tqqq_high, tqqq_low, _ = yfinance_service.get_high_low_close(tqqq, period='2y', interval='1d')
-    sma_short_high = ta_utility.get_sma(nasdaq100_high, window=window_short)
-    sma_short_low = ta_utility.get_sma(nasdaq100_low, window=window_short)
-    sma_long_high = ta_utility.get_sma(nasdaq100_high, window=window_long)
-    sma_long_low = ta_utility.get_sma(nasdaq100_low, window=window_long)
-    nasdaq100_name = yfinance_service.get_name(nasdaq100)
-    stop_sell = 1.0 / 118.0 * (7.0 * sum(tqqq_low[-249:]) - 125.0 * sum(tqqq_high[-13:]))
-    stop_buy = 1.0 / 118.0 * (7.0 * sum(tqqq_high[-249:]) - 125.0 * sum(tqqq_low[-13:]))
+    # nasdaq100_high, nasdaq100_low, _ = yfinance_service.get_high_low_close(nasdaq100, period='2y', interval='1d')
+    # tqqq_high, tqqq_low, _ = yfinance_service.get_high_low_close(tqqq, period='2y', interval='1d')
+    df = yf.download([nasdaq100, tqqq], period='2y', interval='1d')
+    nasdaq100_df = df.xs(key=nasdaq100, axis=1, level=1).copy()
+    tqqq_df = df.xs(key=tqqq, axis=1, level=1).copy()
+    nasdaq100_df = ta_utility.add_smas(nasdaq100_df, window=window_long)
+    nasdaq100_df = ta_utility.add_smas(nasdaq100_df, window=window_short)
 
-    if sma_short_low[-1] > sma_long_high[-1]:
+    # sma_short_high = ta_utility.get_sma(nasdaq100_high, window=window_short)
+    # sma_short_low = ta_utility.get_sma(nasdaq100_low, window=window_short)
+    # sma_long_high = ta_utility.get_sma(nasdaq100_high, window=window_long)
+    # sma_long_low = ta_utility.get_sma(nasdaq100_low, window=window_long)
+    nasdaq100_name = yfinance_service.get_name(nasdaq100)
+
+    stop_sell = 1.0 / 118.0 * (7.0 * sum(tqqq_df[P.L.value].iloc[-249:]) - 125.0 * sum(tqqq_df[P.H.value].iloc[-13:]))
+    stop_buy = 1.0 / 118.0 * (7.0 * sum(tqqq_df[P.H.value].iloc[-249:]) - 125.0 * sum(tqqq_df[P.L.value].iloc[-13:]))
+
+    # stop_sell = 1.0 / 118.0 * (7.0 * sum(tqqq_low[-249:]) - 125.0 * sum(tqqq_high[-13:]))
+    # stop_buy = 1.0 / 118.0 * (7.0 * sum(tqqq_high[-249:]) - 125.0 * sum(tqqq_low[-13:]))
+
+    # if sma_short_low[-1] > sma_long_high[-1]:
+    if nasdaq100_df[f"SMA-{window_short} (Low)"].iat[-1] > nasdaq100_df[f"SMA-{window_long} (High)"].iat[-1]:
         title = f'{nasdaq100_name}: Buy TQQQ (Stop Sell @ {stop_sell:.8f})'
-    elif sma_short_high[-1] < sma_long_low[-1]:
+    # elif sma_short_high[-1] < sma_long_low[-1]:
+    elif nasdaq100_df[f"SMA-{window_short} (High)"].iat[-1] < nasdaq100_df[f"SMA-{window_long} (Low)"].iat[-1]:
         title = f'{nasdaq100_name}: Sell TQQQ (Stop Buy @ {stop_buy:.8f})'
     else:
         title = f'{nasdaq100_name}: Neutral TQQQ (Stop Sell @ {stop_sell:.8f} / Stop Buy @ {stop_buy:.8f})'
 
-    graphs = [
-        sma_short_high[-graph_window:],
-        sma_short_low[-graph_window:],
-        sma_long_high[-graph_window:],
-        sma_long_low[-graph_window:],
-    ]
-
     labels = [
-        f'SMA-{window_short}',
         f'SMA-{window_long}',
+        f'SMA-{window_short}',
     ]
 
-    plot_path = plot_utility.plot_bands(
-        'tqqq',
-        title,
-        nasdaq100_high[-graph_window:],
-        nasdaq100_low[-graph_window:],
-        graphs,
-        labels,
-        yscale='linear'
+    # plot_path = plot_utility.plot_bands(
+    #     'tqqq',
+    #     title,
+    #     nasdaq100_high[-graph_window:],
+    #     nasdaq100_low[-graph_window:],
+    #     graphs,
+    #     labels,
+    #     yscale='linear'
+    # )
+
+    plot_path = plot_utility.plot_bands_by_labels(
+        df=nasdaq100_df.iloc[-window_long:],
+        ticker=nasdaq100,
+        title=title,
+        labels=labels,
+        fname='tqqq.png'
     )
 
     return plot_path
@@ -99,38 +103,33 @@ def analyze_amumbo():
     sp500 = '^GSPC'
     amumbo = 'CL2.PA'
     window = 200
-    sp500_high, sp500_low, _ = yfinance_service.get_high_low_close(sp500, period='2y', interval='1d')
-    amumbo_high, amumbo_low, _ = yfinance_service.get_high_low_close(amumbo, period='1y', interval='1d')
-    sma_200_high = ta_utility.get_sma(sp500_high, window=window)
-    sma_200_low = ta_utility.get_sma(sp500_low, window=window)
+    df = yf.download([sp500, amumbo], period='2y', interval='1d')
+    sp500_df = df.xs(key=sp500, axis=1, level=1).copy()
+    amumbo_df = df.xs(key=amumbo, axis=1, level=1).copy()
+    sp500_df = ta_utility.add_smas(sp500_df, window=window)
+    amumbo_df = ta_utility.add_smas(amumbo_df, window=window)
     sp500_name = yfinance_service.get_name(sp500)
 
-    if sp500_low[-1] > sma_200_high[-1]:
-        stop_sell = sum(amumbo_low[-window:]) / window
+    stop_sell = amumbo_df[f"SMA-{window} (Low)"].iat[-1]
+    stop_buy = amumbo_df[f"SMA-{window} (High)"].iat[-1]
+
+    if sp500_df[P.L.value].iat[-1] > sp500_df[f"SMA-{window} (High)"].iat[-1]:
         title = f'{sp500_name}: Buy Amumbo (Stop Sell @ {stop_sell:.8f})'
-    elif sp500_high[-1] < sma_200_low[-1]:
-        stop_buy = sum(amumbo_high[-window:]) / window
+    elif sp500_df[P.H.value].iat[-1] < sp500_df[f"SMA-{window} (Low)"].iat[-1]:
         title = f'{sp500_name}: Sell Amumbo (Stop Buy @ {stop_buy:.8f})'
     else:
-        title = f'{sp500_name}: Neutral Amumbo'
-
-    graphs = [
-        sma_200_high[-graph_window:],
-        sma_200_low[-graph_window:],
-    ]
+        title = f'{sp500_name}: Neutral Amumbo (Stop Sell @ {stop_sell:.8f} / Stop Buy @ {stop_buy:.8f})'
 
     labels = [
         f'SMA-{window}',
     ]
 
-    plot_path = plot_utility.plot_bands(
-        'amumbo',
-        title,
-        sp500_high[-graph_window:],
-        sp500_low[-graph_window:],
-        graphs,
-        labels,
-        yscale='linear'
+    plot_path = plot_utility.plot_bands_by_labels(
+        df=sp500_df.iloc[-window:],
+        ticker=sp500,
+        title=title,
+        labels=labels,
+        fname='amumbo.png'
     )
 
     return plot_path
