@@ -1,7 +1,9 @@
 import numpy as np
 from scipy.optimize import linprog
 from scipy.sparse import vstack, hstack, eye, csr_matrix
+import pandas as pd
 
+from yfinance_service import P
 
 
 def get_fit(closes):
@@ -35,6 +37,90 @@ def get_fit(closes):
         return factor_new, base_new, error_factor_new
 
     return 0, 0, 0
+
+
+def get_date(date, offset):
+    weekends = offset // 5
+    return date + pd.DateOffset(days=offset + weekends * 2)
+
+
+def add_growths(df, future=0):
+    growth_h, growth_lower_h, growth_upper_h, slope_h, intercept_h, rmsa_h = get_growths_and_final_coefficients(df[P.H.value])
+    growth_l, growth_lower_l, growth_upper_l, slope_l, intercept_l, rmsa_l = get_growths_and_final_coefficients(df[P.L.value])
+
+    last_date = df.index[-1]
+    future_dates = [get_date(last_date, i + 1) for i in range(future)]
+
+    new_growth_h = []
+    new_growth_lower_h = []
+    new_growth_upper_h = []
+    new_growth_l = []
+    new_growth_lower_l = []
+    new_growth_upper_l = []
+
+    for i in range(len(df), len(df) + future):
+        fit_h = slope_h * i + intercept_h
+        fit_l = slope_l * i + intercept_l
+        new_growth_h.append(np.exp(fit_h))
+        new_growth_lower_h.append(np.exp(fit_h - rmsa_h))
+        new_growth_upper_h.append(np.exp(fit_h + rmsa_h))
+        new_growth_l.append(np.exp(fit_l))
+        new_growth_lower_l.append(np.exp(fit_l - rmsa_l))
+        new_growth_upper_l.append(np.exp(fit_l + rmsa_l))
+
+    new_growth_h = pd.Series(new_growth_h, index=future_dates)
+    new_growth_lower_h = pd.Series(new_growth_lower_h, index=future_dates)
+    new_growth_upper_h = pd.Series(new_growth_upper_h, index=future_dates)
+    new_growth_l = pd.Series(new_growth_l, index=future_dates)
+    new_growth_lower_l = pd.Series(new_growth_lower_l, index=future_dates)
+    new_growth_upper_l = pd.Series(new_growth_upper_l, index=future_dates)
+
+    df = df.reindex(df.index.union(future_dates))
+
+    df['Growth (High)'] = pd.concat([growth_h, new_growth_h])
+    df['Growth Lower (High)'] = pd.concat([growth_lower_h, new_growth_lower_h])
+    df['Growth Upper (High)'] = pd.concat([growth_upper_h, new_growth_upper_h])
+    df['Growth (Low)'] = pd.concat([growth_l, new_growth_l])
+    df['Growth Lower (Low)'] = pd.concat([growth_lower_l, new_growth_lower_l])
+    df['Growth Upper (Low)'] = pd.concat([growth_upper_l, new_growth_upper_l])
+
+    return df
+
+
+def get_growths_and_final_coefficients(series):
+    series_log = np.log(series)
+    growth = pd.Series(index=series.index)
+    growth_lower = pd.Series(index=series.index)
+    growth_upper = pd.Series(index=series.index)
+    n = 0
+    sum_y = 0.0
+    sum_xy = 0.0
+    slope = 0.0
+    intercept = 0.0
+    rmsa = 0.0
+
+    for i, (date, y) in enumerate(series_log.items()):
+        n += 1.0
+        sum_y += y
+        sum_xy += i * y
+        sum_x = n * (n - 1.0) / 2.0
+        sum_xx = (n - 1.0) * n * (2.0 * n - 1.0) / 6.0
+        denominator = sum_xx - (sum_x ** 2.0) / n
+
+        if denominator == 0:
+            slope = 0.0
+            intercept = sum_y / n
+        else:
+            slope = (sum_xy - (sum_x * sum_y) / n) / denominator
+            intercept = (sum_y / n) - slope * (sum_x / n)
+
+        fit = slope * i + intercept
+        rmsa = ((rmsa ** 2.0 * i + (y - fit) ** 2.0) / (i + 1.0)) ** 0.5
+        growth[date] = np.exp(fit)
+        growth_lower[date] = np.exp(fit - rmsa)
+        growth_upper[date] = np.exp(fit + rmsa)
+
+    return growth, growth_lower, growth_upper, slope, intercept, rmsa
 
 
 def get_daily_growths(prices):

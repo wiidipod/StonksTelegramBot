@@ -47,7 +47,7 @@ if __name__ == '__main__':
         close = closes[ticker]
         open = opens[ticker]
         long, entry = ta_utility.get_reversal(high, low, close, open)
-        has_signal = ticker in defaults or long is True
+        has_signal = ticker in defaults  # or long is True
 
         etf_entry = None
         if ticker == '^GSPC':

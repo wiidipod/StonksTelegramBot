@@ -1,6 +1,5 @@
 import asyncio
 from time import sleep
-
 import message_utility
 import plot_utility
 import regression_utility
@@ -78,8 +77,8 @@ if __name__ == '__main__':
 
             # growth_high, lower_growth_high, upper_growth_high, double_lower_growth_high, double_upper_growth_high = regression_utility.get_growths(high, future=future)
             # growth_low, lower_growth_low, upper_growth_low, double_lower_growth_low, double_upper_growth_low = regression_utility.get_growths(low, future=future)
-            growth_high, lower_growth_high, upper_growth_high, double_lower_growth_high, double_upper_growth_high = regression_utility.get_daily_growths(high)
-            growth_low, lower_growth_low, upper_growth_low, double_lower_growth_low, double_upper_growth_low = regression_utility.get_daily_growths(low)
+            growth_high, lower_growth_high, upper_growth_high, double_lower_growth_high, double_upper_growth_high, old_growth_high = regression_utility.get_daily_growths(high)
+            growth_low, lower_growth_low, upper_growth_low, double_lower_growth_low, double_upper_growth_low, old_growth_low = regression_utility.get_daily_growths(low)
 
             if growth_high[-future] >= growth_low[-1]:
                 no_growth += 1

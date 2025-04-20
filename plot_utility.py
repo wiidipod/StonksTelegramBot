@@ -334,13 +334,13 @@ def plot_reversal(df, ticker):
     return fname
 
 
-def plot_bands_by_labels(df, ticker, title, labels, fname=None):
+def plot_bands_by_labels(df, ticker, title, labels, fname=None, yscale='linear'):
     if fname is None:
         fname = f'{ticker}_two_bands_plot.png'
     fig = plt.figure(figsize=(9.0, 9.0), dpi=300)
     fig.suptitle(title)
     subplot = fig.add_subplot(111)
-    subplot.set_yscale('linear')
+    subplot.set_yscale(yscale)
     subplot.set_ylabel(yfinance_service.get_currency(ticker))
     subplot.set_xlabel('Date')
     subplot.grid(True)
