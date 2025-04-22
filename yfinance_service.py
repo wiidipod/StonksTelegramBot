@@ -186,8 +186,8 @@ def get_currency(ticker):
     return info["currency"]
 
 
-def remove_nan(df):
-    return df.dropna(subset=[P.H.value, P.L.value, P.C.value, P.O.value])
+def extract_ticker_df(df, ticker):
+    return df[ticker].copy().dropna(subset=[P.H.value, P.L.value, P.C.value, P.O.value])
 
 
 if __name__ == '__main__':

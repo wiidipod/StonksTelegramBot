@@ -55,7 +55,7 @@ if __name__ == '__main__':
 
         for ticker in tqdm(ticker_chunk):
         # for ticker in ticker_chunk:
-            ticker_df = yfinance_service.remove_nan(df[ticker].copy())
+            ticker_df = yfinance_service.extract_ticker_df(df=df, ticker=ticker)
 
             if len(ticker_df) < 2500:
                 too_short += 1

@@ -4,6 +4,8 @@ import plot_utility
 import ta_utility
 import telegram_service
 import yfinance_service
+import yfinance as yf
+from yfinance_service import P
 
 if __name__ == '__main__':
     tickers = [
@@ -22,38 +24,48 @@ if __name__ == '__main__':
         'TSLA',
         'NVDA',
         'AAPL',
+        'BTC-EUR',
     ]
 
     # closes = yfinance_service.get_closes(tickers, period='10y', interval='1d')
-    highs, lows, closes, opens = yfinance_service.get_prices(tickers, period='10y', interval='1d')
+    # highs, lows, closes, opens = yfinance_service.get_prices(tickers, period='10y', interval='1d')
+    df = yf.download(
+        tickers,
+        period='10y',
+        interval='1d',
+        group_by='ticker'
+    )
 
-    all_plot_with_ta_paths = []
-    all_message_paths = []
+    plot_paths = []
+    message_paths = []
 
     for ticker in tickers:
-        close = closes[ticker]
-        high = highs[ticker]
-        low = lows[ticker]
+        ticker_df = yfinance_service.extract_ticker_df(df=df, ticker=ticker)
+        # close = closes[ticker]
+        # high = highs[ticker]
+        # low = lows[ticker]
 
-        if len(close) < 2500:
+        if len(ticker_df) < 2500:
             print(f'{ticker} has less than 2500 data points.')
             continue
 
-        ath = max(high)
-        if ath <= high[-1]:
+        ath = ticker_df[P.H.value].max()
+        if ath <= ticker_df[P.H.value].iat[-1]:
             print(f'{ticker} is ATH.')
             continue
 
-        ath_index = high.index(ath)
-        atl = min(low[ath_index:])
-        if atl >= low[-1]:
+        ath_index = ticker_df[P.H.value].loc[ticker_df[P.H.value] >= ath].index[0]
+        ath_integer_index = ticker_df.index.get_loc(ath_index)
+        low = min(ticker_df[P.L.value].loc[ath_index:])
+        if low >= ticker_df[P.L.value].iat[-1]:
             print(f'{ticker} is LOW.')
             continue
 
-        fourth = (ath - atl) / 4
-        lower_fourth = atl + fourth
+        fourth = (ath - low) / 4
+        lower_fourth = low + fourth
+        center = ath - 2 * fourth
         upper_fourth = ath - fourth
-        if lower_fourth < low[-1] and high[-1] < upper_fourth:
+        if lower_fourth < ticker_df[P.L.value].iat[-1] and ticker_df[P.H.value].iat[-1] < upper_fourth:
             print(f'{ticker} is central.')
             continue
 
@@ -67,46 +79,48 @@ if __name__ == '__main__':
         #     print(f'{ticker} has no growth.')
         #     continue
 
-        rsi, rsi_sma = ta_utility.get_rsi(close)
-        macd, macd_signal, macd_diff = ta_utility.get_macd(close)
+        # rsi, rsi_sma = ta_utility.get_rsi(close)
+        # macd, macd_signal, macd_diff = ta_utility.get_macd(close)
 
-        low_index = low[ath_index:].index(atl) + ath_index
-        center = ath - 2 * fourth
-        upper_fourth = ath - fourth
-
+        low_index = ticker_df[P.L.value].loc[ath_index:].loc[ticker_df[P.L.value].loc[ath_index:] <= low].index[0]
+        low_integer_index = ticker_df.index.get_loc(low_index)
         name = yfinance_service.get_name(ticker)
-        constants = [atl, lower_fourth, center, upper_fourth, ath]
+        constants = [low, lower_fourth, center, upper_fourth, ath]
 
-        plot_path = plot_utility.plot_with_constants(
+        index = ticker_df[P.H.value].loc[:ath_index].loc[ticker_df[P.H.value].loc[:ath_index] <= low].index[-1]
+
+        plot_path = plot_utility.plot_with_constants_by_df(
             ticker,
             name,
-            close[2*ath_index-low_index:],
-            high[2*ath_index-low_index:],
-            low[2*ath_index-low_index:],
+            # close[2*ath_index-low_index:],
+            # high[2*ath_index-low_index:],
+            # low[2*ath_index-low_index:],
+            # ticker_df.iloc[2 * ath_integer_index - low_integer_index:],
+            ticker_df.loc[index:],
             constants,
-            rsi=rsi,
-            rsi_sma=rsi_sma,
-            macd=macd,
-            macd_signal=macd_signal,
-            macd_diff=macd_diff,
+            # rsi=rsi,
+            # rsi_sma=rsi_sma,
+            # macd=macd,
+            # macd_signal=macd_signal,
+            # macd_diff=macd_diff,
         )
 
-        message_path = message_utility.write_hype_message(
-            ticker,
-            name,
-            close,
-            high,
-            low,
-            constants,
-            rsi=rsi,
-            rsi_sma=rsi_sma,
-            macd=macd,
-            macd_signal=macd_signal,
-            macd_diff=macd_diff,
-        )
+        # message_path = message_utility.write_hype_message(
+        #     ticker,
+        #     name,
+        #     close,
+        #     high,
+        #     low,
+        #     constants,
+        #     rsi=rsi,
+        #     rsi_sma=rsi_sma,
+        #     macd=macd,
+        #     macd_signal=macd_signal,
+        #     macd_diff=macd_diff,
+        # )
 
-        all_plot_with_ta_paths.append(plot_path)
-        all_message_paths.append(message_path)
+        plot_paths.append(plot_path)
+        # message_paths.append(message_path)
 
     application = telegram_service.get_application()
-    asyncio.run(telegram_service.send_all(all_plot_with_ta_paths, all_message_paths, application))
+    asyncio.run(telegram_service.send_all(plot_paths, message_paths, application))

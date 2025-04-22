@@ -12,6 +12,39 @@ from yfinance_service import P
 import yfinance_service
 
 
+def plot_with_constants_by_df(
+        ticker,
+        name,
+        df,
+        constants,
+        yscale='linear',
+):
+    length = len(df)
+    fourths = [[constant] * length for constant in constants]
+
+    fig = plt.figure(figsize=(9.0, 9.0), dpi=300)
+    fig.suptitle(name)
+
+    fname = f'{ticker}_plot_with_constants.png'
+    fig = plt.figure(figsize=(9.0, 9.0), dpi=300)
+    fig.suptitle(name)
+    subplot = fig.add_subplot(111)
+    subplot.set_yscale(yscale)
+    currency = yfinance_service.get_currency(ticker)
+    subplot.set_ylabel(currency)
+    subplot.set_xlabel('Date')
+    subplot.grid(True)
+    # for label in labels:
+    #     subplot.fill_between(df.index, df[f'{label} (High)'], df[f'{label} (Low)'], label=label)
+    for fourth in reversed(fourths):
+        subplot.plot(df.index, fourth, label=f"{fourth[0]:16.8f} {currency}")
+    subplot.fill_between(df.index, df[P.H.value], df[P.L.value], label='Price')
+    subplot.legend()
+    fig.tight_layout()
+    fig.savefig(fname)
+    return fname
+
+
 def plot_with_constants(
         ticker,
         name,
