@@ -116,7 +116,7 @@ def get_peg_ratio(ticker):
         return None
 
 
-def get_fair_value(ticker, growth_10y, backtest=False):
+def get_fair_value(ticker, growth_10y=None, growth_1y=None, backtest=False):
     try:
         if backtest:
             earnings_history = yf.Ticker(ticker).earnings_history
@@ -127,14 +127,19 @@ def get_fair_value(ticker, growth_10y, backtest=False):
             current_year = eps_trend['current']['0y']
             next_year = eps_trend['current']['+1y']
 
-        growth_value_estimate = (next_year / current_year - 1.0) * 100.0
-        if growth_value_estimate is None or growth_value_estimate < 0.0 or math.isnan(growth_value_estimate):
+        growth_value_estimate = 40.0
+        if current_year > 0.0:
+            growth_value_estimate = (next_year / current_year - 1.0) * 100.0
+        if growth_value_estimate is None or growth_value_estimate <= 0.0 or math.isnan(growth_value_estimate):
             growth_value_estimate = 40.0
     except:
         growth_value_estimate = 40.0
 
     try:
-        growth_value = ((growth_10y[-1] / growth_10y[0]) ** (1.0 / 10.0) - 1.0) * 100.0
+        if growth_10y is not None:
+            growth_value = ((growth_10y[-1] / growth_10y[0]) ** (1.0 / 10.0) - 1.0) * 100.0
+        else:
+            growth_value = ((growth_1y[-1] / growth_1y[0]) - 1.0) * 100.0
         growth_value = min(growth_value, growth_value_estimate)
         eps = yf.Ticker(ticker).info.get("trailingEps")
         if eps is None or eps <= 0.0 or math.isnan(eps) or growth_value <= 0.0:
@@ -179,6 +184,10 @@ def get_price_in_currency(ticker, to_convert=None, target_currency='EUR'):
 def get_currency(ticker):
     info = yf.Ticker(ticker).info
     return info["currency"]
+
+
+def remove_nan(df):
+    return df.dropna(subset=[P.H.value, P.L.value, P.C.value, P.O.value])
 
 
 if __name__ == '__main__':

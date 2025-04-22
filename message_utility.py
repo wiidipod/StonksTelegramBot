@@ -1,3 +1,6 @@
+import yfinance_service
+from yfinance_service import P
+
 bearish_emoji = "📉"
 bullish_emoji = "📈"
 rocket_emoji = "🚀"
@@ -99,6 +102,45 @@ def get_rsi_emoji(rsi, rsi_sma):
     else:
         rsi_emoji = bearish_emoji
     return rsi_emoji
+
+
+def write_message_by_df(
+        ticker,
+        name,
+        df,
+        future=None,
+        peg_ratio=None,
+        fair_value=None,
+):
+    currency = yfinance_service.get_currency(ticker)
+    index_today = -1 - future
+
+    message = start_message(name)
+    message += f"\n {df.index[index_today].date()} ``` "
+    message += f"Open:                {df[P.O.value].iat[index_today]:16.8f} {currency} \n "
+    message += f"High:                {df[P.H.value].iat[index_today]:16.8f} {currency} \n "
+    message += f"Low:                 {df[P.L.value].iat[index_today]:16.8f} {currency} \n "
+    message += f"Close:               {df[P.C.value].iat[index_today]:16.8f} {currency} \n \n "
+    message += get_growth_message(currency, df, index_today)
+    message += "\n "
+    message += f"Fair Value:          {fair_value:16.8f} {currency} ``` \n "
+    message += f"PEG Ratio: {peg_ratio:5.2f} \n ".replace('.', '\.')
+    message += f"\n {df.index[-1].date()} ``` "
+    message += get_growth_message(currency, df, -1)
+    message += " ``` "
+
+    return save_message(message, ticker)
+
+
+def get_growth_message(currency, df, index):
+    message = ""
+    message += f"Growth Upper (High): {df['Growth Upper (High)'].iat[index]:16.8f} {currency} \n "
+    message += f"Growth Upper (Low):  {df['Growth Upper (Low)'].iat[index]:16.8f} {currency} \n "
+    message += f"Growth (High):       {df['Growth (High)'].iat[index]:16.8f} {currency} \n "
+    message += f"Growth (Low):        {df['Growth (Low)'].iat[index]:16.8f} {currency} \n "
+    message += f"Growth Lower (High): {df['Growth Lower (High)'].iat[index]:16.8f} {currency} \n "
+    message += f"Growth Lower (Low):  {df['Growth Lower (Low)'].iat[index]:16.8f} {currency} \n "
+    return message
 
 
 def write_message(
