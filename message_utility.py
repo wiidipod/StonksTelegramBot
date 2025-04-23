@@ -123,7 +123,10 @@ def write_message_by_df(
     message += f"Close:               {df[P.C.value].iat[index_today]:16.8f} {currency} \n \n "
     message += get_growth_message(currency, df, index_today)
     message += "\n "
-    message += f"Fair Value:          {fair_value:16.8f} {currency} ``` \n "
+    if fair_value is None:
+        message += "``` \n "
+    else:
+        message += f"Fair Value:          {fair_value:16.8f} {currency} ``` \n "
     message += f"PEG Ratio: {peg_ratio:5.2f} \n ".replace('.', '\.')
     message += f"\n {df.index[-1].date()} ``` "
     message += get_growth_message(currency, df, -1)
