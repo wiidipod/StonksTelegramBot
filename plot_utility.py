@@ -367,7 +367,7 @@ def plot_reversal(df, ticker):
     return fname
 
 
-def plot_bands_by_labels(df, ticker, title, labels, fname=None, yscale='linear'):
+def plot_bands_by_labels(df, ticker, title, labels, fname=None, yscale='linear', today=-1):
     if fname is None:
         fname = f'{ticker}_two_bands_plot.png'
     fig = plt.figure(figsize=(9.0, 9.0), dpi=300)
@@ -378,8 +378,8 @@ def plot_bands_by_labels(df, ticker, title, labels, fname=None, yscale='linear')
     subplot.set_xlabel('Date')
     subplot.grid(True)
     for label in labels:
-        subplot.fill_between(df.index, df[f'{label} (High)'], df[f'{label} (Low)'], label=f'{label} ({df[f"{label} (High)"].iat[-1]:.2f} / {df[f"{label} (Low)"].iat[-1]:.2f})')
-    subplot.fill_between(df.index, df[P.H.value], df[P.L.value], label=f'Price ({df[P.H.value].iat[-1]:.2f} / {df[P.L.value].iat[-1]:.2f})')
+        subplot.fill_between(df.index, df[f'{label} (High)'], df[f'{label} (Low)'], label=f'{label} ({df[f"{label} (High)"].iat[today]:.2f} / {df[f"{label} (Low)"].iat[today]:.2f})')
+    subplot.fill_between(df.index, df[P.H.value], df[P.L.value], label=f'Price ({df[P.H.value].iat[today]:.2f} / {df[P.L.value].iat[today]:.2f})')
     subplot.legend()
     fig.tight_layout()
     fig.savefig(fname)

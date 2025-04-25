@@ -116,6 +116,16 @@ def get_peg_ratio(ticker):
         return None
 
 
+def get_ev_to_ebitda(ticker):
+    try:
+        ev_to_ebitda = yf.Ticker(ticker).info.get("enterpriseToEbitda")
+        if ev_to_ebitda is None or ev_to_ebitda <= 0.0 or math.isnan(ev_to_ebitda):
+            return None
+        return ev_to_ebitda
+    except:
+        return None
+
+
 def get_fair_value(ticker, growth_10y=None, growth_1y=None, backtest=False):
     try:
         if backtest:
@@ -195,4 +205,4 @@ if __name__ == '__main__':
     # print(get_price('AAPL'))
     # print(convert([1.0, 2.0]))
     # print(get_price_in_currency('AAPL'))
-    print(yf.Ticker('VOW.DE').info)
+    print(yf.Ticker('AAPL').info)
