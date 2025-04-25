@@ -90,7 +90,7 @@ if __name__ == '__main__':
                 # print(f'{ticker} has no fair value: {ticker_df[P.H.value].iat[-1 - future]} > {fair_value}')
                 # continue
 
-            name = yfinance_service.get_name(ticker=ticker) + f' (EV to EBITDA: {yfinance_service.get_ev_to_ebitda(ticker)})'
+            name = yfinance_service.get_name(ticker=ticker) + f' (EV/EBITDA: {yfinance_service.get_ev_to_ebitda(ticker)})'
 
             plot_path = plot_utility.plot_bands_by_labels(
                 df=ticker_df,
