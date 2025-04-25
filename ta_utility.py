@@ -119,3 +119,13 @@ def add_smas(df, window):
     df[f"SMA-{window} (Low)"] = sma_low.sma_indicator()
 
     return df
+
+
+def add_emas(df, window):
+    ema_high = EMAIndicator(df[P.H.value], window=window, fillna=True)
+    df[f"EMA-{window} (High)"] = ema_high.ema_indicator()
+
+    ema_low = EMAIndicator(df[P.L.value], window=window, fillna=True)
+    df[f"EMA-{window} (Low)"] = ema_low.ema_indicator()
+
+    return df
