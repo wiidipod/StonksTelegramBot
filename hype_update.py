@@ -65,7 +65,7 @@ if __name__ == '__main__':
         lower_fourth = low + fourth
         center = ath - 2 * fourth
         upper_fourth = ath - fourth
-        if lower_fourth < ticker_df[P.L.value].iat[-1] and ticker_df[P.H.value].iat[-1] < upper_fourth:
+        if lower_fourth < ticker_df[P.H.value].iat[-1] and ticker_df[P.L.value].iat[-1] < upper_fourth:
             print(f'{ticker} is central.')
             continue
 
