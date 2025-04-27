@@ -17,12 +17,12 @@ def analyze_reversal():
         '^GDAXI',
         '^NDX',
         '^GSPC',
-        '^DJI',
-        '^MDAXI',
+        # '^DJI',
+        # '^MDAXI',
         '^STOXX50E',
-        '^N225',
-        '^TECDAX',
-        '^FCHI',
+        # '^N225',
+        # '^TECDAX',
+        # '^FCHI',
         '^FTSE',
     ]
 
