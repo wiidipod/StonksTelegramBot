@@ -81,17 +81,18 @@ if __name__ == '__main__':
                 # print(f'{ticker} is not cheap: {ticker_df[P.H.value].iat[-1 - future]} > {ticker_df["Growth Lower (Low)"].iat[-1 - future]}')
                 continue
 
-            fair_value = yfinance_service.get_fair_value(
-                ticker=ticker,
-                growth_1y=ticker_df['Growth (High)'].iloc[-1 - future:].tolist()
-            )
-            if fair_value is None or fair_value <= 0.0 or ticker_df[P.H.value].iat[-1 - future] > fair_value:
-                no_fair_value += 1
+            # fair_value = yfinance_service.get_fair_value(
+            #     ticker=ticker,
+            #     growth_1y=ticker_df['Growth (High)'].iloc[-1 - future:].tolist()
+            # )
+            # if fair_value is None or fair_value <= 0.0 or ticker_df[P.H.value].iat[-1 - future] > fair_value:
+            #     no_fair_value += 1
                 # print(f'{ticker} has no fair value: {ticker_df[P.H.value].iat[-1 - future]} > {fair_value}')
                 # continue
 
-            ev_to_ebitda = yfinance_service.get_ev_to_ebitda(ticker)
-            name = yfinance_service.get_name(ticker=ticker) + f' (EV/EBITDA: {ev_to_ebitda})'
+            # ev_to_ebitda = yfinance_service.get_ev_to_ebitda(ticker)
+            name = yfinance_service.get_name(ticker=ticker)  # + f' (EV/EBITDA: {ev_to_ebitda})'
+            name += f' (PEG: {peg_ratio})'
 
             plot_path = plot_utility.plot_bands_by_labels(
                 df=ticker_df,
@@ -107,15 +108,15 @@ if __name__ == '__main__':
             )
             plot_paths.append(plot_path)
 
-            message_path = message_utility.write_message_by_df(
-                ticker=ticker,
-                name=name,
-                df=ticker_df,
-                future=future,
-                peg_ratio=peg_ratio,
-                fair_value=fair_value,
-            )
-            message_paths.append(message_path)
+            # message_path = message_utility.write_message_by_df(
+            #     ticker=ticker,
+            #     name=name,
+            #     df=ticker_df,
+            #     future=future,
+            #     peg_ratio=peg_ratio,
+            #     fair_value=fair_value,
+            # )
+            # message_paths.append(message_path)
 
     print(f'Tickers too short: {too_short}')
     print(f'PEG ratio too high: {peg_ratio_too_high}')

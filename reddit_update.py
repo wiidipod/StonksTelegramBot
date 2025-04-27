@@ -150,11 +150,67 @@ def analyze_amumbo():
     return plot_path
 
 
+def analyze_all():
+    sp500 = '^GSPC'
+    df = yf.download(
+        [sp500],
+        period='2y',
+        interval='1d',
+        group_by='ticker',
+    )
+    sp500_df = yfinance_service.extract_ticker_df(df, sp500)
+    sp500_df = ta_utility.add_smas(sp500_df, window=200)
+    sp500_df = ta_utility.add_smas(sp500_df, window=250)
+    sp500_df = ta_utility.add_smas(sp500_df, window=14)
+    sp500_df = ta_utility.add_emas(sp500_df, window=65)
+
+    sp500_name = yfinance_service.get_name(sp500)
+
+    if sp500_df[P.L.value].iat[-1] > sp500_df["SMA-200 (High)"].iat[-1]:
+        title = f'{sp500_name}: Buy 2x'
+    elif sp500_df[P.H.value].iat[-1] < sp500_df["SMA-200 (Low)"].iat[-1]:
+        title = f'{sp500_name}: Sell 2x'
+    else:
+        title = f'{sp500_name}: Neutral 2x'
+
+    if sp500_df["SMA-14 (Low)"].iat[-1] > sp500_df["SMA-250 (High)"].iat[-1]:
+        title += f' | Buy 3x'
+    elif sp500_df["SMA-14 (High)"].iat[-1] < sp500_df["SMA-250 (Low)"].iat[-1]:
+        title += f' | Sell 3x'
+    else:
+        title += f' | Neutral 3x'
+
+    if sp500_df[P.L.value].iat[-1] > sp500_df["EMA-65 (High)"].iat[-1]:
+        title += f' | Buy 5x'
+    elif sp500_df[P.H.value].iat[-1] < sp500_df["EMA-65 (Low)"].iat[-1]:
+        title += f' | Sell 5x'
+    else:
+        title += f' | Neutral 5x'
+
+    labels = [
+        f'EMA-65',
+        f'SMA-250',
+        f'SMA-14',
+        f'SMA-200',
+    ]
+
+    plot_path = plot_utility.plot_bands_by_labels(
+        df=sp500_df.iloc[-250:],
+        ticker=sp500,
+        title=title,
+        labels=labels,
+        fname='sp500.png'
+    )
+
+    return plot_path
+
+
 if __name__ == '__main__':
     plot_paths = [
-        analyze_amumbo(),
-        analyze_golden_cross(),
-        analyze_dji(),
+        # analyze_amumbo(),
+        # analyze_golden_cross(),
+        # analyze_dji(),
+        analyze_all(),
     ] + analyze_reversal()
 
     application = telegram_service.get_application()
