@@ -62,7 +62,7 @@ if __name__ == '__main__':
                 continue
 
             peg_ratio = yfinance_service.get_peg_ratio(ticker)
-            if peg_ratio is None or peg_ratio > 2.0:
+            if peg_ratio is None or peg_ratio > 1.0:
                 peg_ratio_too_high += 1
                 continue
 
@@ -90,7 +90,8 @@ if __name__ == '__main__':
                 # print(f'{ticker} has no fair value: {ticker_df[P.H.value].iat[-1 - future]} > {fair_value}')
                 # continue
 
-            name = yfinance_service.get_name(ticker=ticker) + f' (EV/EBITDA: {yfinance_service.get_ev_to_ebitda(ticker)})'
+            ev_to_ebitda = yfinance_service.get_ev_to_ebitda(ticker)
+            name = yfinance_service.get_name(ticker=ticker) + f' (EV/EBITDA: {ev_to_ebitda})'
 
             plot_path = plot_utility.plot_bands_by_labels(
                 df=ticker_df,
