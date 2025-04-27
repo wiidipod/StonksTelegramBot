@@ -167,25 +167,25 @@ def analyze_all():
     sp500_name = yfinance_service.get_name(sp500)
 
     if sp500_df[P.L.value].iat[-1] > sp500_df["SMA-200 (High)"].iat[-1]:
-        title = f'{sp500_name}: Buy 2x'
+        title = f'{sp500_name} (2x: Buy'
     elif sp500_df[P.H.value].iat[-1] < sp500_df["SMA-200 (Low)"].iat[-1]:
-        title = f'{sp500_name}: Sell 2x'
+        title = f'{sp500_name} (2x: Sell'
     else:
-        title = f'{sp500_name}: Neutral 2x'
+        title = f'{sp500_name} (2x: Neutral'
 
     if sp500_df["SMA-14 (Low)"].iat[-1] > sp500_df["SMA-250 (High)"].iat[-1]:
-        title += f' | Buy 3x'
+        title += f' | 3x: Buy'
     elif sp500_df["SMA-14 (High)"].iat[-1] < sp500_df["SMA-250 (Low)"].iat[-1]:
-        title += f' | Sell 3x'
+        title += f' | 3x: Sell'
     else:
-        title += f' | Neutral 3x'
+        title += f' | 3x: Neutral'
 
     if sp500_df[P.L.value].iat[-1] > sp500_df["EMA-65 (High)"].iat[-1]:
-        title += f' | Buy 5x'
+        title += f' | 5x: Buy)'
     elif sp500_df[P.H.value].iat[-1] < sp500_df["EMA-65 (Low)"].iat[-1]:
-        title += f' | Sell 5x'
+        title += f' | 5x: Sell)'
     else:
-        title += f' | Neutral 5x'
+        title += f' | 5x: Neutral)'
 
     labels = [
         f'EMA-65',
