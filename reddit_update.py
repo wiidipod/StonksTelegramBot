@@ -160,8 +160,8 @@ def analyze_all():
     )
     sp500_df = yfinance_service.extract_ticker_df(df, sp500)
     sp500_df = ta_utility.add_smas(sp500_df, window=200)
-    sp500_df = ta_utility.add_smas(sp500_df, window=250)
-    sp500_df = ta_utility.add_smas(sp500_df, window=14)
+    # sp500_df = ta_utility.add_smas(sp500_df, window=250)
+    # sp500_df = ta_utility.add_smas(sp500_df, window=14)
     sp500_df = ta_utility.add_emas(sp500_df, window=65)
 
     sp500_name = yfinance_service.get_name(sp500)
@@ -173,12 +173,12 @@ def analyze_all():
     else:
         title = f'{sp500_name} (2x: Neutral'
 
-    if sp500_df["SMA-14 (Low)"].iat[-1] > sp500_df["SMA-250 (High)"].iat[-1]:
-        title += f' | 3x: Buy'
-    elif sp500_df["SMA-14 (High)"].iat[-1] < sp500_df["SMA-250 (Low)"].iat[-1]:
-        title += f' | 3x: Sell'
-    else:
-        title += f' | 3x: Neutral'
+    # if sp500_df["SMA-14 (Low)"].iat[-1] > sp500_df["SMA-250 (High)"].iat[-1]:
+    #     title += f' | 3x: Buy'
+    # elif sp500_df["SMA-14 (High)"].iat[-1] < sp500_df["SMA-250 (Low)"].iat[-1]:
+    #     title += f' | 3x: Sell'
+    # else:
+    #     title += f' | 3x: Neutral'
 
     if sp500_df[P.L.value].iat[-1] > sp500_df["EMA-65 (High)"].iat[-1]:
         title += f' | 5x: Buy)'
@@ -188,10 +188,10 @@ def analyze_all():
         title += f' | 5x: Neutral)'
 
     labels = [
-        f'EMA-65',
-        f'SMA-250',
-        f'SMA-14',
         f'SMA-200',
+        f'EMA-65',
+        # f'SMA-250',
+        # f'SMA-14',
     ]
 
     plot_path = plot_utility.plot_bands_by_labels(
