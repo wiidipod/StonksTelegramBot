@@ -49,7 +49,7 @@ def get_tickers(
 
         tickers.append(ticker)
 
-    return tickers
+    return list(set(tickers))
 
 
 def get_s_p_500_tickers():
@@ -262,18 +262,67 @@ def get_etf_tickers(index_ticker):
 
 def get_all_tickers():
     tickers = []
-    tickers.extend(get_dax_tickers())  # Germany
-    tickers.extend(get_nasdaq_100_tickers())  # United States
-    tickers.extend(get_s_p_500_tickers())  # United States
-    tickers.extend(get_dow_jones_tickers())  # United States
-    tickers.extend(get_mdax_tickers())  # Germany
-    tickers.extend(get_euro_stoxx_50_tickers())  # Europe
-    tickers.extend(get_nikkei_225_tickers())  # Japan
-    tickers.extend(get_tecdax_tickers())  # Germany
-    tickers.extend(get_cac_40_tickers())  # France
-    tickers.extend(get_ftse_100_tickers())  # United Kingdom
-    tickers.extend(get_smi_tickers())  # Switzerland
-    tickers.extend(get_atx_tickers())  # Austria
+
+    dax_tickers = get_dax_tickers()
+    if len(dax_tickers) < 40:
+        print('DAX tickers missing!')
+    tickers.extend(dax_tickers)  # Germany 40
+
+    nasdaq_100_tickers = get_nasdaq_100_tickers()
+    if len(nasdaq_100_tickers) < 100:
+        print('NASDAQ 100 tickers missing!')
+    tickers.extend(nasdaq_100_tickers)  # United States 100
+
+    s_p_500_tickers = get_s_p_500_tickers()
+    if len(s_p_500_tickers) < 500:
+        print('S&P 500 tickers missing!')
+    tickers.extend(s_p_500_tickers)  # United States 500
+
+    dow_jones_tickers = get_dow_jones_tickers()
+    if len(dow_jones_tickers) < 30:
+        print('Dow Jones tickers missing!')
+    tickers.extend(dow_jones_tickers)  # United States 30
+
+    mdax_tickers = get_mdax_tickers()
+    if len(mdax_tickers) < 50:
+        print('MDAX tickers missing!')
+    tickers.extend(mdax_tickers)  # Germany 50
+
+    euro_stoxx_50_tickers = get_euro_stoxx_50_tickers()
+    if len(euro_stoxx_50_tickers) < 50:
+        print('EURO STOXX 50 tickers missing!')
+    tickers.extend(euro_stoxx_50_tickers)  # Europe 50
+
+    nikkei_225_tickers = get_nikkei_225_tickers()
+    if len(nikkei_225_tickers) < 225:
+        print('Nikkei 225 tickers missing!')
+    tickers.extend(nikkei_225_tickers)  # Japan 225
+
+    tecdax_tickers = get_tecdax_tickers()
+    if len(tecdax_tickers) < 30:
+        print('TecDAX tickers missing!')
+    tickers.extend(tecdax_tickers)  # Germany 30
+
+    cac_40_tickers = get_cac_40_tickers()
+    if len(cac_40_tickers) < 40:
+        print('CAC 40 tickers missing!')
+    tickers.extend(cac_40_tickers)  # France 40
+
+    ftse_100_tickers = get_ftse_100_tickers()
+    if len(ftse_100_tickers) < 100:
+        print('FTSE 100 tickers missing!')
+    tickers.extend(ftse_100_tickers)  # United Kingdom 100
+
+    smi_tickers = get_smi_tickers()
+    if len(smi_tickers) < 20:
+        print('SMI tickers missing!')
+    tickers.extend(smi_tickers)  # Switzerland 20
+
+    atx_tickers = get_atx_tickers()
+    if len(atx_tickers) < 20:
+        print('ATX tickers missing!')
+    tickers.extend(atx_tickers)  # Austria 20
+
     # tickers.extend(get_asx_50_tickers())  # Australia
     # tickers.extend(get_hang_seng_tickers())  # Hong Kong
     # tickers.extend(get_kospi_tickers())  # South Korea
@@ -283,8 +332,5 @@ def get_all_tickers():
 
 
 if __name__ == '__main__':
-    # main_tickers = get_smi_tickers()
-    # print(main_tickers)
-    # print(len(main_tickers))
-    print(get_nikkei_225_tickers())
-    print(len(get_nikkei_225_tickers()))
+    main_tickers = get_all_tickers()
+    print(len(main_tickers))
