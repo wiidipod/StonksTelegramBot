@@ -1,5 +1,7 @@
 import bs4 as bs
 import requests
+import yfinance
+from bs4 import BeautifulSoup
 
 
 def get_tickers(
@@ -106,7 +108,7 @@ def get_tecdax_tickers():
     return tickers
 
 
-def get_swiss_market_index():
+def get_smi_tickers():
     source = 'https://en.wikipedia.org/wiki/Swiss_Market_Index'
     attribute = 'class'
     name = 'wikitable'
@@ -192,6 +194,31 @@ def get_precious_metals_tickers():
     return get_tickers(source, attribute=attribute, name=name, table_index=table_index, column=column, is_future=True)
 
 
+def get_atx_tickers():
+    source = 'https://www.wienerborse.at/en/index/atx-AT0000999982/composition/'
+    resp = requests.get(source)
+    soup = bs.BeautifulSoup(resp.text, 'lxml')
+    tables = soup.find_all('table', {'class': 'table-horizontal'})
+    table = tables[1]
+    tickers = []
+
+    for row in table.findAll('tr')[1:]:
+        cell = row.findAll('td')[0]
+        isin = cell.findAll('span', {'class': 'isin'})[0].text.strip()
+
+        if not isin:
+            continue
+
+        ticker = yfinance.Search(isin, max_results=1).all['quotes'][0]['symbol']
+
+        if not ticker:
+            continue
+
+        tickers.append(ticker)
+
+    return tickers
+
+
 def get_etf_tickers(index_ticker):
     if index_ticker == '^GSPC':
         return [
@@ -234,7 +261,8 @@ def get_all_tickers():
     tickers.extend(get_tecdax_tickers())  # Germany
     tickers.extend(get_cac_40_tickers())  # France
     tickers.extend(get_ftse_100_tickers())  # United Kingdom
-    # tickers.extend(get_swiss_market_index())  # Switzerland
+    tickers.extend(get_smi_tickers())  # Switzerland
+    tickers.extend(get_atx_tickers())  # Austria
     # tickers.extend(get_asx_50_tickers())  # Australia
     # tickers.extend(get_hang_seng_tickers())  # Hong Kong
     # tickers.extend(get_kospi_tickers())  # South Korea
@@ -244,6 +272,7 @@ def get_all_tickers():
 
 
 if __name__ == '__main__':
-    main_tickers = get_tecdax_tickers()
-    print(main_tickers)
-    print(len(main_tickers))
+    # main_tickers = get_smi_tickers()
+    # print(main_tickers)
+    # print(len(main_tickers))
+    print(get_atx_tickers())
