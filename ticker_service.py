@@ -1,4 +1,5 @@
 import bs4 as bs
+import re
 import requests
 import yfinance
 from bs4 import BeautifulSoup
@@ -95,6 +96,7 @@ def get_mdax_tickers():
     exchange = 'DE'
     tickers = get_tickers(source, column=column, exchange=exchange)
     # tickers.append('^MDAXI')
+    tickers = [ticker.replace('ECV.DE', 'ECV.HM') for ticker in tickers]
     return tickers
 
 
@@ -154,15 +156,24 @@ def get_hang_seng_tickers():
 
 
 def get_nikkei_225_tickers():
-    source = 'https://de.wikipedia.org/wiki/Nikkei_225'
-    attribute = 'class'
-    name = 'wikitable'
-    table_index = -1
-    column = 1
-    exchange = 'T'
-    tickers = get_tickers(source, attribute=attribute, name=name, table_index=table_index, column=column, exchange=exchange)
-    # tickers.append('^N225')
-    return tickers
+    # source = 'https://de.wikipedia.org/wiki/Nikkei_225'
+    # attribute = 'class'
+    # name = 'wikitable'
+    # table_index = -1
+    # column = 1
+    # exchange = 'T'
+    # tickers = get_tickers(source, attribute=attribute, name=name, table_index=table_index, column=column, exchange=exchange)
+    # # tickers.append('^N225')
+    # return tickers
+
+    source = 'https://en.wikipedia.org/wiki/Nikkei_225'
+    response = requests.get(source)
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    # Find all occurrences of "(TYO: " and extract the next four characters
+    matches = re.findall(r'\(TYO: (\w{4})', soup.text)
+
+    return [f'{tyo}.T' for tyo in list(set(matches))]
 
 
 def get_kospi_tickers():
@@ -275,4 +286,5 @@ if __name__ == '__main__':
     # main_tickers = get_smi_tickers()
     # print(main_tickers)
     # print(len(main_tickers))
-    print(get_atx_tickers())
+    print(get_nikkei_225_tickers())
+    print(len(get_nikkei_225_tickers()))
