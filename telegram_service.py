@@ -5,6 +5,8 @@ from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, Conve
 import yfinance as yf
 import pandas as pd
 
+import fundamentals_update
+import message_utility
 import option_utility
 import ta_utility
 import yfinance_service
@@ -50,6 +52,29 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         message = "You are already subscribed!"
 
     await context.bot.send_message(chat_id=chat_id, text=message)
+
+
+async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        if len(context.args) < 1:
+            await update.message.reply_text("Invalid input. Try /analyze AAPL")
+            return
+
+        ticker = context.args[0]
+        df = yf.download(
+            [ticker],
+            period='10y',
+            interval='1d',
+            group_by='ticker',
+        )
+        ticker_df = yfinance_service.extract_ticker_df(df=df, ticker=context.args[0])
+
+        dictionary, plot_path = fundamentals_update.analyze(df=ticker_df, ticker=ticker, future=250, full=True)
+        message_path = message_utility.write_message_by_dictionary(dictionary=dictionary, ticker=ticker)
+
+        asyncio.run(send_all(plot_paths=[plot_path], message_paths=[message_path], context=context))
+    except Exception as e:
+        await update.message.reply_text(f"An error occurred: {str(e)}")
 
 
 async def handle_stop_loss(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -198,7 +223,7 @@ async def set_commands(context: ContextTypes.DEFAULT_TYPE):
         BotCommand(command='end', description='Unsubscribe from daily updates'),
         # BotCommand(command='stoploss', description='/stoploss option_close [ticker_symbol] [option_delta]'),
         # BotCommand(command='fivex', description='S&P 500 5x Daily')
-        BotCommand(command='reversal', description='S&P 500 Down Reversal Signal'),
+        # BotCommand(command='reversal', description='S&P 500 Down Reversal Signal'),
     ]
     await context.bot.set_my_commands(commands)
 
@@ -213,14 +238,17 @@ def get_application():
     end_handler = CommandHandler('end', end)
     application.add_handler(end_handler)
 
+    analyze_handler = CommandHandler('analyze', handle_analyze)
+    application.add_handler(analyze_handler)
+
     # long_handler = CommandHandler('stoploss', handle_stop_loss)
     # application.add_handler(long_handler)
 
     # fivex_handler = CommandHandler('fivex', handle_fivex)
     # application.add_handler(fivex_handler)
 
-    reversal_handler = CommandHandler('reversal', handle_reversal)
-    application.add_handler(reversal_handler)
+    # reversal_handler = CommandHandler('reversal', handle_reversal)
+    # application.add_handler(reversal_handler)
 
     return application
 
