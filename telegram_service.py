@@ -72,7 +72,7 @@ async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
         dictionary, plot_path = fundamentals_update.analyze(df=ticker_df, ticker=ticker, future=250, full=True)
         message_path = message_utility.write_message_by_dictionary(dictionary=dictionary, ticker=ticker)
 
-        asyncio.run(send_all(plot_paths=[plot_path], message_paths=[message_path], context=context))
+        await send_all(plot_paths=[plot_path], message_paths=[message_path], context=context)
     except Exception as e:
         await update.message.reply_text(f"An error occurred: {str(e)}")
 
