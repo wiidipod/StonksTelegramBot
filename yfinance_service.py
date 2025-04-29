@@ -197,7 +197,9 @@ def get_currency(ticker):
 
 
 def extract_ticker_df(df, ticker):
-    return df[ticker].copy().dropna(subset=[P.H.value, P.L.value, P.C.value, P.O.value])
+    return df[ticker].copy().dropna(subset=[P.H.value, P.L.value, P.C.value, P.O.value]).loc(
+        lambda x: (x[P.H.value] != 0) & (x[P.L.value] != 0) & (x[P.C.value] != 0) & (x[P.O.value] != 0)
+    )
 
 
 if __name__ == '__main__':
