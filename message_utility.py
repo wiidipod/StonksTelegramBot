@@ -110,13 +110,13 @@ def write_message_by_dictionary(dictionary, ticker):
     name = yfinance_service.get_name(ticker)
     message = start_message(name=name)
     if dictionary[dictionary_keys.too_short]:
-        message += "Too short \n"
+        message += "   Too short \n "
     if dictionary[dictionary_keys.peg_ratio_too_high]:
-        message += "PEG Ratio too high \n"
+        message += "   PEG Ratio too high \n "
     if dictionary[dictionary_keys.weak_growth]:
-        message += "Weak growth \n"
+        message += "   Weak growth \n "
     if dictionary[dictionary_keys.not_cheap]:
-        message += "Not cheap \n"
+        message += "   Not cheap \n "
     return save_message(message, ticker)
 
 
