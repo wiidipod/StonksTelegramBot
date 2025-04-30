@@ -221,6 +221,7 @@ async def set_commands(context: ContextTypes.DEFAULT_TYPE):
     commands = [
         BotCommand(command='start', description='Subscribe to daily updates'),
         BotCommand(command='end', description='Unsubscribe from daily updates'),
+        BotCommand(command='analyze', description='/analyze AAPL'),
         # BotCommand(command='stoploss', description='/stoploss option_close [ticker_symbol] [option_delta]'),
         # BotCommand(command='fivex', description='S&P 500 5x Daily')
         # BotCommand(command='reversal', description='S&P 500 Down Reversal Signal'),
