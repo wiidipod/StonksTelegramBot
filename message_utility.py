@@ -1,6 +1,7 @@
 import yfinance_service
-from fundamentals_update import dictionary_keys
 from yfinance_service import P
+from constants import dictionary_keys
+
 
 bearish_emoji = "📉"
 bullish_emoji = "📈"

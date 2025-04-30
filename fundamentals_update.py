@@ -8,14 +8,7 @@ import ticker_service
 from yfinance_service import P
 import yfinance as yf
 import yfinance_service
-from enum import Enum
-
-
-class dictionary_keys(Enum):
-    too_short = 'too_short'
-    peg_ratio_too_high = 'peg_ratio_too_high'
-    weak_growth = 'weak_growth'
-    not_cheap = 'not_cheap'
+from constants import dictionary_keys
 
 
 def chunk_list(lst, chunk_size):
