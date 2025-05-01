@@ -25,6 +25,7 @@ if __name__ == '__main__':
         'NVDA',
         'AAPL',
         'BTC-EUR',
+        'HYPE',
     ]
 
     # closes = yfinance_service.get_closes(tickers, period='10y', interval='1d')

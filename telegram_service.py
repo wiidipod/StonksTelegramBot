@@ -72,7 +72,6 @@ async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
         dictionary, plot_path = fundamentals_update.analyze(df=ticker_df, ticker=ticker, future=250, full=True)
         message_path = message_utility.write_message_by_dictionary(dictionary=dictionary, ticker=ticker)
 
-        # await send_all(plot_paths=[plot_path], message_paths=[message_path], context=context)
         await send_plot_to_chat_id(plot_path=plot_path, chat_id=update.effective_chat.id, context=context)
         await send_message_to_chat_id(message_path=message_path, chat_id=update.effective_chat.id, context=context)
     except Exception as e:
