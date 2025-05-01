@@ -72,7 +72,9 @@ async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
         dictionary, plot_path = fundamentals_update.analyze(df=ticker_df, ticker=ticker, future=250, full=True)
         message_path = message_utility.write_message_by_dictionary(dictionary=dictionary, ticker=ticker)
 
-        await send_all(plot_paths=[plot_path], message_paths=[message_path], context=context)
+        # await send_all(plot_paths=[plot_path], message_paths=[message_path], context=context)
+        await send_plot_to_chat_id(plot_path=plot_path, chat_id=update.effective_chat.id, context=context)
+        await send_message_to_chat_id(message_path=message_path, chat_id=update.effective_chat.id, context=context)
     except Exception as e:
         await update.message.reply_text(f"An error occurred: {str(e)}")
 
@@ -194,6 +196,14 @@ async def end(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=chat_id, text=message)
 
 
+async def send_plot_to_chat_id(plot_path, chat_id, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        with open(plot_path, 'rb') as file:
+            await context.bot.send_photo(chat_id=chat_id, photo=file)
+    except Exception as e:
+        logging.error(f"Failed to send plot to {chat_id}: {e}")
+
+
 async def send_plots_to_all(plot_paths, context: ContextTypes.DEFAULT_TYPE):
     subscribers = get_subscribers()
     media_groups = [plot_paths[i:i + 10] for i in range(0, len(plot_paths), 10)]
@@ -202,6 +212,15 @@ async def send_plots_to_all(plot_paths, context: ContextTypes.DEFAULT_TYPE):
         for group in media_groups:
             media = [InputMediaPhoto(open(image_path, 'rb')) for image_path in group]
             await context.bot.send_media_group(chat_id=chat_id, media=media)
+
+
+async def send_message_to_chat_id(message_path, chat_id, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        with open(message_path, 'r', encoding="utf-8") as file:
+            message = file.read()
+            await context.bot.send_message(chat_id=chat_id, text=message, parse_mode='MarkdownV2')
+    except Exception as e:
+        logging.error(f"Failed to send message to {chat_id}: {e}")
 
 
 async def send_messages_to_all(message_paths, context: ContextTypes.DEFAULT_TYPE):
