@@ -62,8 +62,8 @@ def analyze(df, ticker, future=250, full=False):
 
 
 if __name__ == '__main__':
-    # tickers = ticker_service.get_all_tickers()
-    tickers = ['GOOGL', 'GOOG']
+    tickers = ticker_service.get_all_tickers()
+    # tickers = ['GOOGL', 'GOOG']
 
     too_short = 0
     peg_ratio_too_high = 0
@@ -91,7 +91,6 @@ if __name__ == '__main__':
 
         for ticker in tqdm(ticker_chunk):
             ticker_df = yfinance_service.extract_ticker_df(df=df, ticker=ticker)
-            ticker_df = ticker_df.iloc[:-1]
 
             dictionary, plot_path = analyze(df=ticker_df, ticker=ticker, future=future)
 
