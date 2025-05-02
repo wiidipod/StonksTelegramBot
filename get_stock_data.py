@@ -67,5 +67,61 @@ def main():
 
     print('\n' + '='*10 + ' END OF DATA ' + '='*10)
 
+    print_title("ANALYST PRICE TARGETS (1 YEAR)")
+    target_keys = ['targetLowPrice', 'targetMeanPrice', 'targetMedianPrice', 'targetHighPrice']
+    for k in target_keys:
+        pf(k.replace('target', '1Y Target '), info.get(k, 'N/A'))
+    pf('currentPrice', info.get('currentPrice', 'N/A'))
+
+    print_title("ANALYST RECOMMENDATION SUMMARY")
+    for k in [
+        'recommendationMean',  # Lower is better (1=strong buy, 5=sell)
+        'recommendationKey',   # "buy", "hold", etc.
+        'numberOfAnalystOpinions'
+    ]:
+        pf(k, info.get(k, 'N/A'))
+
+    print_title("FWD GROWTH ESTIMATES")
+    for k in [
+        'earningsQuarterlyGrowth',  # YOY recent EPS growth
+        'revenueQuarterlyGrowth',   # YOY recent revenue growth
+        'forwardEps',
+        'forwardPE',
+        'pegRatio'
+    ]:
+        pf(k, info.get(k, 'N/A'))
+
+    print_title("PROFITABILITY")
+    for k in [
+        'profitMargins',  # net margin
+        'operatingMargins',
+        'grossMargins',
+        'returnOnAssets',
+        'returnOnEquity'
+    ]:
+        pf(k, info.get(k, 'N/A'))
+
+    print_title("INSIDER & INSTITUTIONAL HOLDINGS")
+    for k in [
+        'heldPercentInsiders',
+        'heldPercentInstitutions',
+        'insiderOwn',
+        'insiderTransPercent'
+    ]:
+        pf(k, info.get(k, 'N/A'))
+
+    print_title("DEBT & LIQUIDITY")
+    for k in [
+        'debtToEquity',
+        'currentRatio',
+        'quickRatio',
+        'totalCash',
+        'totalDebt'
+    ]:
+        pf(k, info.get(k, 'N/A'))
+
+    print_title("SIMILAR TICKERS")
+    pf('relatedTickers', info.get('relatedTickers', 'N/A'))
+
 if __name__ == "__main__":
     main()
