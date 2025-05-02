@@ -87,8 +87,8 @@ if __name__ == '__main__':
         print(f'Processing chunk {i + 1} of {len(tickers) // chunk_size + 1}')
 
         if i != 0:
-            # sleep(10.0 * len(ticker_chunk))
-            sleep(len(ticker_chunk))
+            sleep(10.0 * len(ticker_chunk))
+            # sleep(len(ticker_chunk))
 
         df = yf.download(
             ticker_chunk,
