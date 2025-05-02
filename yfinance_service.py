@@ -116,6 +116,26 @@ def get_peg_ratio(ticker):
         return None
 
 
+def is_valid_price(price):
+    return price is not None and price > 0.0 and not math.isnan(price)
+
+
+def get_price_target(ticker):
+    try:
+        price_targets = yf.Ticker(ticker).analyst_price_targets
+        mean_price_target = price_targets['mean']
+        median_price_target = price_targets['median']
+        if is_valid_price(mean_price_target) and is_valid_price(median_price_target):
+            return min(mean_price_target, median_price_target)
+        if is_valid_price(mean_price_target):
+            return mean_price_target
+        if is_valid_price(median_price_target):
+            return median_price_target
+        return None
+    except:
+        return None
+
+
 def get_ev_to_ebitda(ticker):
     try:
         ev_to_ebitda = yf.Ticker(ticker).info.get("enterpriseToEbitda")
@@ -211,10 +231,11 @@ if __name__ == '__main__':
     # print(get_price('AAPL'))
     # print(convert([1.0, 2.0]))
     # print(get_price_in_currency('AAPL'))
-    print(yf.Ticker('AAPL').financials)
-    print(yf.Ticker('AAPL').cash_flow)
-    print(yf.Ticker('AAPL').balance_sheet)
-    print(yf.Ticker('AAPL').capital_gains)
-    print(yf.Ticker('AAPL').info)
-    print(yf.Ticker('AAPL').income_stmt)
-    print(yf.Ticker('AAPL').revenue_estimate)
+    # print(yf.Ticker('AAPL').financials)
+    # print(yf.Ticker('AAPL').cash_flow)
+    # print(yf.Ticker('AAPL').balance_sheet)
+    # print(yf.Ticker('AAPL').capital_gains)
+    # print(yf.Ticker('AAPL').info)
+    # print(yf.Ticker('AAPL').income_stmt)
+    # print(yf.Ticker('AAPL').revenue_estimate)
+    print(yf.Ticker('ADI').analyst_price_targets)

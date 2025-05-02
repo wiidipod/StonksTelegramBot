@@ -1,6 +1,6 @@
 import yfinance_service
 from yfinance_service import P
-from constants import dictionary_keys
+from constants import DictionaryKeys
 
 
 bearish_emoji = "📉"
@@ -109,13 +109,15 @@ def get_rsi_emoji(rsi, rsi_sma):
 def write_message_by_dictionary(dictionary, ticker):
     name = yfinance_service.get_name(ticker)
     message = start_message(name=name)
-    if dictionary[dictionary_keys.too_short]:
+    if dictionary[DictionaryKeys.too_short]:
         message += "   Too short \n "
-    if dictionary[dictionary_keys.peg_ratio_too_high]:
-        message += "   PEG Ratio too high \n "
-    if dictionary[dictionary_keys.weak_growth]:
-        message += "   Weak growth \n "
-    if dictionary[dictionary_keys.not_cheap]:
+    # if dictionary[DictionaryKeys.peg_ratio_too_high]:
+    #     message += "   PEG Ratio too high \n "
+    if dictionary[DictionaryKeys.price_target_too_high]:
+        message += "   Price target too high \n "
+    if dictionary[DictionaryKeys.weak_growth]:
+        message += "   Weak growth to volatility \n "
+    if dictionary[DictionaryKeys.not_cheap]:
         message += "   Not cheap \n "
     return save_message(message, ticker)
 
