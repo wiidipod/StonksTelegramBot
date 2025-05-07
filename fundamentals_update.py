@@ -61,7 +61,7 @@ def analyze(df, ticker, future=250, full=False):
             'Growth Lower',
             'Growth Upper',
         ],
-        yscale='log',
+        yscale='linear',
         today=-1-future,
     )
 
