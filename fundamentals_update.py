@@ -19,39 +19,41 @@ def chunk_list(lst, chunk_size):
 def analyze(df, ticker, future=250, full=False):
     dictionary = {
         DictionaryKeys.too_short: False,
-        # dictionary_keys.peg_ratio_too_high: False,
-        DictionaryKeys.price_target_too_high: False,
-        DictionaryKeys.weak_growth: False,
-        DictionaryKeys.not_cheap: False,
+        DictionaryKeys.peg_ratio_too_high: False,
+        DictionaryKeys.price_target_too_low: False,
+        DictionaryKeys.growth_too_low: False,
+        DictionaryKeys.too_expensive: False,
     }
 
     if len(df) < 2500:
         dictionary[DictionaryKeys.too_short] = True
 
-    # peg_ratio = yfinance_service.get_peg_ratio(ticker)
-    # if peg_ratio is None or peg_ratio > 1.0:
-    #     dictionary[dictionary_keys.peg_ratio_too_high] = True
+    peg_ratio = yfinance_service.get_peg_ratio(ticker)
+    if peg_ratio is None or peg_ratio > 1.0:
+        dictionary[DictionaryKeys.peg_ratio_too_high] = True
 
     price_target = yfinance_service.get_price_target(ticker)
     if price_target is None or price_target <= df[P.H.value].iat[-1]:
-        dictionary[DictionaryKeys.price_target_too_high] = True
+        dictionary[DictionaryKeys.price_target_too_low] = True
 
-    df = regression_utility.add_growths(df, future=future)
+    # df = regression_utility.add_growths(df, future=future)
+    window = len(df) // 2
+    df = regression_utility.add_window_growths(df, window=window, future=future)
 
-    if df['Growth Upper (High)'].iat[-1 - future] > df['Growth Lower (Low)'].iat[-1]:
-        dictionary[DictionaryKeys.weak_growth] = True
+    if df['Growth (High)'].iat[-1 - future] > df['Growth Lower (Low)'].iat[-1]:
+        dictionary[DictionaryKeys.growth_too_low] = True
 
     if df[P.H.value].iat[-1 - future] > df['Growth Lower (Low)'].iat[-1 - future]:
-        dictionary[DictionaryKeys.not_cheap] = True
+        dictionary[DictionaryKeys.too_expensive] = True
 
     if not full and any(dictionary.values()):
         return dictionary, None
 
     name = yfinance_service.get_name(ticker=ticker)
-    name += f' (Price Target: {price_target})'
+    name += f' (PT: {price_target} / PEG: {peg_ratio})'
 
     plot_path = plot_utility.plot_bands_by_labels(
-        df=df,
+        df=df.iloc[-window-future:],
         ticker=ticker,
         title=name,
         labels=[
@@ -68,26 +70,26 @@ def analyze(df, ticker, future=250, full=False):
 
 if __name__ == '__main__':
     tickers = ticker_service.get_all_tickers()
-    # tickers = ['GOOGL', 'GOOG']
+    # tickers = ['GOOGL']
     # tickers = ticker_service.get_nasdaq_100_tickers()
 
     too_short = 0
-    # peg_ratio_too_high = 0
-    price_target_too_high = 0
-    weak_growth = 0
-    not_cheap = 0
+    peg_ratio_too_high = 0
+    price_target_too_low = 0
+    growth_too_low = 0
+    too_expensive = 0
 
     plot_paths = []
     message_paths = []
 
-    future = 250
+    # future = 250
 
     chunk_size = 100
     for i, ticker_chunk in enumerate(chunk_list(tickers, chunk_size)):
         print(f'Processing chunk {i + 1} of {len(tickers) // chunk_size + 1}')
 
-        if i != 0:
-            sleep(10.0 * len(ticker_chunk))
+        # if i != 0:
+            # sleep(10.0 * len(ticker_chunk))
             # sleep(len(ticker_chunk))
 
         df = yf.download(
@@ -100,29 +102,35 @@ if __name__ == '__main__':
         for ticker in tqdm(ticker_chunk):
             ticker_df = yfinance_service.extract_ticker_df(df=df, ticker=ticker)
 
-            dictionary, plot_path = analyze(df=ticker_df, ticker=ticker, future=future)
+            future = len(ticker_df) // 10
+
+            try:
+                dictionary, plot_path = analyze(df=ticker_df, ticker=ticker, future=future)
+            except Exception as e:
+                print(f'Error processing {ticker}: {e}')
+                continue
 
             if dictionary[DictionaryKeys.too_short]:
                 too_short += 1
-            # if dictionary[DictionaryKeys.peg_ratio_too_high]:
-            #     peg_ratio_too_high += 1
-            if dictionary[DictionaryKeys.price_target_too_high]:
-                price_target_too_high += 1
-            if dictionary[DictionaryKeys.weak_growth]:
-                weak_growth += 1
-            if dictionary[DictionaryKeys.not_cheap]:
-                not_cheap += 1
+            if dictionary[DictionaryKeys.peg_ratio_too_high]:
+                peg_ratio_too_high += 1
+            if dictionary[DictionaryKeys.price_target_too_low]:
+                price_target_too_low += 1
+            if dictionary[DictionaryKeys.growth_too_low]:
+                growth_too_low += 1
+            if dictionary[DictionaryKeys.too_expensive]:
+                too_expensive += 1
 
             if plot_path is None:
                 continue
 
             plot_paths.append(plot_path)
 
-    print(f'Tickers too short: {too_short}')
-    # print(f'PEG ratio too high: {peg_ratio_too_high}')
-    print(f'Price target too high: {price_target_too_high}')
-    print(f'Weak growth: {weak_growth}')
-    print(f'Not cheap: {not_cheap}')
+    print(f'Too short: {too_short}')
+    print(f'PEG ratio too high: {peg_ratio_too_high}')
+    print(f'Price target too low: {price_target_too_low}')
+    print(f'Growth too low: {growth_too_low}')
+    print(f'Too expensive: {too_expensive}')
     print(f'Total tickers: {len(tickers)}')
 
     application = telegram_service.get_application()

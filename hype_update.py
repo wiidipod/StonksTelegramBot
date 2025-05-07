@@ -10,6 +10,8 @@ from yfinance_service import P
 if __name__ == '__main__':
     tickers = [
         'RHM.DE',
+        'R3NK.DE',
+        'HAG.DE',
         # 'LDO.MI',
         # 'SAAB-B.ST',
         # 'BA.L',
@@ -26,6 +28,10 @@ if __name__ == '__main__':
         'AAPL',
         'BTC-EUR',
         'WOLF',
+        'PLTR',
+        'MSTR',
+        'HIMS',
+        'DEZ.DE',
     ]
 
     # closes = yfinance_service.get_closes(tickers, period='10y', interval='1d')
@@ -46,9 +52,9 @@ if __name__ == '__main__':
         # high = highs[ticker]
         # low = lows[ticker]
 
-        if len(ticker_df) < 2500:
-            print(f'{ticker} has less than 2500 data points.')
-            continue
+        # if len(ticker_df) < 2500:
+        #     print(f'{ticker} has less than 2500 data points.')
+        #     continue
 
         ath = ticker_df[P.H.value].max()
         if ath <= ticker_df[P.H.value].iat[-1]:
@@ -88,7 +94,12 @@ if __name__ == '__main__':
         name = yfinance_service.get_name(ticker)
         constants = [low, lower_fourth, center, upper_fourth, ath]
 
-        index = ticker_df[P.H.value].loc[:ath_index].loc[ticker_df[P.H.value].loc[:ath_index] <= low].index[-1]
+        try:
+            index = ticker_df[P.H.value].loc[:ath_index].loc[ticker_df[P.H.value].loc[:ath_index] <= low].index[-1]
+        except IndexError as e:
+            print(f'Error processing {ticker}: {e}')
+            continue
+
 
         plot_path = plot_utility.plot_with_constants_by_df(
             ticker,

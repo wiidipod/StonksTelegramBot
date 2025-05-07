@@ -111,13 +111,13 @@ def write_message_by_dictionary(dictionary, ticker):
     message = start_message(name=name)
     if dictionary[DictionaryKeys.too_short]:
         message += "   Too short \n "
-    # if dictionary[DictionaryKeys.peg_ratio_too_high]:
-    #     message += "   PEG Ratio too high \n "
-    if dictionary[DictionaryKeys.price_target_too_high]:
-        message += "   Price target too high \n "
-    if dictionary[DictionaryKeys.weak_growth]:
-        message += "   Weak growth to volatility \n "
-    if dictionary[DictionaryKeys.not_cheap]:
+    if dictionary[DictionaryKeys.peg_ratio_too_high]:
+        message += "   PEG Ratio too high \n "
+    if dictionary[DictionaryKeys.price_target_too_low]:
+        message += "   Price target too low \n "
+    if dictionary[DictionaryKeys.growth_too_low]:
+        message += "   Growth to volatility too low \n "
+    if dictionary[DictionaryKeys.too_expensive]:
         message += "   Not cheap \n "
     return save_message(message, ticker)
 

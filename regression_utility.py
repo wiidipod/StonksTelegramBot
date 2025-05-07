@@ -44,6 +44,68 @@ def get_date(date, offset):
     return date + pd.DateOffset(days=offset + weekends * 2)
 
 
+def add_window_growths(df, window=1250, future=0):
+    growth_h = pd.Series(index=df.index)
+    growth_lower_h = pd.Series(index=df.index)
+    growth_upper_h = pd.Series(index=df.index)
+    growth_l = pd.Series(index=df.index)
+    growth_lower_l = pd.Series(index=df.index)
+    growth_upper_l = pd.Series(index=df.index)
+
+    slope_h = 0.0
+    intercept_h = 0.0
+    rmsa_h = 0.0
+    slope_l = 0.0
+    intercept_l = 0.0
+    rmsa_l = 0.0
+
+    for start_index in range(len(df) - window):
+        end_index = start_index + window
+        date = df.index[end_index]
+
+        sub_df = df.iloc[start_index:end_index]
+        g_h, g_l_h, g_u_h, slope_h, intercept_h, rmsa_h = get_growth_and_final_coefficients(sub_df[P.H.value])
+        g_l, g_l_l, g_u_l, slope_l, intercept_l, rmsa_l = get_growth_and_final_coefficients(sub_df[P.L.value])
+
+        growth_h[date] = g_h
+        growth_lower_h[date] = g_l_h
+        growth_upper_h[date] = g_u_h
+        growth_l[date] = g_l
+        growth_lower_l[date] = g_l_l
+        growth_upper_l[date] = g_u_l
+
+    last_date = df.index[-1]
+    future_dates = [get_date(last_date, i + 1) for i in range(future)]
+
+    future_growth_h = pd.Series(index=future_dates)
+    future_growth_lower_h = pd.Series(index=future_dates)
+    future_growth_upper_h = pd.Series(index=future_dates)
+    future_growth_l = pd.Series(index=future_dates)
+    future_growth_lower_l = pd.Series(index=future_dates)
+    future_growth_upper_l = pd.Series(index=future_dates)
+
+    for i, n in enumerate(range(window, window + future)):
+        fit_h = slope_h * n + intercept_h
+        fit_l = slope_l * n + intercept_l
+        future_growth_h[future_dates[i]] = np.exp(fit_h)
+        future_growth_lower_h[future_dates[i]] = np.exp(fit_h - rmsa_h)
+        future_growth_upper_h[future_dates[i]] = np.exp(fit_h + rmsa_h)
+        future_growth_l[future_dates[i]] = np.exp(fit_l)
+        future_growth_lower_l[future_dates[i]] = np.exp(fit_l - rmsa_l)
+        future_growth_upper_l[future_dates[i]] = np.exp(fit_l + rmsa_l)
+
+    df = df.reindex(df.index.union(future_dates))
+
+    df['Growth (High)'] = pd.concat([growth_h, future_growth_h])
+    df['Growth Lower (High)'] = pd.concat([growth_lower_h, future_growth_lower_h])
+    df['Growth Upper (High)'] = pd.concat([growth_upper_h, future_growth_upper_h])
+    df['Growth (Low)'] = pd.concat([growth_l, future_growth_l])
+    df['Growth Lower (Low)'] = pd.concat([growth_lower_l, future_growth_lower_l])
+    df['Growth Upper (Low)'] = pd.concat([growth_upper_l, future_growth_upper_l])
+
+    return df
+
+
 def add_growths(df, future=0):
     growth_h, growth_lower_h, growth_upper_h, slope_h, intercept_h, rmsa_h = get_growths_and_final_coefficients(df[P.H.value])
     growth_l, growth_lower_l, growth_upper_l, slope_l, intercept_l, rmsa_l = get_growths_and_final_coefficients(df[P.L.value])
@@ -85,6 +147,31 @@ def add_growths(df, future=0):
     df['Growth Upper (Low)'] = pd.concat([growth_upper_l, new_growth_upper_l])
 
     return df
+
+
+def get_growth_and_final_coefficients(series):
+    series_log = np.log(series)
+    n = len(series_log)
+    sum_y = np.sum(series_log)
+    sum_xy = np.sum(np.arange(n) * series_log)
+    sum_x = n * (n - 1.0) / 2.0
+    sum_xx = (n - 1.0) * n * (2.0 * n - 1.0) / 6.0
+    denominator = sum_xx - (sum_x ** 2.0) / n
+
+    if denominator == 0:
+        slope = 0.0
+        intercept = sum_y / n
+    else:
+        slope = (sum_xy - (sum_x * sum_y) / n) / denominator
+        intercept = (sum_y / n) - slope * (sum_x / n)
+
+    fit = slope * np.arange(n) + intercept
+    rmsa = np.sqrt(np.sum((series_log - fit) ** 2.0) / n)
+    growth = np.exp(fit[-1])
+    growth_lower = np.exp(fit[-1] - rmsa)
+    growth_upper = np.exp(fit[-1] + rmsa)
+
+    return growth, growth_lower, growth_upper, slope, intercept, rmsa
 
 
 def get_growths_and_final_coefficients(series):
