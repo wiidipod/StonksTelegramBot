@@ -70,6 +70,7 @@ async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ticker_df = yfinance_service.extract_ticker_df(df=df, ticker=context.args[0])
 
         dictionary, plot_path = fundamentals_update.analyze(df=ticker_df, ticker=ticker, future=250, full=True)
+
         message_path = message_utility.write_message_by_dictionary(dictionary=dictionary, ticker=ticker)
 
         # await send_plot_to_chat_id(plot_path=plot_path, chat_id=update.effective_chat.id, context=context)

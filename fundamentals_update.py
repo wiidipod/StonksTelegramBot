@@ -50,7 +50,8 @@ def analyze(df, ticker, future=250, full=False):
         return dictionary, None
 
     name = yfinance_service.get_name(ticker=ticker)
-    name += f' (PT: {price_target} / PEG: {peg_ratio})'
+    pe_ratio = yfinance_service.get_pe_ratio(ticker)
+    name += f' (PT: {price_target} / PEG: {peg_ratio} / P/E: {pe_ratio})'
 
     plot_path = plot_utility.plot_bands_by_labels(
         df=df.iloc[-window-future:],
