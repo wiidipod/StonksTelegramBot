@@ -72,8 +72,9 @@ async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
         dictionary, plot_path = fundamentals_update.analyze(df=ticker_df, ticker=ticker, future=250, full=True)
         message_path = message_utility.write_message_by_dictionary(dictionary=dictionary, ticker=ticker)
 
-        await send_plot_to_chat_id(plot_path=plot_path, chat_id=update.effective_chat.id, context=context)
-        await send_message_to_chat_id(message_path=message_path, chat_id=update.effective_chat.id, context=context)
+        # await send_plot_to_chat_id(plot_path=plot_path, chat_id=update.effective_chat.id, context=context)
+        # await send_message_to_chat_id(message_path=message_path, chat_id=update.effective_chat.id, context=context)
+        await send_plot_with_message(plot_path=plot_path, message_path=message_path, chat_id=update.effective_chat.id, context=context)
     except Exception as e:
         await update.message.reply_text(f"An error occurred: {str(e)}")
 
@@ -201,6 +202,20 @@ async def send_plot_to_chat_id(plot_path, chat_id, context: ContextTypes.DEFAULT
             await context.bot.send_photo(chat_id=chat_id, photo=file)
     except Exception as e:
         logging.error(f"Failed to send plot to {chat_id}: {e}")
+
+
+async def send_plot_with_message(plot_path, message_path, chat_id, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        with open(plot_path, 'rb') as photo_file, open(message_path, 'r', encoding='utf-8') as message_file:
+            caption = message_file.read()
+            await context.bot.send_photo(
+                chat_id=chat_id,
+                photo=photo_file,
+                caption=caption,
+                parse_mode='MarkdownV2',
+            )
+    except Exception as e:
+        logging.error(f"Failed to send plot with message to {chat_id}: {e}")
 
 
 async def send_plots_to_all(plot_paths, context: ContextTypes.DEFAULT_TYPE):
