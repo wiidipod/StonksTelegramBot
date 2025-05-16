@@ -238,4 +238,5 @@ if __name__ == '__main__':
     # print(yf.Ticker('AAPL').info)
     # print(yf.Ticker('AAPL').income_stmt)
     # print(yf.Ticker('AAPL').revenue_estimate)
-    print(yf.Ticker('ADI').analyst_price_targets)
+    # print(yf.Ticker('ADI').analyst_price_targets)
+    print(yf.Ticker('AAPL').info.get("trailingPegRatio"))

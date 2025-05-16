@@ -69,7 +69,9 @@ async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         ticker_df = yfinance_service.extract_ticker_df(df=df, ticker=context.args[0])
 
-        dictionary, plot_path = fundamentals_update.analyze(df=ticker_df, ticker=ticker, future=250, full=True)
+        future = len(ticker_df) // 10
+
+        dictionary, plot_path = fundamentals_update.analyze(df=ticker_df, ticker=ticker, future=future, full=True)
 
         message_path = message_utility.write_message_by_dictionary(dictionary=dictionary, ticker=ticker)
 
