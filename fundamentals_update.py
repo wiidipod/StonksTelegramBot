@@ -63,12 +63,12 @@ def analyze(df, ticker, future=250, full=False):
     if price_target is not None or peg_ratio is not None or pe_ratio is not None:
         name += '('
         if price_target is not None:
-            name += f'PT: {price_target} /'
+            name += f'PT: {price_target} / '
         if peg_ratio is not None:
-            name += f'PEG: {peg_ratio} /'
+            name += f'PEG: {peg_ratio} / '
         if pe_ratio is not None:
-            name += f'PE: {pe_ratio} /'
-        name = name[:-2] + ')'
+            name += f'PE: {pe_ratio} / '
+        name = name[:-3] + ')'
 
     plot_path = plot_utility.plot_bands_by_labels(
         df=df.iloc[-window-future:],
