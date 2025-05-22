@@ -39,6 +39,12 @@ def analyze(df, ticker, future=250, full=False):
         if price_target is None or price_target <= df[P.H.value].iat[-1]:
             dictionary[DictionaryKeys.price_target_too_low] = True
 
+        pe_ratio = yfinance_service.get_pe_ratio(ticker)
+    else:
+        peg_ratio = None
+        price_target = None
+        pe_ratio = None
+
     # df = regression_utility.add_growths(df, future=future)
     window = len(df) // 2
     df = regression_utility.add_window_growths(df, window=window, future=future)
@@ -53,8 +59,16 @@ def analyze(df, ticker, future=250, full=False):
         return dictionary, None
 
     name = yfinance_service.get_name(ticker=ticker)
-    pe_ratio = yfinance_service.get_pe_ratio(ticker)
-    name += f' (PT: {price_target} / PEG: {peg_ratio} / P/E: {pe_ratio})'
+
+    if price_target is not None or peg_ratio is not None or pe_ratio is not None:
+        name += '('
+        if price_target is not None:
+            name += f'PT: {price_target} /'
+        if peg_ratio is not None:
+            name += f'PEG: {peg_ratio} /'
+        if pe_ratio is not None:
+            name += f'PE: {pe_ratio} /'
+        name = name[:-2] + ')'
 
     plot_path = plot_utility.plot_bands_by_labels(
         df=df.iloc[-window-future:],
