@@ -55,7 +55,7 @@ def get_tickers(
 def get_s_p_500_tickers():
     source = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
     tickers = get_tickers(source, replace_dots=True)
-    # tickers.append('^GSPC')
+    tickers.append('^GSPC')
     return tickers
 
 
@@ -63,7 +63,7 @@ def get_nasdaq_100_tickers():
     source = 'https://en.wikipedia.org/wiki/Nasdaq-100'
     column = 1
     tickers = get_tickers(source, column=column, replace_dots=True)
-    # tickers.append('^NDX')
+    tickers.append('^NDX')
     return tickers
 
 
@@ -71,14 +71,14 @@ def get_dow_jones_tickers():
     source = 'https://en.wikipedia.org/wiki/Dow_Jones_Industrial_Average'
     column = 1
     tickers = get_tickers(source, column=column, replace_dots=True)
-    # tickers.append('^DJI')
+    tickers.append('^DJI')
     return tickers
 
 
 def get_euro_stoxx_50_tickers():
     source = 'https://en.wikipedia.org/wiki/EURO_STOXX_50'
     tickers = get_tickers(source)
-    # tickers.append('^STOXX50E')
+    tickers.append('^STOXX50E')
     return tickers
 
 
@@ -86,7 +86,7 @@ def get_dax_tickers():
     source = 'https://en.wikipedia.org/wiki/DAX'
     column = 3
     tickers = get_tickers(source, column=column)
-    # tickers.append('^GDAXI')
+    tickers.append('^GDAXI')
     return tickers
 
 
@@ -95,7 +95,7 @@ def get_mdax_tickers():
     column = 7
     exchange = 'DE'
     tickers = get_tickers(source, column=column, exchange=exchange)
-    # tickers.append('^MDAXI')
+    tickers.append('^MDAXI')
     tickers = [ticker.replace('ECV.DE', 'ECV.HM') for ticker in tickers]
     return tickers
 
@@ -106,7 +106,7 @@ def get_tecdax_tickers():
     column = 2
     exchange = 'DE'
     tickers = get_tickers(source, name=name, column=column, exchange=exchange)
-    # tickers.append('^TECDAX')
+    tickers.append('^TECDAX')
     return tickers
 
 
@@ -116,7 +116,7 @@ def get_smi_tickers():
     name = 'wikitable'
     column = 3
     tickers = get_tickers(source, attribute=attribute, name=name, column=column)
-    # tickers.append('^SSMI')
+    tickers.append('^SSMI')
     return tickers
 
 
@@ -125,7 +125,7 @@ def get_ftse_100_tickers():
     column = 1
     exchange = 'L'
     tickers = get_tickers(source, column=column, exchange=exchange)
-    # tickers.append('^FTSE')
+    tickers.append('^FTSE')
     return tickers
 
 
@@ -133,7 +133,7 @@ def get_cac_40_tickers():
     source = 'https://en.wikipedia.org/wiki/CAC_40'
     column = 3
     tickers = get_tickers(source, column=column)
-    # tickers.append('^FCHI')
+    tickers.append('^FCHI')
     return tickers
 
 
@@ -143,7 +143,7 @@ def get_asx_50_tickers():
     name = 'wikitable'
     exchange = 'AX'
     tickers = get_tickers(source, attribute=attribute, name=name, exchange=exchange)
-    # tickers.append('^AFLI')
+    tickers.append('^AFLI')
     return tickers
 
 
@@ -151,7 +151,7 @@ def get_hang_seng_tickers():
     source = 'https://en.wikipedia.org/wiki/Hang_Seng_Index'
     exchange = 'HK'
     tickers = get_tickers(source, exchange=exchange, fill_digits=4)
-    # tickers.append('^HSI')
+    tickers.append('^HSI')
     return tickers
 
 
@@ -173,7 +173,10 @@ def get_nikkei_225_tickers():
     # Find all occurrences of "(TYO: " and extract the next four characters
     matches = re.findall(r'\(TYO: (\w{4})', soup.text)
 
-    return [f'{tyo}.T' for tyo in list(set(matches))]
+    tickers = [f'{tyo}.T' for tyo in list(set(matches))]
+    tickers.append('^N225')
+
+    return tickers
 
 
 def get_kospi_tickers():
@@ -184,7 +187,7 @@ def get_kospi_tickers():
     column = 2
     exchange = 'KS'
     tickers = get_tickers(source, attribute=attribute, name=name, table_index=table_index, column=column, exchange=exchange)
-    # tickers.append('^KS200')
+    tickers.append('^KS200')
     return tickers
 
 
@@ -227,6 +230,8 @@ def get_atx_tickers():
 
         tickers.append(ticker)
 
+    tickers.append('^ATX')
+
     return tickers
 
 
@@ -258,6 +263,24 @@ def get_etf_tickers(index_ticker):
             "BTC-USD",
             "BTC-USD",
         ]
+
+
+def is_index(ticker):
+    if ticker[0] == '^':
+        return True
+    return False
+
+
+def is_crypto(ticker):
+    if ticker[-4:] == '-USD':
+        return True
+    return False
+
+
+def is_future(ticker):
+    if ticker[-2:] == '=F':
+        return True
+    return False
 
 
 def get_all_tickers():
@@ -322,6 +345,12 @@ def get_all_tickers():
     if len(atx_tickers) < 20:
         print('ATX tickers missing!')
     tickers.extend(atx_tickers)  # Austria 20
+
+    cryptocurrency_tickers = get_cryptocurrency_tickers()
+    tickers.extend(cryptocurrency_tickers)
+
+    precious_metals_tickers = get_precious_metals_tickers()
+    tickers.extend(precious_metals_tickers)
 
     # tickers.extend(get_asx_50_tickers())  # Australia
     # tickers.extend(get_hang_seng_tickers())  # Hong Kong

@@ -25,16 +25,19 @@ def analyze(df, ticker, future=250, full=False):
         DictionaryKeys.too_expensive: False,
     }
 
+    is_stock = not ticker_service.is_index(ticker) and not ticker_service.is_crypto(ticker) and not ticker_service.is_future(ticker)
+
     if len(df) < 2500:
         dictionary[DictionaryKeys.too_short] = True
 
-    peg_ratio = yfinance_service.get_peg_ratio(ticker)
-    if peg_ratio is None or peg_ratio > 1.0:
-        dictionary[DictionaryKeys.peg_ratio_too_high] = True
+    if is_stock:
+        peg_ratio = yfinance_service.get_peg_ratio(ticker)
+        if peg_ratio is None or peg_ratio > 1.0:
+            dictionary[DictionaryKeys.peg_ratio_too_high] = True
 
-    price_target = yfinance_service.get_price_target(ticker)
-    if price_target is None or price_target <= df[P.H.value].iat[-1]:
-        dictionary[DictionaryKeys.price_target_too_low] = True
+        price_target = yfinance_service.get_price_target(ticker)
+        if price_target is None or price_target <= df[P.H.value].iat[-1]:
+            dictionary[DictionaryKeys.price_target_too_low] = True
 
     # df = regression_utility.add_growths(df, future=future)
     window = len(df) // 2
