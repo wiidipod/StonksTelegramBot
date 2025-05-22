@@ -96,6 +96,7 @@ if __name__ == '__main__':
     price_target_too_low = 0
     growth_too_low = 0
     too_expensive = 0
+    undervalued = 0
 
     plot_paths = []
     message_paths = []
@@ -143,6 +144,7 @@ if __name__ == '__main__':
                 continue
 
             plot_paths.append(plot_path)
+            undervalued += 1
 
     print(f'Too short: {too_short}')
     print(f'PEG ratio too high: {peg_ratio_too_high}')
@@ -150,6 +152,7 @@ if __name__ == '__main__':
     print(f'Growth too low: {growth_too_low}')
     print(f'Too expensive: {too_expensive}')
     print(f'Total tickers: {len(tickers)}')
+    print(f'Undervalued: {undervalued}')
 
     application = telegram_service.get_application()
     asyncio.run(telegram_service.send_all(plot_paths, message_paths, application))
