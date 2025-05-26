@@ -17,12 +17,12 @@ def analyze_reversal():
         '^GDAXI',
         '^NDX',
         '^GSPC',
-        # '^DJI',
-        # '^MDAXI',
+        '^DJI',
+        '^MDAXI',
         '^STOXX50E',
-        # '^N225',
-        # '^TECDAX',
-        # '^FCHI',
+        '^N225',
+        '^TECDAX',
+        '^FCHI',
         '^FTSE',
     ]
 
@@ -34,7 +34,7 @@ def analyze_reversal():
 
         reversal = ta_utility.get_reversal_by_dataframe(ticker_df)
 
-        if reversal is True:
+        if reversal:
             plot_paths.append(plot_utility.plot_reversal(ticker_df, ticker))
 
     return plot_paths
@@ -212,6 +212,8 @@ if __name__ == '__main__':
         # analyze_dji(),
         analyze_all(),
     ] + analyze_reversal()
+
+    print(plot_paths)
 
     application = telegram_service.get_application()
     asyncio.run(telegram_service.send_all(plot_paths, [], application))
