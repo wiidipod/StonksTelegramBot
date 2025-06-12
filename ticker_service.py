@@ -61,8 +61,7 @@ def get_s_p_500_tickers():
 
 def get_nasdaq_100_tickers():
     source = 'https://en.wikipedia.org/wiki/Nasdaq-100'
-    column = 1
-    tickers = get_tickers(source, column=column, replace_dots=True)
+    tickers = get_tickers(source, replace_dots=True)
     tickers.append('^NDX')
     return tickers
 
