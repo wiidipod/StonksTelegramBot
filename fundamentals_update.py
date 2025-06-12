@@ -1,5 +1,4 @@
 import asyncio
-from time import sleep
 from tqdm import tqdm
 import plot_utility
 import regression_utility
@@ -61,7 +60,7 @@ def analyze(df, ticker, future=250, full=False):
     name = yfinance_service.get_name(ticker=ticker)
 
     if price_target is not None or peg_ratio is not None or pe_ratio is not None:
-        name += '('
+        name += ' ('
         if price_target is not None:
             name += f'PT: {price_target} / '
         if peg_ratio is not None:
