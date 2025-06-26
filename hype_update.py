@@ -1,7 +1,5 @@
 import asyncio
-import message_utility
 import plot_utility
-import ta_utility
 import telegram_service
 import yfinance_service
 import yfinance as yf
@@ -12,22 +10,12 @@ if __name__ == '__main__':
         'RHM.DE',
         'R3NK.DE',
         'HAG.DE',
-        # 'LDO.MI',
-        # 'SAAB-B.ST',
-        # 'BA.L',
-        # 'HO.PA',
-        # 'RR.L',
-        # 'AIR.PA',
-        # 'SAF.PA',
-        # 'KOG.OL',
-        # 'MRO.L',
         'GC=F',
         'GME',
         'TSLA',
         'NVDA',
         'AAPL',
         'BTC-EUR',
-        'WOLF',
         'PLTR',
         'MSTR',
         'HIMS',
