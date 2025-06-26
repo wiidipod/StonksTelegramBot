@@ -33,6 +33,8 @@ if __name__ == '__main__':
         'HIMS',
         'DEZ.DE',
         'NVO',
+        '1211.HK',
+        'DRO.AX',
     ]
 
     # closes = yfinance_service.get_closes(tickers, period='10y', interval='1d')
