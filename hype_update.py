@@ -32,6 +32,7 @@ if __name__ == '__main__':
         'MSTR',
         'HIMS',
         'DEZ.DE',
+        'NVO',
     ]
 
     # closes = yfinance_service.get_closes(tickers, period='10y', interval='1d')
