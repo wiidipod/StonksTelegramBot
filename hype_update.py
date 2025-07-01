@@ -24,6 +24,7 @@ if __name__ == '__main__':
         '1211.HK',
         'DRO.AX',
         'PLTR',
+        'ENR.DE',
     ]
 
     # closes = yfinance_service.get_closes(tickers, period='10y', interval='1d')
