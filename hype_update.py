@@ -7,23 +7,23 @@ from yfinance_service import P
 
 if __name__ == '__main__':
     tickers = [
-        'RHM.DE',
-        'R3NK.DE',
-        'HAG.DE',
-        'GC=F',
-        'GME',
-        'TSLA',
-        'NVDA',
-        'AAPL',
-        'BTC-EUR',
-        'PLTR',
-        'MSTR',
-        'HIMS',
-        'DEZ.DE',
-        'NVO',
-        '1211.HK',
-        'DRO.AX',
-        'PLTR',
+        'RHM.DE',  # Rheinmetall AG
+        'R3NK.DE',  # RENK Group AG
+        'HAG.DE',  # Hensoldt AG
+        'GC=F',  # Gold Futures
+        'GME',  # GameStop Corp.
+        'TSLA',  # Tesla, Inc.
+        'NVDA',  # NVIDIA Corporation
+        'AAPL',  # Apple Inc.
+        'BTC-EUR',  # Bitcoin EUR Price
+        'PLTR',  # Palantir Technologies Inc.
+        'MSTR',  # Strategy Incorporated
+        'HIMS',  # Hims & Hers Health, Inc.
+        'DEZ.DE',  # DEUTZ Aktiengesellschaft
+        'NVO',  # Novo Nordisk A/S
+        '1211.HK',  # BYD COMPANY
+        'DRO.AX',  # DroneShield Limited
+        'PLTR',  # Palantir Technologies Inc.
         'ENR.DE',  # Siemens Energy AG
         '1810.HK',  # XIAOMI-W
         'QBTS',  # D-Wave Quantum Inc.
