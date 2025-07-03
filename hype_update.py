@@ -24,7 +24,9 @@ if __name__ == '__main__':
         '1211.HK',
         'DRO.AX',
         'PLTR',
-        'ENR.DE',
+        'ENR.DE',  # Siemens Energy AG
+        '1810.HK',  # XIAOMI-W
+        'QBTS',  # D-Wave Quantum Inc.
     ]
 
     # closes = yfinance_service.get_closes(tickers, period='10y', interval='1d')
