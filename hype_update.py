@@ -27,6 +27,7 @@ if __name__ == '__main__':
         'ENR.DE',  # Siemens Energy AG
         '1810.HK',  # XIAOMI-W
         'QBTS',  # D-Wave Quantum Inc.
+        'CLTE.NE'  # Clara Technologies Corp.
     ]
 
     # closes = yfinance_service.get_closes(tickers, period='10y', interval='1d')
