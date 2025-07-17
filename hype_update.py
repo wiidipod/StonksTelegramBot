@@ -29,6 +29,7 @@ if __name__ == '__main__':
         'QBTS',  # D-Wave Quantum Inc.
         'CLTE.NE',  # Clara Technologies Corp.
         'FLT.V',  # Volatus Aerospace Inc.
+        'ASML',  # ASML Holding N.V.
     ]
 
     # closes = yfinance_service.get_closes(tickers, period='10y', interval='1d')
