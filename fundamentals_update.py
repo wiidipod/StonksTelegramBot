@@ -15,12 +15,27 @@ def chunk_list(lst, chunk_size):
         yield lst[list_index:list_index + chunk_size]
 
 
+def has_buy_signal(dictionary):
+    return (
+        dictionary[DictionaryKeys.too_short] is False
+        and (
+            dictionary[DictionaryKeys.peg_ratio_too_high] is False
+            and dictionary[DictionaryKeys.not_52w_low] is False
+        )
+        # and dictionary[DictionaryKeys.not_52w_low] is False
+        and dictionary[DictionaryKeys.growth_too_low] is False
+        and dictionary[DictionaryKeys.price_target_too_low] is False
+        and dictionary[DictionaryKeys.too_expensive] is False
+    )
+
+
 def analyze(df, ticker, future=250, full=False):
     dictionary = {
         DictionaryKeys.too_short: False,
         DictionaryKeys.peg_ratio_too_high: False,
-        DictionaryKeys.price_target_too_low: False,
         DictionaryKeys.growth_too_low: False,
+        DictionaryKeys.not_52w_low: False,
+        DictionaryKeys.price_target_too_low: False,
         DictionaryKeys.too_expensive: False,
     }
 
@@ -54,7 +69,11 @@ def analyze(df, ticker, future=250, full=False):
     if df[P.H.value].iat[-1 - future] > df['Growth Lower (Low)'].iat[-1 - future]:
         dictionary[DictionaryKeys.too_expensive] = True
 
-    if not full and any(dictionary.values()):
+    if df[P.L.value].iat[-1 - future] >= min(df[P.H.value].iloc[-1 - 2 * future:]):
+        dictionary[DictionaryKeys.not_52w_low] = True
+
+    # if not full and any(dictionary.values()):
+    if not full and not has_buy_signal(dictionary):
         return dictionary, None
 
     name = yfinance_service.get_name(ticker=ticker)
@@ -95,6 +114,7 @@ if __name__ == '__main__':
     price_target_too_low = 0
     growth_too_low = 0
     too_expensive = 0
+    not_52w_low = 0
     undervalued = 0
 
     plot_paths = []
@@ -138,6 +158,8 @@ if __name__ == '__main__':
                 growth_too_low += 1
             if dictionary[DictionaryKeys.too_expensive]:
                 too_expensive += 1
+            if dictionary[DictionaryKeys.not_52w_low]:
+                not_52w_low += 1
 
             if plot_path is None:
                 continue
