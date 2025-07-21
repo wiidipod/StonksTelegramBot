@@ -18,11 +18,8 @@ def chunk_list(lst, chunk_size):
 def has_buy_signal(dictionary):
     return (
         dictionary[DictionaryKeys.too_short] is False
-        and (
-            dictionary[DictionaryKeys.peg_ratio_too_high] is False
-            and dictionary[DictionaryKeys.not_52w_low] is False
-        )
-        # and dictionary[DictionaryKeys.not_52w_low] is False
+        and dictionary[DictionaryKeys.peg_ratio_too_high] is False
+        and dictionary[DictionaryKeys.not_52w_low] is False
         and dictionary[DictionaryKeys.growth_too_low] is False
         and dictionary[DictionaryKeys.price_target_too_low] is False
         and dictionary[DictionaryKeys.too_expensive] is False
@@ -59,7 +56,6 @@ def analyze(df, ticker, future=250, full=False):
         price_target = None
         pe_ratio = None
 
-    # df = regression_utility.add_growths(df, future=future)
     window = len(df) // 2
     df = regression_utility.add_window_growths(df, window=window, future=future)
 
@@ -72,7 +68,6 @@ def analyze(df, ticker, future=250, full=False):
     if df[P.L.value].iat[-1 - future] >= min(df[P.H.value].iloc[-1 - 2 * future:]):
         dictionary[DictionaryKeys.not_52w_low] = True
 
-    # if not full and any(dictionary.values()):
     if not full and not has_buy_signal(dictionary):
         return dictionary, None
 
@@ -106,8 +101,6 @@ def analyze(df, ticker, future=250, full=False):
 
 if __name__ == '__main__':
     tickers = ticker_service.get_all_tickers()
-    # tickers = ['GOOGL']
-    # tickers = ticker_service.get_nasdaq_100_tickers()
 
     too_short = 0
     peg_ratio_too_high = 0
@@ -120,51 +113,45 @@ if __name__ == '__main__':
     plot_paths = []
     message_paths = []
 
-    # future = 250
+    chunk_size_main = 100
+    for i, ticker_chunk in enumerate(chunk_list(tickers, chunk_size_main)):
+        print(f'Processing chunk {i + 1} of {len(tickers) // chunk_size_main + 1}')
 
-    chunk_size = 100
-    for i, ticker_chunk in enumerate(chunk_list(tickers, chunk_size)):
-        print(f'Processing chunk {i + 1} of {len(tickers) // chunk_size + 1}')
-
-        # if i != 0:
-            # sleep(10.0 * len(ticker_chunk))
-            # sleep(len(ticker_chunk))
-
-        df = yf.download(
+        df_main = yf.download(
             ticker_chunk,
             period='10y',
             interval='1d',
             group_by='ticker',
         )
 
-        for ticker in tqdm(ticker_chunk):
-            ticker_df = yfinance_service.extract_ticker_df(df=df, ticker=ticker)
+        for ticker_main in tqdm(ticker_chunk):
+            ticker_df = yfinance_service.extract_ticker_df(df=df_main, ticker=ticker_main)
 
-            future = len(ticker_df) // 10
+            future_main = len(ticker_df) // 10
 
             try:
-                dictionary, plot_path = analyze(df=ticker_df, ticker=ticker, future=future)
+                dictionary_main, plot_path_main = analyze(df=ticker_df, ticker=ticker_main, future=future_main)
             except Exception as e:
-                print(f'Error processing {ticker}: {e}')
+                print(f'Error processing {ticker_main}: {e}')
                 continue
 
-            if dictionary[DictionaryKeys.too_short]:
+            if dictionary_main[DictionaryKeys.too_short]:
                 too_short += 1
-            if dictionary[DictionaryKeys.peg_ratio_too_high]:
+            if dictionary_main[DictionaryKeys.peg_ratio_too_high]:
                 peg_ratio_too_high += 1
-            if dictionary[DictionaryKeys.price_target_too_low]:
+            if dictionary_main[DictionaryKeys.price_target_too_low]:
                 price_target_too_low += 1
-            if dictionary[DictionaryKeys.growth_too_low]:
+            if dictionary_main[DictionaryKeys.growth_too_low]:
                 growth_too_low += 1
-            if dictionary[DictionaryKeys.too_expensive]:
+            if dictionary_main[DictionaryKeys.too_expensive]:
                 too_expensive += 1
-            if dictionary[DictionaryKeys.not_52w_low]:
+            if dictionary_main[DictionaryKeys.not_52w_low]:
                 not_52w_low += 1
 
-            if plot_path is None:
+            if plot_path_main is None:
                 continue
 
-            plot_paths.append(plot_path)
+            plot_paths.append(plot_path_main)
             undervalued += 1
 
     print(f'Too short: {too_short}')
