@@ -30,6 +30,8 @@ if __name__ == '__main__':
         'CLTE.NE',  # Clara Technologies Corp.
         'FLT.V',  # Volatus Aerospace Inc.
         'ASML',  # ASML Holding N.V.
+        'OPEN',  # Opendoor Technologies Inc.
+        '3350.T',  # Metaplanet Inc.
     ]
 
     # closes = yfinance_service.get_closes(tickers, period='10y', interval='1d')
