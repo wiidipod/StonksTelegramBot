@@ -56,7 +56,7 @@ def analyze(df, ticker, future=250, full=False):
         price_target = None
         pe_ratio = None
 
-    window = len(df) // 2
+    window = len(df) * 9 // 10
     df = regression_utility.add_window_growths(df, window=window, future=future)
 
     if df['Growth (High)'].iat[-1 - future] > df['Growth Lower (Low)'].iat[-1]:
