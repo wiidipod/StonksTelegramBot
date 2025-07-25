@@ -84,7 +84,7 @@ def analyze(df, ticker, future=250, full=False):
         name = name[:-3] + ')'
 
     plot_path = plot_utility.plot_bands_by_labels(
-        df=df.iloc[-window-future:],
+        df=df.iloc[window:],
         ticker=ticker,
         title=name,
         labels=[
