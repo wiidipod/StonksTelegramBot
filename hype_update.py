@@ -34,6 +34,7 @@ if __name__ == '__main__':
         '3350.T',  # Metaplanet Inc.
         'SAP.DE',  # SAP SE
         'PUM.DE',  # Puma SE
+        'INTC',  # Intel Corporation
     ]
 
     # closes = yfinance_service.get_closes(tickers, period='10y', interval='1d')
