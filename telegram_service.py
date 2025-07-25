@@ -3,7 +3,6 @@ import logging
 from telegram import Update, InputMediaPhoto, BotCommand
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, ConversationHandler, MessageHandler, filters
 import yfinance as yf
-import pandas as pd
 
 import fundamentals_update
 import message_utility
@@ -228,7 +227,11 @@ async def send_plots_to_all(plot_paths, context: ContextTypes.DEFAULT_TYPE):
     for chat_id in subscribers:
         for group in media_groups:
             media = [InputMediaPhoto(open(image_path, 'rb')) for image_path in group]
-            await context.bot.send_media_group(chat_id=chat_id, media=media)
+            try:
+                await context.bot.send_media_group(chat_id=chat_id, media=media)
+            except Exception as e:
+                logging.error(f"Failed to send media group to {chat_id}: {e}")
+                continue
 
 
 async def send_message_to_chat_id(message_path, chat_id, context: ContextTypes.DEFAULT_TYPE):
@@ -245,7 +248,11 @@ async def send_messages_to_all(message_paths, context: ContextTypes.DEFAULT_TYPE
     messages = [open(message_path, 'r', encoding="utf-8").read() for message_path in message_paths]
     for chat_id in subscribers:
         for message in messages:
-            await context.bot.send_message(chat_id=chat_id, text=message, parse_mode='MarkdownV2')
+            try:
+                await context.bot.send_message(chat_id=chat_id, text=message, parse_mode='MarkdownV2')
+            except Exception as e:
+                logging.error(f"Failed to send message to {chat_id}: {e}")
+                continue
 
 
 async def send_all(plot_paths, message_paths, context: ContextTypes.DEFAULT_TYPE):
