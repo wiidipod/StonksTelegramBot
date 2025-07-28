@@ -35,6 +35,8 @@ if __name__ == '__main__':
         'SAP.DE',  # SAP SE
         'PUM.DE',  # Puma SE
         'INTC',  # Intel Corporation
+        'VOW3.DE',  # Volkswagen AG
+        'MBG.DE',  # Mercedes-Benz Group AG
     ]
 
     # closes = yfinance_service.get_closes(tickers, period='10y', interval='1d')
