@@ -81,6 +81,10 @@ if __name__ == '__main__':
             print(f'{ticker} is central.')
             continue
 
+        if ticker_df[P.L.value].iat[-1] >= upper_fourth:
+            print(f'{ticker} is upper fourth.')
+            continue
+
         # technicals = ta_utility.get_technicals(close)
         # if technicals is None and close[-1] > lower_fourth:
         #     print(f'{ticker} has no technicals.')
