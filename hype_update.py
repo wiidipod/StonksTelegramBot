@@ -37,6 +37,7 @@ if __name__ == '__main__':
         'INTC',  # Intel Corporation
         'VOW3.DE',  # Volkswagen AG
         'MBG.DE',  # Mercedes-Benz Group AG
+        'PYPL',  # PayPal Holdings, Inc.
     ]
 
     # closes = yfinance_service.get_closes(tickers, period='10y', interval='1d')
