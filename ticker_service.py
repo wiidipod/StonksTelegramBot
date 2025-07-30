@@ -282,6 +282,44 @@ def is_future(ticker):
     return False
 
 
+def get_hype_tickers():
+    return [
+        'RHM.DE',  # Rheinmetall AG
+        'R3NK.DE',  # RENK Group AG
+        'HAG.DE',  # Hensoldt AG
+        'GC=F',  # Gold Futures
+        'GME',  # GameStop Corp.
+        'TSLA',  # Tesla, Inc.
+        'NVDA',  # NVIDIA Corporation
+        'AAPL',  # Apple Inc.
+        'BTC-EUR',  # Bitcoin EUR Price
+        'PLTR',  # Palantir Technologies Inc.
+        'MSTR',  # Strategy Incorporated
+        'HIMS',  # Hims & Hers Health, Inc.
+        'DEZ.DE',  # DEUTZ Aktiengesellschaft
+        'NVO',  # Novo Nordisk A/S
+        '1211.HK',  # BYD COMPANY
+        'DRO.AX',  # DroneShield Limited
+        'PLTR',  # Palantir Technologies Inc.
+        'ENR.DE',  # Siemens Energy AG
+        '1810.HK',  # XIAOMI-W
+        'QBTS',  # D-Wave Quantum Inc.
+        'CLTE.NE',  # Clara Technologies Corp.
+        'FLT.V',  # Volatus Aerospace Inc.
+        'ASML',  # ASML Holding N.V.
+        'OPEN',  # Opendoor Technologies Inc.
+        '3350.T',  # Metaplanet Inc.
+        'SAP.DE',  # SAP SE
+        'PUM.DE',  # Puma SE
+        'INTC',  # Intel Corporation
+        'VOW3.DE',  # Volkswagen AG
+        'MBG.DE',  # Mercedes-Benz Group AG
+        'PYPL',  # PayPal Holdings, Inc.
+        'HDD.F',  # Heidelberger Druckmaschinen Aktiengesellschaft
+        'ADS.DE',  # Adidas AG
+    ]
+
+
 def get_all_tickers():
     tickers = []
 
@@ -350,6 +388,9 @@ def get_all_tickers():
 
     precious_metals_tickers = get_precious_metals_tickers()
     tickers.extend(precious_metals_tickers)
+
+    hype_tickers = get_hype_tickers()
+    tickers.extend(hype_tickers)
 
     # tickers.extend(get_asx_50_tickers())  # Australia
     # tickers.extend(get_hang_seng_tickers())  # Hong Kong

@@ -1,46 +1,13 @@
 import asyncio
 import plot_utility
 import telegram_service
+import ticker_service
 import yfinance_service
 import yfinance as yf
 from yfinance_service import P
 
 if __name__ == '__main__':
-    tickers = [
-        'RHM.DE',  # Rheinmetall AG
-        'R3NK.DE',  # RENK Group AG
-        'HAG.DE',  # Hensoldt AG
-        'GC=F',  # Gold Futures
-        'GME',  # GameStop Corp.
-        'TSLA',  # Tesla, Inc.
-        'NVDA',  # NVIDIA Corporation
-        'AAPL',  # Apple Inc.
-        'BTC-EUR',  # Bitcoin EUR Price
-        'PLTR',  # Palantir Technologies Inc.
-        'MSTR',  # Strategy Incorporated
-        'HIMS',  # Hims & Hers Health, Inc.
-        'DEZ.DE',  # DEUTZ Aktiengesellschaft
-        'NVO',  # Novo Nordisk A/S
-        '1211.HK',  # BYD COMPANY
-        'DRO.AX',  # DroneShield Limited
-        'PLTR',  # Palantir Technologies Inc.
-        'ENR.DE',  # Siemens Energy AG
-        '1810.HK',  # XIAOMI-W
-        'QBTS',  # D-Wave Quantum Inc.
-        'CLTE.NE',  # Clara Technologies Corp.
-        'FLT.V',  # Volatus Aerospace Inc.
-        'ASML',  # ASML Holding N.V.
-        'OPEN',  # Opendoor Technologies Inc.
-        '3350.T',  # Metaplanet Inc.
-        'SAP.DE',  # SAP SE
-        'PUM.DE',  # Puma SE
-        'INTC',  # Intel Corporation
-        'VOW3.DE',  # Volkswagen AG
-        'MBG.DE',  # Mercedes-Benz Group AG
-        'PYPL',  # PayPal Holdings, Inc.
-        'HDD.F',  # Heidelberger Druckmaschinen Aktiengesellschaft
-        'ADS.DE',  # Adidas AG
-    ]
+    tickers = ticker_service.get_hype_tickers()
 
     # closes = yfinance_service.get_closes(tickers, period='10y', interval='1d')
     # highs, lows, closes, opens = yfinance_service.get_prices(tickers, period='10y', interval='1d')
