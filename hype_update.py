@@ -39,6 +39,7 @@ if __name__ == '__main__':
         'MBG.DE',  # Mercedes-Benz Group AG
         'PYPL',  # PayPal Holdings, Inc.
         'HDD.F',  # Heidelberger Druckmaschinen Aktiengesellschaft
+        'ADS.DE',  # Adidas AG
     ]
 
     # closes = yfinance_service.get_closes(tickers, period='10y', interval='1d')
