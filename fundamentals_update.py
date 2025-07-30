@@ -61,13 +61,12 @@ def analyze(df, ticker, future=250, full=False):
 
     # if df['Growth (High)'].iat[-1 - future] > df['Growth Lower (Low)'].iat[-1]:
     if (
-            df['Growth (High)'].iat[-1 - future] >= df['Growth (Low)'].iat[-1]
-            # or df['Growth Upper (High)'].iat[-2 - future] >= df['Growth Upper (High)'].iat[-1 - future]
-            # or df['Growth Lower (High)'].iat[-2 - future] >= df['Growth Lower (High)'].iat[-1 - future]
-            # or df['Growth (High)'].iat[-2 - future] >= df['Growth (High)'].iat[-1 - future]
-            # or df['Growth (Low)'].iat[-2 - future] >= df['Growth (Low)'].iat[-1 - future]
-            # or df['Growth Lower (High)'].iat[-2 - future] >= df['Growth Lower (High)'].iat[-1 - future]
-            # or df['Growth Upper (Low)'].iat[-2 - future] >= df['Growth Upper (Low)'].iat[-1 - future]
+            df['Growth Upper (High)'].iat[-1 - future] >= df['Growth Upper (Low)'].iat[-1]
+            or df['Growth (High)'].iat[-1 - future] >= df['Growth (Low)'].iat[-1]
+            or df['Growth Lower (High)'].iat[-1 - future] >= df['Growth Lower (Low)'].iat[-1]
+            or df['Growth Upper (High)'].iat[-2*future] >= df['Growth Upper (Low)'].iat[-1 - future]
+            or df['Growth (High)'].iat[-2*future] >= df['Growth (Low)'].iat[-1 - future]
+            or df['Growth Lower (High)'].iat[-2*future] >= df['Growth Lower (Low)'].iat[-1 - future]
     ):
         dictionary[DictionaryKeys.growth_too_low] = True
 
