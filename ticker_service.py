@@ -222,7 +222,11 @@ def get_atx_tickers():
         if not isin:
             continue
 
-        ticker = yfinance.Search(isin, max_results=1).all['quotes'][0]['symbol']
+        try:
+            ticker = yfinance.Search(isin, max_results=1).all['quotes'][0]['symbol']
+        except Exception as e:
+            print(f'Error fetching ticker for ISIN {isin}: {e}')
+            ticker = None
 
         if not ticker:
             continue
