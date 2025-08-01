@@ -110,6 +110,7 @@ def analyze(df, ticker, future=250, full=False):
 
 if __name__ == '__main__':
     tickers = ticker_service.get_all_tickers()
+    # tickers = ['CI']
 
     too_short = 0
     peg_ratio_too_high = 0

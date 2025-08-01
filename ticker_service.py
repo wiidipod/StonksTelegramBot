@@ -321,6 +321,7 @@ def get_hype_tickers():
         'PYPL',  # PayPal Holdings, Inc.
         'HDD.F',  # Heidelberger Druckmaschinen Aktiengesellschaft
         'ADS.DE',  # Adidas AG
+        'AMZN',  # Amazon.com, Inc.
     ]
 
 
