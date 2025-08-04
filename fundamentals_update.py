@@ -8,6 +8,7 @@ from yfinance_service import P
 import yfinance as yf
 import yfinance_service
 from constants import DictionaryKeys
+import time
 
 
 def chunk_list(lst, chunk_size):
@@ -126,6 +127,9 @@ if __name__ == '__main__':
     chunk_size_main = 100
     for i, ticker_chunk in enumerate(chunk_list(tickers, chunk_size_main)):
         print(f'Processing chunk {i + 1} of {len(tickers) // chunk_size_main + 1}')
+
+        if i > 0:
+            time.sleep(chunk_size_main)
 
         df_main = yf.download(
             ticker_chunk,
