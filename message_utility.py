@@ -1,4 +1,5 @@
 import yfinance_service
+from plot_utility import output_directory
 from yfinance_service import P
 from constants import DictionaryKeys
 
@@ -7,7 +8,6 @@ bearish_emoji = "📉"
 bullish_emoji = "📈"
 rocket_emoji = "🚀"
 skull_emoji = "💀"
-
 
 def write_hype_message(
         ticker,
@@ -306,7 +306,7 @@ def write_message(
 
 def save_message(message, ticker):
     message = message.replace('(', '\(').replace(')', '\)').replace('-', '\-')
-    message_path = f"{ticker}_message.txt"
+    message_path = f"{output_directory}{ticker}_message.txt"
     with open(message_path, "w", encoding="utf-8") as file:
         file.write(message)
     return message_path

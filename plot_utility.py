@@ -11,6 +11,7 @@ import regression_utility
 from yfinance_service import P
 import yfinance_service
 
+output_directory = '/home/moritz/PycharmProjects/StonksTelegramBot/output/'
 
 def plot_with_constants_by_df(
         ticker,
@@ -25,7 +26,7 @@ def plot_with_constants_by_df(
     fig = plt.figure(figsize=(9.0, 9.0), dpi=300)
     fig.suptitle(name)
 
-    fname = f'{ticker}_plot_with_constants.png'
+    fname = f'{output_directory}{ticker}_plot_with_constants.png'
     fig = plt.figure(figsize=(9.0, 9.0), dpi=300)
     fig.suptitle(name)
     subplot = fig.add_subplot(111)
@@ -86,7 +87,7 @@ def plot_with_constants(
     )
 
     fig.tight_layout()
-    image_path = f'{ticker}_prediction_plot.png'
+    image_path = f'{output_directory}{ticker}_prediction_plot.png'
     fig.savefig(image_path)
     return image_path
     # fig.show()
@@ -117,7 +118,7 @@ def plot_prediction(
     price_subplot.legend()
 
     fig.tight_layout()
-    image_path = f'{ticker}_prediction_plot.png'
+    image_path = f'{output_directory}{ticker}_prediction_plot.png'
     fig.savefig(image_path)
     fig.show()
 
@@ -143,7 +144,7 @@ def plot_with_growths(
     plot_with_colors(close, high, low, price_subplot, growths_high, growths_low, yscale)
 
     plt.tight_layout()
-    image_path = f'{ticker}_plot.png'
+    image_path = f'{output_directory}{ticker}_plot.png'
     plt.savefig(image_path)
 
     if show:
@@ -198,7 +199,7 @@ def plot_bands(
     price_subplot.legend()
 
     fig.tight_layout()
-    image_path = f'{ticker}_plot_bands.png'
+    image_path = f'{output_directory}{ticker}_plot_bands.png'
     fig.savefig(image_path)
 
     return image_path
@@ -297,7 +298,7 @@ def plot_with_ta(
     )
 
     fig.tight_layout()
-    image_path = f'{ticker}_plot_with_ta.png'
+    image_path = f'{output_directory}{ticker}_plot_with_ta.png'
     fig.savefig(image_path)
 
     return image_path
@@ -352,7 +353,7 @@ def get_colors(macd_diff):
 
 
 def plot_reversal(df, ticker):
-    fname = f'{ticker}_reversal_plot.png'
+    fname = f'{output_directory}{ticker}_reversal_plot.png'
     title = yfinance_service.get_name(ticker)
     mpf.plot(
         df.iloc[-5:],
@@ -369,7 +370,7 @@ def plot_reversal(df, ticker):
 
 def plot_bands_by_labels(df, ticker, title, labels, fname=None, yscale='linear', today=-1):
     if fname is None:
-        fname = f'{ticker}_two_bands_plot.png'
+        fname = f'{output_directory}{ticker}_two_bands_plot.png'
     fig = plt.figure(figsize=(9.0, 9.0), dpi=300)
     fig.suptitle(title)
     subplot = fig.add_subplot(111)

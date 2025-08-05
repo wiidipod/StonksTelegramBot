@@ -21,7 +21,7 @@ logging.basicConfig(
 
 def get_token():
     try:
-        with open('token', 'r') as file:
+        with open('/home/moritz/PycharmProjects/StonksTelegramBot/token', 'r') as file:
             token = file.read().strip()
     except FileNotFoundError:
         logging.error("Token file not found.")
@@ -300,3 +300,5 @@ def get_application():
 if __name__ == "__main__":
     main_application = get_application()
     asyncio.run(set_commands(main_application))
+    # import os
+    # print("Current working directory:", os.getcwd())
