@@ -322,6 +322,7 @@ def get_hype_tickers():
         'HDD.F',  # Heidelberger Druckmaschinen Aktiengesellschaft
         'ADS.DE',  # Adidas AG
         'AMZN',  # Amazon.com, Inc.
+        'FTNT',  # Fortinet, Inc.
     ]
 
 
