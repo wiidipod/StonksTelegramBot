@@ -10,7 +10,7 @@ import option_utility
 import ta_utility
 import yfinance_service
 
-subscribers_file = 'subscribers.txt'
+subscribers_file = '/home/moritz/PycharmProjects/StonksTelegramBot/subscribers.txt'
 
 
 logging.basicConfig(
@@ -276,6 +276,12 @@ def get_application():
     token = get_token()
     application = ApplicationBuilder().token(token).build()
 
+    return application
+
+
+def get_handling_application():
+    application = get_application()
+
     start_handler = CommandHandler('start', start)
     application.add_handler(start_handler)
 
@@ -284,15 +290,6 @@ def get_application():
 
     analyze_handler = CommandHandler('analyze', handle_analyze)
     application.add_handler(analyze_handler)
-
-    # long_handler = CommandHandler('stoploss', handle_stop_loss)
-    # application.add_handler(long_handler)
-
-    # fivex_handler = CommandHandler('fivex', handle_fivex)
-    # application.add_handler(fivex_handler)
-
-    # reversal_handler = CommandHandler('reversal', handle_reversal)
-    # application.add_handler(reversal_handler)
 
     return application
 
