@@ -3,6 +3,7 @@ import asyncio
 import message_utility
 import telegram_service
 import yfinance_service
+from plot_utility import output_directory
 from yfinance_service import P
 import ta_utility
 import plot_utility
@@ -70,7 +71,7 @@ def analyze_dji():
         ticker=dji,
         title=title,
         labels=labels,
-        fname='dji.png'
+        fname=f'{output_directory}dji.png'
     )
 
     return plot_path
@@ -108,7 +109,7 @@ def analyze_golden_cross():
         ticker=nasdaq100,
         title=title,
         labels=labels,
-        fname='tqqq.png'
+        fname=f'{output_directory}tqqq.png'
     )
 
     return plot_path
@@ -144,7 +145,7 @@ def analyze_amumbo():
         ticker=sp500,
         title=title,
         labels=labels,
-        fname='amumbo.png'
+        fname=f'{output_directory}amumbo.png'
     )
 
     return plot_path
@@ -199,7 +200,7 @@ def analyze_all():
         ticker=sp500,
         title=title,
         labels=labels,
-        fname='sp500.png'
+        fname=f'{output_directory}sp500.png'
     )
 
     return plot_path
