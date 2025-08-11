@@ -20,10 +20,11 @@ def has_buy_signal(dictionary):
     return (
         dictionary[DictionaryKeys.too_short] is False
         and dictionary[DictionaryKeys.peg_ratio_too_high] is False
-        and dictionary[DictionaryKeys.not_52w_low] is False
+        # and dictionary[DictionaryKeys.not_52w_low] is False
         and dictionary[DictionaryKeys.growth_too_low] is False
         and dictionary[DictionaryKeys.price_target_too_low] is False
         and dictionary[DictionaryKeys.too_expensive] is False
+        and dictionary[DictionaryKeys.not_enough_undervaluation] is False
     )
 
 
@@ -32,9 +33,10 @@ def analyze(df, ticker, future=250, full=False):
         DictionaryKeys.too_short: False,
         DictionaryKeys.peg_ratio_too_high: False,
         DictionaryKeys.growth_too_low: False,
-        DictionaryKeys.not_52w_low: False,
+        # DictionaryKeys.not_52w_low: False,
         DictionaryKeys.price_target_too_low: False,
         DictionaryKeys.too_expensive: False,
+        DictionaryKeys.not_enough_undervaluation: False,
     }
 
     is_stock = not ticker_service.is_index(ticker) and not ticker_service.is_crypto(ticker) and not ticker_service.is_future(ticker)
@@ -48,7 +50,7 @@ def analyze(df, ticker, future=250, full=False):
             dictionary[DictionaryKeys.peg_ratio_too_high] = True
 
         price_target = yfinance_service.get_price_target(ticker)
-        if price_target is None or price_target <= df[P.H.value].iat[-1]:
+        if price_target is None or 0.9 * price_target <= df[P.H.value].iat[-1]:
             dictionary[DictionaryKeys.price_target_too_low] = True
 
         pe_ratio = yfinance_service.get_pe_ratio(ticker)
@@ -71,12 +73,12 @@ def analyze(df, ticker, future=250, full=False):
     ):
         dictionary[DictionaryKeys.growth_too_low] = True
 
-    if df[P.H.value].iat[-1 - future] >= df['Growth Lower (Low)'].iat[-1 - future]:
+    if df[P.H.value].iat[-1 - future] >= 0.9 * df['Growth Lower (Low)'].iat[-1 - future]:
     # if df[P.H.value].iat[-1 - future] > df['Growth (Low)'].iat[-1 - future]:
         dictionary[DictionaryKeys.too_expensive] = True
 
-    if df[P.L.value].iat[-1 - future] >= min(df[P.H.value].iloc[-1 - 2 * future:]):
-        dictionary[DictionaryKeys.not_52w_low] = True
+    # if df[P.L.value].iat[-1 - future] >= min(df[P.H.value].iloc[-1 - 2 * future:]):
+    #     dictionary[DictionaryKeys.not_52w_low] = True
 
     if not full and not has_buy_signal(dictionary):
         return dictionary, None
