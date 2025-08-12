@@ -120,7 +120,7 @@ if __name__ == '__main__':
     price_target_too_low = 0
     growth_too_low = 0
     too_expensive = 0
-    not_52w_low = 0
+    # not_52w_low = 0
     undervalued = 0
 
     plot_paths = []
@@ -161,8 +161,8 @@ if __name__ == '__main__':
                 growth_too_low += 1
             if dictionary_main[DictionaryKeys.too_expensive]:
                 too_expensive += 1
-            if dictionary_main[DictionaryKeys.not_52w_low]:
-                not_52w_low += 1
+            # if dictionary_main[DictionaryKeys.not_52w_low]:
+            #     not_52w_low += 1
 
             if plot_path_main is None:
                 continue
