@@ -96,14 +96,18 @@ def add_window_growths(df, window=1250, future=0):
 
     df = df.reindex(df.index.union(future_dates))
 
-    df['Growth (High)'] = pd.concat([growth_h, future_growth_h])
-    df['Growth Lower (High)'] = pd.concat([growth_lower_h, future_growth_lower_h])
-    df['Growth Upper (High)'] = pd.concat([growth_upper_h, future_growth_upper_h])
-    df['Growth (Low)'] = pd.concat([growth_l, future_growth_l])
-    df['Growth Lower (Low)'] = pd.concat([growth_lower_l, future_growth_lower_l])
-    df['Growth Upper (Low)'] = pd.concat([growth_upper_l, future_growth_upper_l])
+    df['Growth (High)'] = safe_concat([growth_h, future_growth_h])
+    df['Growth Lower (High)'] = safe_concat([growth_lower_h, future_growth_lower_h])
+    df['Growth Upper (High)'] = safe_concat([growth_upper_h, future_growth_upper_h])
+    df['Growth (Low)'] = safe_concat([growth_l, future_growth_l])
+    df['Growth Lower (Low)'] = safe_concat([growth_lower_l, future_growth_lower_l])
+    df['Growth Upper (Low)'] = safe_concat([growth_upper_l, future_growth_upper_l])
 
     return df
+
+
+def safe_concat(series_list):
+    return pd.concat([s for s in series_list if not s.empty])
 
 
 def add_growths(df, future=0):
@@ -139,12 +143,12 @@ def add_growths(df, future=0):
 
     df = df.reindex(df.index.union(future_dates))
 
-    df['Growth (High)'] = pd.concat([growth_h, new_growth_h])
-    df['Growth Lower (High)'] = pd.concat([growth_lower_h, new_growth_lower_h])
-    df['Growth Upper (High)'] = pd.concat([growth_upper_h, new_growth_upper_h])
-    df['Growth (Low)'] = pd.concat([growth_l, new_growth_l])
-    df['Growth Lower (Low)'] = pd.concat([growth_lower_l, new_growth_lower_l])
-    df['Growth Upper (Low)'] = pd.concat([growth_upper_l, new_growth_upper_l])
+    df['Growth (High)'] = safe_concat([growth_h, new_growth_h])
+    df['Growth Lower (High)'] = safe_concat([growth_lower_h, new_growth_lower_h])
+    df['Growth Upper (High)'] = safe_concat([growth_upper_h, new_growth_upper_h])
+    df['Growth (Low)'] = safe_concat([growth_l, new_growth_l])
+    df['Growth Lower (Low)'] = safe_concat([growth_lower_l, new_growth_lower_l])
+    df['Growth Upper (Low)'] = safe_concat([growth_upper_l, new_growth_upper_l])
 
     return df
 
