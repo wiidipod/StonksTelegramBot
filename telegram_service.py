@@ -74,8 +74,6 @@ async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         message_path = message_utility.write_message_by_dictionary(dictionary=dictionary, ticker=ticker)
 
-        # await send_plot_to_chat_id(plot_path=plot_path, chat_id=update.effective_chat.id, context=context)
-        # await send_message_to_chat_id(message_path=message_path, chat_id=update.effective_chat.id, context=context)
         await send_plot_with_message(plot_path=plot_path, message_path=message_path, chat_id=update.effective_chat.id, context=context)
     except Exception as e:
         await update.message.reply_text(f"An error occurred: {str(e)}")
@@ -145,28 +143,6 @@ async def handle_reversal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await update.message.reply_text(f"An error occurred: {str(e)}")
 
-
-# async def handle_fivex(update: Update, context: ContextTypes.DEFAULT_TYPE):
-#     try:
-#         high, low, close = yfinance_service.get_high_low_close('^GSPC', period='1y')
-#         upperband, lowerband = ta_utility.get_supertrend(high, low, close)
-#
-#         if upperband[-1] is None:
-#             supertrend = lowerband[-1]
-#             message = "Long "
-#             ticker = 'US5L.DE'
-#             price = yfinance_service.get_price(ticker)
-#             stop_loss = ((supertrend / close[-1] - 1.0) * 5.0 + 1.0) * price
-#         else:
-#             supertrend = upperband[-1]
-#             message = "Short "
-#             ticker = 'US5S.DE'
-#             price = yfinance_service.get_price(ticker)
-#             stop_loss = price / ((supertrend / close[-1] - 1.0) * 5.0 + 1.0)
-#
-#         await update.message.reply_text(f"{ticker} {message} {stop_loss:.3f}")
-#     except Exception as e:
-#         await update.message.reply_text(f"An error occurred: {str(e)}")
 
 def extract_option_close_delta_and_ticker(context):
     option_close = float(context.args[0])
@@ -260,14 +236,17 @@ async def send_all(plot_paths, message_paths, context: ContextTypes.DEFAULT_TYPE
     await send_messages_to_all(message_paths, context)
 
 
+async def send_plots_to_first( plot_paths, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = get_subscribers()[0]
+    for plot_path in plot_paths:
+        await send_plot_to_chat_id(plot_path, chat_id, context)
+
+
 async def set_commands(context: ContextTypes.DEFAULT_TYPE):
     commands = [
         BotCommand(command='start', description='Subscribe to daily updates'),
         BotCommand(command='end', description='Unsubscribe from daily updates'),
         BotCommand(command='analyze', description='/analyze AAPL'),
-        # BotCommand(command='stoploss', description='/stoploss option_close [ticker_symbol] [option_delta]'),
-        # BotCommand(command='fivex', description='S&P 500 5x Daily')
-        # BotCommand(command='reversal', description='S&P 500 Down Reversal Signal'),
     ]
     await context.bot.set_my_commands(commands)
 
@@ -297,5 +276,3 @@ def get_handling_application():
 if __name__ == "__main__":
     main_application = get_application()
     asyncio.run(set_commands(main_application))
-    # import os
-    # print("Current working directory:", os.getcwd())

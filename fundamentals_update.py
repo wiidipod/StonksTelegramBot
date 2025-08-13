@@ -9,6 +9,7 @@ import yfinance as yf
 import yfinance_service
 from constants import DictionaryKeys
 import time
+import argparse
 
 
 def chunk_list(lst, chunk_size):
@@ -20,7 +21,6 @@ def has_buy_signal(dictionary):
     return (
         dictionary[DictionaryKeys.too_short] is False
         and dictionary[DictionaryKeys.peg_ratio_too_high] is False
-        # and dictionary[DictionaryKeys.not_52w_low] is False
         and dictionary[DictionaryKeys.growth_too_low] is False
         and dictionary[DictionaryKeys.price_target_too_low] is False
         and dictionary[DictionaryKeys.too_expensive] is False
@@ -33,7 +33,6 @@ def analyze(df, ticker, future=250, full=False):
         DictionaryKeys.too_short: False,
         DictionaryKeys.peg_ratio_too_high: False,
         DictionaryKeys.growth_too_low: False,
-        # DictionaryKeys.not_52w_low: False,
         DictionaryKeys.price_target_too_low: False,
         DictionaryKeys.too_expensive: False,
         DictionaryKeys.not_enough_undervaluation: False,
@@ -62,23 +61,15 @@ def analyze(df, ticker, future=250, full=False):
     window = len(df) * 9 // 10
     df = regression_utility.add_window_growths(df, window=window, future=future)
 
-    # if df['Growth (High)'].iat[-1 - future] > df['Growth Lower (Low)'].iat[-1]:
     if (
             df['Growth Upper (High)'].iat[-1 - future] >= df['Growth Upper (Low)'].iat[-1]
             or df['Growth (High)'].iat[-1 - future] >= df['Growth (Low)'].iat[-1]
             or df['Growth Lower (High)'].iat[-1 - future] >= df['Growth Lower (Low)'].iat[-1]
-            # or df['Growth Upper (High)'].iat[-2*future] >= df['Growth Upper (Low)'].iat[-1 - future]
-            # or df['Growth (High)'].iat[-2*future] >= df['Growth (Low)'].iat[-1 - future]
-            # or df['Growth Lower (High)'].iat[-2*future] >= df['Growth Lower (Low)'].iat[-1 - future]
     ):
         dictionary[DictionaryKeys.growth_too_low] = True
 
     if df[P.H.value].iat[-1 - future] >= 0.9 * df['Growth Lower (Low)'].iat[-1 - future]:
-    # if df[P.H.value].iat[-1 - future] > df['Growth (Low)'].iat[-1 - future]:
         dictionary[DictionaryKeys.too_expensive] = True
-
-    # if df[P.L.value].iat[-1 - future] >= min(df[P.H.value].iloc[-1 - 2 * future:]):
-    #     dictionary[DictionaryKeys.not_52w_low] = True
 
     if not full and not has_buy_signal(dictionary):
         return dictionary, None
@@ -112,19 +103,20 @@ def analyze(df, ticker, future=250, full=False):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Send plots to Telegram subscribers.')
+    parser.add_argument('--all', action='store_true', help='Send plots to all subscribers')
+    args = parser.parse_args()
+
     tickers = ticker_service.get_all_tickers()
-    # tickers = ['CI']
 
     too_short = 0
     peg_ratio_too_high = 0
     price_target_too_low = 0
     growth_too_low = 0
     too_expensive = 0
-    # not_52w_low = 0
     undervalued = 0
 
     plot_paths = []
-    message_paths = []
 
     chunk_size_main = 100
     for i, ticker_chunk in enumerate(chunk_list(tickers, chunk_size_main)):
@@ -161,8 +153,6 @@ if __name__ == '__main__':
                 growth_too_low += 1
             if dictionary_main[DictionaryKeys.too_expensive]:
                 too_expensive += 1
-            # if dictionary_main[DictionaryKeys.not_52w_low]:
-            #     not_52w_low += 1
 
             if plot_path_main is None:
                 continue
@@ -179,4 +169,7 @@ if __name__ == '__main__':
     print(f'Undervalued: {undervalued}')
 
     application = telegram_service.get_application()
-    asyncio.run(telegram_service.send_all(plot_paths, message_paths, application))
+    if args.all:
+        asyncio.run(telegram_service.send_plots_to_all(plot_paths, application))
+    else:
+        asyncio.run(telegram_service.send_plots_to_first(plot_paths, application))
