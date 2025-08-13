@@ -40,7 +40,7 @@ def analyze(df, ticker, future=250, full=False):
 
     is_stock = not ticker_service.is_index(ticker) and not ticker_service.is_crypto(ticker) and not ticker_service.is_future(ticker)
 
-    if len(df) < 2500:
+    if len(df) <= 2500:
         dictionary[DictionaryKeys.too_short] = True
 
     if is_stock:
@@ -58,7 +58,8 @@ def analyze(df, ticker, future=250, full=False):
         price_target = None
         pe_ratio = None
 
-    window = len(df) * 9 // 10
+    # window = len(df) * 9 // 10
+    window = len(df) - 1
     df = regression_utility.add_window_growths(df, window=window, future=future)
 
     if (
@@ -75,19 +76,22 @@ def analyze(df, ticker, future=250, full=False):
         return dictionary, None
 
     name = yfinance_service.get_name(ticker=ticker)
+    ev_to_ebitda = yfinance_service.get_ev_to_ebitda(ticker)
 
     if price_target is not None or peg_ratio is not None or pe_ratio is not None:
         name += ' ('
         if price_target is not None:
-            name += f'PT: {price_target} / '
+            name += f'PT: {price_target} - '
         if peg_ratio is not None:
-            name += f'PEG: {peg_ratio} / '
+            name += f'PEG: {peg_ratio} - '
         if pe_ratio is not None:
-            name += f'PE: {pe_ratio} / '
+            name += f'P/E: {pe_ratio} - '
+        if ev_to_ebitda is not None:
+            name += f'EV/EBITDA: {ev_to_ebitda} - '
         name = name[:-3] + ')'
 
     plot_path = plot_utility.plot_bands_by_labels(
-        df=df.iloc[window:],
+        df=df,  # .iloc[window:],
         ticker=ticker,
         title=name,
         labels=[

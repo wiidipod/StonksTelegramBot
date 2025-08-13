@@ -174,12 +174,15 @@ async def end(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=chat_id, text=message)
 
 
-async def send_plot_to_chat_id(plot_path, chat_id, context: ContextTypes.DEFAULT_TYPE):
-    try:
-        with open(plot_path, 'rb') as file:
-            await context.bot.send_photo(chat_id=chat_id, photo=file)
-    except Exception as e:
-        logging.error(f"Failed to send plot to {chat_id}: {e}")
+async def send_plots_to_chat_id(plot_paths, chat_id, context: ContextTypes.DEFAULT_TYPE):
+    media_groups = [plot_paths[i:i + 10] for i in range(0, len(plot_paths), 10)]
+    for group in media_groups:
+        media = [InputMediaPhoto(open(image_path, 'rb')) for image_path in group]
+        try:
+            await context.bot.send_media_group(chat_id=chat_id, media=media)
+        except Exception as e:
+            logging.error(f"Failed to send media group to {chat_id}: {e}")
+            continue
 
 
 async def send_plot_with_message(plot_path, message_path, chat_id, context: ContextTypes.DEFAULT_TYPE):
@@ -236,10 +239,9 @@ async def send_all(plot_paths, message_paths, context: ContextTypes.DEFAULT_TYPE
     await send_messages_to_all(message_paths, context)
 
 
-async def send_plots_to_first( plot_paths, context: ContextTypes.DEFAULT_TYPE):
+async def send_plots_to_first(plot_paths, context: ContextTypes.DEFAULT_TYPE):
     chat_id = get_subscribers()[0]
-    for plot_path in plot_paths:
-        await send_plot_to_chat_id(plot_path, chat_id, context)
+    await send_plots_to_chat_id(plot_paths, chat_id, context)
 
 
 async def set_commands(context: ContextTypes.DEFAULT_TYPE):
