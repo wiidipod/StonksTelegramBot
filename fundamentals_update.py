@@ -63,37 +63,51 @@ def analyze(df, ticker, future=250, full=False):
     df = regression_utility.add_window_growths(df, window=window, future=future)
 
     if (
-            df['Growth Upper (High)'].iat[-1 - future] >= df['Growth Upper (Low)'].iat[-1]
-            or df['Growth (High)'].iat[-1 - future] >= df['Growth (Low)'].iat[-1]
-            or df['Growth Lower (High)'].iat[-1 - future] >= df['Growth Lower (Low)'].iat[-1]
+            # df['Growth Upper (High)'].iat[-1 - future] >= 0.9 * df['Growth Upper (Low)'].iat[-1]
+            # or df['Growth (High)'].iat[-1 - future] >= 0.9 * df['Growth (Low)'].iat[-1]
+            # or df['Growth Lower (High)'].iat[-1 - future] >= 0.9 * df['Growth Lower (Low)'].iat[-1]
+            # or df['Growth Upper (High)'].iat[-1 - future] >= df['Growth (High)'].iat[-1]
+            # or df['Growth Upper (Low)'].iat[-1 - future] >= df['Growth (Low)'].iat[-1]
+            # or df['Growth (High)'].iat[-1 - future] >= df['Growth Lower (High)'].iat[-1]
+            # or df['Growth (Low)'].iat[-1 - future] >= df['Growth Lower (Low)'].iat[-1]
+            df['Growth Upper (High)'].iat[-1 - future] >= df['Growth (Low)'].iat[-1]
+            or df['Growth (High)'].iat[-1 - future] >= df['Growth Lower (Low)'].iat[-1]
+            # df['Growth Upper (High)'].iat[-1 - future] >=df['Growth Lower (Low)'].iat[-1]
     ):
         dictionary[DictionaryKeys.growth_too_low] = True
 
-    if df[P.H.value].iat[-1 - future] >= 0.9 * df['Growth Lower (Low)'].iat[-1 - future]:
+    if df[P.H.value].iat[-1 - future] >= 0.9 * df['Growth Lower (Low)'].iat[-1]:
         dictionary[DictionaryKeys.too_expensive] = True
+
+    if price_target is None:
+        price_target = df['Growth Lower (Low)'].iat[-1]
+    else:
+        price_target = min(price_target, df['Growth Lower (Low)'].iat[-1])
 
     if not full and not has_buy_signal(dictionary):
         return dictionary, None
 
     name = yfinance_service.get_name(ticker=ticker)
     ev_to_ebitda = yfinance_service.get_ev_to_ebitda(ticker)
+    subtitle = None
 
-    if price_target is not None or peg_ratio is not None or pe_ratio is not None:
-        name += ' ('
+    if price_target is not None or peg_ratio is not None or pe_ratio is not None or ev_to_ebitda is not None:
+        subtitle = ''
         if price_target is not None:
-            name += f'PT: {price_target} - '
+            subtitle += f'PT: {price_target} - '
         if peg_ratio is not None:
-            name += f'PEG: {peg_ratio} - '
+            subtitle += f'PEG: {peg_ratio} - '
         if pe_ratio is not None:
-            name += f'P/E: {pe_ratio} - '
+            subtitle += f'P/E: {pe_ratio} - '
         if ev_to_ebitda is not None:
-            name += f'EV/EBITDA: {ev_to_ebitda} - '
-        name = name[:-3] + ')'
+            subtitle += f'EV/EBITDA: {ev_to_ebitda} - '
+        subtitle = subtitle[:-3]
 
     plot_path = plot_utility.plot_bands_by_labels(
         df=df,  # .iloc[window:],
         ticker=ticker,
         title=name,
+        subtitle=subtitle,
         labels=[
             'Growth',
             'Growth Lower',
