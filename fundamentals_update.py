@@ -66,13 +66,17 @@ def analyze(df, ticker, future=250, full=False):
             # df['Growth Upper (High)'].iat[-1 - future] >= 0.9 * df['Growth Upper (Low)'].iat[-1]
             # or df['Growth (High)'].iat[-1 - future] >= 0.9 * df['Growth (Low)'].iat[-1]
             # or df['Growth Lower (High)'].iat[-1 - future] >= 0.9 * df['Growth Lower (Low)'].iat[-1]
+            # or df['Growth Upper (Low)'].iat[-1 - future] >= df['Growth (High)'].iat[-1]
+            # or df['Growth (Low)'].iat[-1 - future] >= df['Growth Lower (High)'].iat[-1]
             # or df['Growth Upper (High)'].iat[-1 - future] >= df['Growth (High)'].iat[-1]
             # or df['Growth Upper (Low)'].iat[-1 - future] >= df['Growth (Low)'].iat[-1]
             # or df['Growth (High)'].iat[-1 - future] >= df['Growth Lower (High)'].iat[-1]
             # or df['Growth (Low)'].iat[-1 - future] >= df['Growth Lower (Low)'].iat[-1]
-            df['Growth Upper (High)'].iat[-1 - future] >= df['Growth (Low)'].iat[-1]
-            or df['Growth (High)'].iat[-1 - future] >= df['Growth Lower (Low)'].iat[-1]
+            # df['Growth Upper (High)'].iat[-1 - future] >= df['Growth (Low)'].iat[-1]
+            # or df['Growth (High)'].iat[-1 - future] >= df['Growth Lower (Low)'].iat[-1]
             # df['Growth Upper (High)'].iat[-1 - future] >=df['Growth Lower (Low)'].iat[-1]
+            df['Growth Upper (Low)'].iat[-1 - future] >= df['Growth (High)'].iat[-1]
+            or df['Growth (Low)'].iat[-1 - future] >= df['Growth Lower (High)'].iat[-1]
     ):
         dictionary[DictionaryKeys.growth_too_low] = True
 
@@ -113,7 +117,7 @@ def analyze(df, ticker, future=250, full=False):
             'Growth Lower',
             'Growth Upper',
         ],
-        yscale='linear',
+        yscale='log',
         today=-1-future,
     )
 
