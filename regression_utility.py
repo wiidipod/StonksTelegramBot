@@ -7,15 +7,6 @@ from yfinance_service import P
 
 
 def get_fit(closes):
-    # try:
-    #     fit, residuals, rank, singular_values, rcond = np.polyfit(range(len(closes)), np.log(closes), 1, full=True)
-    # except:
-    #     return 0, 0, 0
-    # factor = np.exp(fit[1])
-    # base = np.exp(fit[0])
-    # error_factor = np.exp((residuals[0] / len(closes)) ** 0.5)
-    # return factor, base, error_factor
-
     X = np.vstack([np.arange(len(closes)), np.ones(len(closes))]).T
     c = np.hstack([np.zeros(2), np.ones(len(closes))])
     A_ub = hstack([-X, -eye(len(closes))])
@@ -271,7 +262,5 @@ def get_growths(closes, future=0):
     upper_growth = [g * error_factor for g in growth]
     double_lower_growth = [g / error_factor ** 2 for g in growth]
     double_upper_growth = [g * error_factor ** 2 for g in growth]
-    # double_lower_growth = [min(c / g for c, g in zip(closes, growth)) * g for g in growth]
-    # double_lower_growth = [max(c / g for c, g in zip(closes, growth)) * g for g in growth]
 
     return growth, lower_growth, upper_growth, double_lower_growth, double_upper_growth

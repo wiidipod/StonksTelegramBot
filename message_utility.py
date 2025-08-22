@@ -1,5 +1,7 @@
+import math
+
 import yfinance_service
-from plot_utility import output_directory
+from constants import output_directory
 from yfinance_service import P
 from constants import DictionaryKeys
 
@@ -352,3 +354,49 @@ def add_rsi_message(message, rsi_emoji, rsi, rsi_sma):
     message += f"RSI:     {rsi[-1]:16.8f} \n "
     message += f"RSI SMA: {rsi_sma[-1]:16.8f} ``` "
     return message
+
+
+def round_down(value):
+    if value == 0.0:
+        return "0.0"
+
+    sign = "-" if value < 0 else ""
+    value = abs(value)
+    order = math.floor(math.log10(value))
+    factor = 10 ** (order - 1)
+    rounded = math.floor(value / factor) * factor
+    if order >= 0:
+        return f"{sign}{int(rounded)}"
+    else:
+        precision = abs(order - 1)
+        return f"{sign}{rounded:.{precision}f}"
+
+
+def round_up(value):
+    if value == 0.0:
+        return "0.0"
+
+    sign = "-" if value < 0 else ""
+    value = abs(value)
+    order = math.floor(math.log10(value))
+    factor = 10 ** (order - 1)
+    rounded = math.ceil(value / factor) * factor
+    if order >= 0:
+        return f"{sign}{int(rounded)}"
+    else:
+        precision = abs(order - 1)
+        return f"{sign}{rounded:.{precision}f}"
+
+
+if __name__ == "__main__":
+    print(round_down(0.0))
+    print(round_down(12345))
+    print(round_down(543))
+    print(round_down(0.0098765))
+    print(round_down(-10.12345))
+
+    print(round_up(0.0))
+    print(round_up(12345))
+    print(round_up(543))
+    print(round_up(0.0098765))
+    print(round_up(-10.12345))

@@ -1,4 +1,3 @@
-import enum
 from enum import Enum
 
 import pandas as pd
@@ -227,16 +226,4 @@ def extract_ticker_df(df, ticker):
 
 
 if __name__ == '__main__':
-    # print(get_close_as_series('AAPL'))
-    # print(get_price('AAPL'))
-    # print(convert([1.0, 2.0]))
-    # print(get_price_in_currency('AAPL'))
-    # print(yf.Ticker('AAPL').financials)
-    # print(yf.Ticker('AAPL').cash_flow)
-    # print(yf.Ticker('AAPL').balance_sheet)
-    # print(yf.Ticker('AAPL').capital_gains)
-    # print(yf.Ticker('AAPL').info)
-    # print(yf.Ticker('AAPL').income_stmt)
-    # print(yf.Ticker('AAPL').revenue_estimate)
-    # print(yf.Ticker('ADI').analyst_price_targets)
     print(yf.Ticker('AAPL').info.get("trailingPegRatio"))

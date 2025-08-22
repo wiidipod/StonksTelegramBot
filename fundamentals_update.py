@@ -10,6 +10,7 @@ import yfinance_service
 from constants import DictionaryKeys
 import time
 import argparse
+from message_utility import round_down, round_up
 
 
 def chunk_list(lst, chunk_size):
@@ -49,7 +50,8 @@ def analyze(df, ticker, future=250, full=False):
             dictionary[DictionaryKeys.peg_ratio_too_high] = True
 
         price_target = yfinance_service.get_price_target(ticker)
-        if price_target is None or 0.9 * price_target <= df[P.H.value].iat[-1]:
+        # if price_target is None or 0.9 * price_target <= df[P.H.value].iat[-1]:
+        if price_target is None or price_target <= df[P.H.value].iat[-1]:
             dictionary[DictionaryKeys.price_target_too_low] = True
 
         pe_ratio = yfinance_service.get_pe_ratio(ticker)
@@ -58,29 +60,18 @@ def analyze(df, ticker, future=250, full=False):
         price_target = None
         pe_ratio = None
 
-    # window = len(df) * 9 // 10
     window = len(df) - 1
     df = regression_utility.add_window_growths(df, window=window, future=future)
 
     if (
-            # df['Growth Upper (High)'].iat[-1 - future] >= 0.9 * df['Growth Upper (Low)'].iat[-1]
-            # or df['Growth (High)'].iat[-1 - future] >= 0.9 * df['Growth (Low)'].iat[-1]
-            # or df['Growth Lower (High)'].iat[-1 - future] >= 0.9 * df['Growth Lower (Low)'].iat[-1]
-            # or df['Growth Upper (Low)'].iat[-1 - future] >= df['Growth (High)'].iat[-1]
-            # or df['Growth (Low)'].iat[-1 - future] >= df['Growth Lower (High)'].iat[-1]
-            # or df['Growth Upper (High)'].iat[-1 - future] >= df['Growth (High)'].iat[-1]
-            # or df['Growth Upper (Low)'].iat[-1 - future] >= df['Growth (Low)'].iat[-1]
-            # or df['Growth (High)'].iat[-1 - future] >= df['Growth Lower (High)'].iat[-1]
-            # or df['Growth (Low)'].iat[-1 - future] >= df['Growth Lower (Low)'].iat[-1]
-            # df['Growth Upper (High)'].iat[-1 - future] >= df['Growth (Low)'].iat[-1]
-            # or df['Growth (High)'].iat[-1 - future] >= df['Growth Lower (Low)'].iat[-1]
-            # df['Growth Upper (High)'].iat[-1 - future] >=df['Growth Lower (Low)'].iat[-1]
-            df['Growth Upper (Low)'].iat[-1 - future] >= df['Growth (High)'].iat[-1]
-            or df['Growth (Low)'].iat[-1 - future] >= df['Growth Lower (High)'].iat[-1]
+        df['Growth Upper (Low)'].iat[-1 - future] >= df['Growth (High)'].iat[-1]
+        or df['Growth (Low)'].iat[-1 - future] >= df['Growth Lower (High)'].iat[-1]
     ):
         dictionary[DictionaryKeys.growth_too_low] = True
 
-    if df[P.H.value].iat[-1 - future] >= 0.9 * df['Growth Lower (Low)'].iat[-1]:
+    # if df[P.H.value].iat[-1 - future] >= 0.9 * df['Growth Lower (Low)'].iat[-1]:
+    if df[P.H.value].iat[-1 - future] >= df['Growth Lower (Low)'].iat[-1]:
+
         dictionary[DictionaryKeys.too_expensive] = True
 
     if price_target is None:
@@ -98,17 +89,18 @@ def analyze(df, ticker, future=250, full=False):
     if price_target is not None or peg_ratio is not None or pe_ratio is not None or ev_to_ebitda is not None:
         subtitle = ''
         if price_target is not None:
-            subtitle += f'PT: {price_target} - '
+            relative_offset = ((df[P.H.value].iat[-1 - future] / price_target) - 1.0) * 100.0
+            subtitle += f'PT: {round_down(price_target)} ({round_down(relative_offset)}%) - '
         if peg_ratio is not None:
-            subtitle += f'PEG: {peg_ratio} - '
+            subtitle += f'PEG: {round_up(peg_ratio)} - '
         if pe_ratio is not None:
-            subtitle += f'P/E: {pe_ratio} - '
+            subtitle += f'P/E: {round_up(pe_ratio)} - '
         if ev_to_ebitda is not None:
-            subtitle += f'EV/EBITDA: {ev_to_ebitda} - '
+            subtitle += f'EV/EBITDA: {round_up(ev_to_ebitda)} - '
         subtitle = subtitle[:-3]
 
     plot_path = plot_utility.plot_bands_by_labels(
-        df=df,  # .iloc[window:],
+        df=df,
         ticker=ticker,
         title=name,
         subtitle=subtitle,
@@ -117,7 +109,7 @@ def analyze(df, ticker, future=250, full=False):
             'Growth Lower',
             'Growth Upper',
         ],
-        yscale='log',
+        yscale='linear',
         today=-1-future,
     )
 

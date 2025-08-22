@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from telegram import Update, InputMediaPhoto, BotCommand
-from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, ConversationHandler, MessageHandler, filters
+from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
 import yfinance as yf
 
 import fundamentals_update

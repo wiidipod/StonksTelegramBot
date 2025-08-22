@@ -1,5 +1,3 @@
-from cProfile import label
-
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -10,8 +8,9 @@ import mplfinance as mpf
 import regression_utility
 from yfinance_service import P
 import yfinance_service
+from message_utility import round_down, round_up
+from constants import output_directory
 
-output_directory = '/home/moritz/PycharmProjects/StonksTelegramBot/output/'
 
 def plot_with_constants_by_df(
         ticker,
@@ -381,8 +380,8 @@ def plot_bands_by_labels(df, ticker, title, labels, subtitle=None, fname=None, y
     subplot.set_xlabel('Date')
     subplot.grid(True)
     for label in labels:
-        subplot.fill_between(df.index, df[f'{label} (High)'], df[f'{label} (Low)'], label=f'{label} ({df[f"{label} (High)"].iat[today]:.2f} / {df[f"{label} (Low)"].iat[today]:.2f})')
-    subplot.fill_between(df.index, df[P.H.value], df[P.L.value], label=f'Price ({df[P.H.value].iat[today]:.2f} / {df[P.L.value].iat[today]:.2f})')
+        subplot.fill_between(df.index, df[f'{label} (High)'], df[f'{label} (Low)'], label=f'{label} ({round_up(df[f"{label} (High)"].iat[today])} / {round_down(df[f"{label} (Low)"].iat[today])})')
+    subplot.fill_between(df.index, df[P.H.value], df[P.L.value], label=f'Price ({round_up(df[P.H.value].iat[today])} / {round_down(df[P.L.value].iat[today])})')
     subplot.legend()
     fig.tight_layout()
     fig.savefig(fname)
