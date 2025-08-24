@@ -362,9 +362,9 @@ def round_down(value):
     sign = "-" if value < 0 else ""
     value = abs(value)
     order = math.floor(math.log10(value))
-    factor = 10 ** (order - 1)
+    factor = 10 ** (order - 2)
     rounded = math.floor(value / factor) * factor
-    precision = max(0, -order + 1)
+    precision = max(0, -order + 2)
     return f"{sign}{rounded:.{precision}f}"
 
 def round_up(value):
@@ -373,9 +373,9 @@ def round_up(value):
     sign = "-" if value < 0 else ""
     value = abs(value)
     order = math.floor(math.log10(value))
-    factor = 10 ** (order - 1)
+    factor = 10 ** (order - 2)
     rounded = math.ceil(value / factor) * factor
-    precision = max(0, -order + 1)
+    precision = max(0, -order + 2)
     return f"{sign}{rounded:.{precision}f}"
 
 
@@ -386,6 +386,7 @@ if __name__ == "__main__":
     print(round_down(0.0098765))
     print(round_down(-10.12345))
     print(round_down(1.23))
+    print(round_down(0.01012345))
 
     print(round_up(0.0))
     print(round_up(12345))
@@ -393,3 +394,4 @@ if __name__ == "__main__":
     print(round_up(0.0098765))
     print(round_up(-10.12345))
     print(round_up(1.23))
+    print(round_up(0.01012345))
