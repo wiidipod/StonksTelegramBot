@@ -76,8 +76,10 @@ async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         await send_plot_with_message(plot_path=plot_path, message_path=message_path, chat_id=update.effective_chat.id, context=context)
     except Exception as e:
-        await update.message.reply_text(f"An error occurred: {str(e)}")
-
+        try:
+            await update.message.reply_text(f"An error occurred: {str(e)}")
+        except Exception as send_error:
+            logging.error(f"Failed to send error message to chat: {send_error}. Original error: {e}")
 
 async def handle_stop_loss(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
