@@ -70,8 +70,7 @@ def analyze(df, ticker, future=250, full=False):
         dictionary[DictionaryKeys.growth_too_low] = True
 
     # if df[P.H.value].iat[-1 - future] >= 0.9 * df['Growth Lower (Low)'].iat[-1]:
-    if df[P.H.value].iat[-1 - future] >= df['Growth Lower (Low)'].iat[-1]:
-
+    if df[P.H.value].iat[-1 - future] >= df['Growth Lower (Low)'].iat[-1 - future]:
         dictionary[DictionaryKeys.too_expensive] = True
 
     if price_target is None:
