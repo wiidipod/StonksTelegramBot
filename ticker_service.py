@@ -341,6 +341,7 @@ def get_hype_tickers():
         'FTNT',  # Fortinet, Inc.
         'CBK.DE',  # Commerzbank AG
         'NOK',  # Nokia Corporation
+        'MRVL',  # Marvell Technology, Inc.
     ]
 
     
