@@ -25,7 +25,6 @@ def has_buy_signal(dictionary):
         and dictionary[DictionaryKeys.growth_too_low] is False
         and dictionary[DictionaryKeys.price_target_too_low] is False
         and dictionary[DictionaryKeys.too_expensive] is False
-        and dictionary[DictionaryKeys.not_enough_undervaluation] is False
     )
 
 
@@ -36,7 +35,6 @@ def analyze(df, ticker, future=250, full=False):
         DictionaryKeys.growth_too_low: False,
         DictionaryKeys.price_target_too_low: False,
         DictionaryKeys.too_expensive: False,
-        DictionaryKeys.not_enough_undervaluation: False,
     }
 
     is_stock = not ticker_service.is_index(ticker) and not ticker_service.is_crypto(ticker) and not ticker_service.is_future(ticker)
@@ -69,7 +67,6 @@ def analyze(df, ticker, future=250, full=False):
     ):
         dictionary[DictionaryKeys.growth_too_low] = True
 
-    # if df[P.H.value].iat[-1 - future] >= 0.9 * df['Growth Lower (Low)'].iat[-1]:
     if df[P.H.value].iat[-1 - future] >= df['Growth Lower (Low)'].iat[-1 - future]:
         dictionary[DictionaryKeys.too_expensive] = True
 

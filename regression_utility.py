@@ -45,18 +45,18 @@ def add_window_growths(df, window=1250, future=0):
 
     slope_h = 0.0
     intercept_h = 0.0
-    rmsa_h = 0.0
+    rmse_h = 0.0
     slope_l = 0.0
     intercept_l = 0.0
-    rmsa_l = 0.0
+    rmse_l = 0.0
 
     for start_index in range(len(df) - window):
         end_index = start_index + window
         date = df.index[end_index]
 
         sub_df = df.iloc[start_index:end_index]
-        g_h, g_l_h, g_u_h, slope_h, intercept_h, rmsa_h = get_growth_and_final_coefficients(sub_df[P.H.value])
-        g_l, g_l_l, g_u_l, slope_l, intercept_l, rmsa_l = get_growth_and_final_coefficients(sub_df[P.L.value])
+        g_h, g_l_h, g_u_h, slope_h, intercept_h, rmse_h = get_growth_and_final_coefficients(sub_df[P.H.value])
+        g_l, g_l_l, g_u_l, slope_l, intercept_l, rmse_l = get_growth_and_final_coefficients(sub_df[P.L.value])
 
         growth_h[date] = g_h
         growth_lower_h[date] = g_l_h
@@ -66,7 +66,8 @@ def add_window_growths(df, window=1250, future=0):
         growth_upper_l[date] = g_u_l
 
     last_date = df.index[-1]
-    future_dates = [get_date(last_date, i + 1) for i in range(future)]
+    future_dates = pd.bdate_range(start=last_date + pd.offsets.BDay(), periods=future)
+    # future_dates = [get_date(last_date, i + 1) for i in range(future)]
 
     future_growth_h = pd.Series(index=future_dates)
     future_growth_lower_h = pd.Series(index=future_dates)
@@ -79,11 +80,11 @@ def add_window_growths(df, window=1250, future=0):
         fit_h = slope_h * n + intercept_h
         fit_l = slope_l * n + intercept_l
         future_growth_h[future_dates[i]] = np.exp(fit_h)
-        future_growth_lower_h[future_dates[i]] = np.exp(fit_h - rmsa_h)
-        future_growth_upper_h[future_dates[i]] = np.exp(fit_h + rmsa_h)
+        future_growth_lower_h[future_dates[i]] = np.exp(fit_h - rmse_h)
+        future_growth_upper_h[future_dates[i]] = np.exp(fit_h + rmse_h)
         future_growth_l[future_dates[i]] = np.exp(fit_l)
-        future_growth_lower_l[future_dates[i]] = np.exp(fit_l - rmsa_l)
-        future_growth_upper_l[future_dates[i]] = np.exp(fit_l + rmsa_l)
+        future_growth_lower_l[future_dates[i]] = np.exp(fit_l - rmse_l)
+        future_growth_upper_l[future_dates[i]] = np.exp(fit_l + rmse_l)
 
     df = df.reindex(df.index.union(future_dates))
 
@@ -102,11 +103,12 @@ def safe_concat(series_list):
 
 
 def add_growths(df, future=0):
-    growth_h, growth_lower_h, growth_upper_h, slope_h, intercept_h, rmsa_h = get_growths_and_final_coefficients(df[P.H.value])
-    growth_l, growth_lower_l, growth_upper_l, slope_l, intercept_l, rmsa_l = get_growths_and_final_coefficients(df[P.L.value])
+    growth_h, growth_lower_h, growth_upper_h, slope_h, intercept_h, rmse_h = get_growths_and_final_coefficients(df[P.H.value])
+    growth_l, growth_lower_l, growth_upper_l, slope_l, intercept_l, rmse_l = get_growths_and_final_coefficients(df[P.L.value])
 
     last_date = df.index[-1]
-    future_dates = [get_date(last_date, i + 1) for i in range(future)]
+    future_dates = pd.bdate_range(start=last_date + pd.offsets.BDay(), periods=future)
+    # future_dates = [get_date(last_date, i + 1) for i in range(future)]
 
     new_growth_h = []
     new_growth_lower_h = []
@@ -119,11 +121,11 @@ def add_growths(df, future=0):
         fit_h = slope_h * i + intercept_h
         fit_l = slope_l * i + intercept_l
         new_growth_h.append(np.exp(fit_h))
-        new_growth_lower_h.append(np.exp(fit_h - rmsa_h))
-        new_growth_upper_h.append(np.exp(fit_h + rmsa_h))
+        new_growth_lower_h.append(np.exp(fit_h - rmse_h))
+        new_growth_upper_h.append(np.exp(fit_h + rmse_h))
         new_growth_l.append(np.exp(fit_l))
-        new_growth_lower_l.append(np.exp(fit_l - rmsa_l))
-        new_growth_upper_l.append(np.exp(fit_l + rmsa_l))
+        new_growth_lower_l.append(np.exp(fit_l - rmse_l))
+        new_growth_upper_l.append(np.exp(fit_l + rmse_l))
 
     new_growth_h = pd.Series(new_growth_h, index=future_dates)
     new_growth_lower_h = pd.Series(new_growth_lower_h, index=future_dates)
@@ -161,12 +163,12 @@ def get_growth_and_final_coefficients(series):
         intercept = (sum_y / n) - slope * (sum_x / n)
 
     fit = slope * np.arange(n) + intercept
-    rmsa = np.sqrt(np.sum((series_log - fit) ** 2.0) / n)
+    rmse = np.sqrt(np.sum((series_log - fit) ** 2.0) / n)
     growth = np.exp(fit[-1])
-    growth_lower = np.exp(fit[-1] - rmsa)
-    growth_upper = np.exp(fit[-1] + rmsa)
+    growth_lower = np.exp(fit[-1] - rmse)
+    growth_upper = np.exp(fit[-1] + rmse)
 
-    return growth, growth_lower, growth_upper, slope, intercept, rmsa
+    return growth, growth_lower, growth_upper, slope, intercept, rmse
 
 
 def get_growths_and_final_coefficients(series):
@@ -179,7 +181,7 @@ def get_growths_and_final_coefficients(series):
     sum_xy = 0.0
     slope = 0.0
     intercept = 0.0
-    rmsa = 0.0
+    rmse = 0.0
 
     for i, (date, y) in enumerate(series_log.items()):
         n += 1.0
@@ -197,12 +199,12 @@ def get_growths_and_final_coefficients(series):
             intercept = (sum_y / n) - slope * (sum_x / n)
 
         fit = slope * i + intercept
-        rmsa = ((rmsa ** 2.0 * i + (y - fit) ** 2.0) / (i + 1.0)) ** 0.5
+        rmse = ((rmse ** 2.0 * i + (y - fit) ** 2.0) / (i + 1.0)) ** 0.5
         growth[date] = np.exp(fit)
-        growth_lower[date] = np.exp(fit - rmsa)
-        growth_upper[date] = np.exp(fit + rmsa)
+        growth_lower[date] = np.exp(fit - rmse)
+        growth_upper[date] = np.exp(fit + rmse)
 
-    return growth, growth_lower, growth_upper, slope, intercept, rmsa
+    return growth, growth_lower, growth_upper, slope, intercept, rmse
 
 
 def get_daily_growths(prices):
@@ -213,7 +215,7 @@ def get_daily_growths(prices):
     double_upper_growth = []
     double_lower_growth = []
     mae = 0.0
-    rmsa = 0.0
+    rmse = 0.0
 
     n = 0
     sum_y = 0.0
@@ -239,14 +241,14 @@ def get_daily_growths(prices):
             slope = 0.0
             intercept = y
         mae = (mae * i + abs(y - (slope * i + intercept))) / (i + 1.0)
-        rmsa = ((rmsa**2 * i + (y - (slope * i + intercept))**2) / (i + 1.0))**0.5
+        rmse = ((rmse**2 * i + (y - (slope * i + intercept))**2) / (i + 1.0))**0.5
         growth.append(slope * i + intercept)
-        lower_growth.append(slope * i + intercept - rmsa)
-        upper_growth.append(slope * i + intercept + 1.0 * rmsa)
-        double_lower_growth.append(slope * i + intercept - 1.0 / 3.0 * rmsa)
-        double_upper_growth.append(slope * i + intercept + 1.0 / 3.0 * rmsa)
+        lower_growth.append(slope * i + intercept - rmse)
+        upper_growth.append(slope * i + intercept + 1.0 * rmse)
+        double_lower_growth.append(slope * i + intercept - 1.0 / 3.0 * rmse)
+        double_upper_growth.append(slope * i + intercept + 1.0 / 3.0 * rmse)
 
-    print(f"MAE: {mae}, MSA: {rmsa}")
+    print(f"MAE: {mae}, RMSE: {rmse}")
     return np.exp(growth), np.exp(lower_growth), np.exp(upper_growth), np.exp(double_lower_growth), np.exp(double_upper_growth), np.exp([slope * i + intercept for i in range(len(prices))])
 
 
