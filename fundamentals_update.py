@@ -48,8 +48,7 @@ def analyze(df, ticker, future=250, full=False):
             dictionary[DictionaryKeys.peg_ratio_too_high] = True
 
         price_target = yfinance_service.get_price_target(ticker)
-        # if price_target is None or 0.9 * price_target <= df[P.H.value].iat[-1]:
-        if price_target is None or price_target <= df[P.H.value].iat[-1]:
+        if price_target is None:
             dictionary[DictionaryKeys.price_target_too_low] = True
 
         pe_ratio = yfinance_service.get_pe_ratio(ticker)
@@ -62,18 +61,25 @@ def analyze(df, ticker, future=250, full=False):
     df = regression_utility.add_window_growths(df, window=window, future=future)
 
     if (
-        df['Growth Upper (Low)'].iat[-1 - future] >= df['Growth (High)'].iat[-1]
-        or df['Growth (Low)'].iat[-1 - future] >= df['Growth Lower (High)'].iat[-1]
+        df['Growth Upper (High)'].iat[-1 - future] >= df['Growth Upper (Low)'].iat[-1]
+        or df['Growth (High)'].iat[-1 - future] >= df['Growth (Low)'].iat[-1]
+        or df['Growth Lower (High)'].iat[-1 - future] >= df['Growth Lower (Low)'].iat[-1]
     ):
         dictionary[DictionaryKeys.growth_too_low] = True
 
-    if df[P.H.value].iat[-1 - future] >= df['Growth Lower (Low)'].iat[-1 - future]:
+    if (
+        df[P.H.value].iat[-1 - future] >= df['Growth Lower (Low)'].iat[-1 - future]
+        or df[P.L.value].iat[-1 - future] >= min(df[P.H.value].iloc[-1 - future - len(df) // 10:-1 - future])
+    ):
         dictionary[DictionaryKeys.too_expensive] = True
 
     if price_target is None:
         price_target = df['Growth Lower (Low)'].iat[-1]
     else:
         price_target = min(price_target, df['Growth Lower (Low)'].iat[-1])
+
+    if 0.9 * price_target <= df[P.H.value].iat[-1]:
+        dictionary[DictionaryKeys.price_target_too_low] = True
 
     if not full and not has_buy_signal(dictionary):
         return dictionary, None

@@ -65,9 +65,18 @@ def add_window_growths(df, window=1250, future=0):
         growth_lower_l[date] = g_l_l
         growth_upper_l[date] = g_u_l
 
+        if start_index == 0:
+            for index in range(window):
+                date = df.index[index]
+                growth_h[date] = np.exp(slope_h * index + intercept_h)
+                growth_lower_h[date] = np.exp(slope_h * index + intercept_h - rmse_h)
+                growth_upper_h[date] = np.exp(slope_h * index + intercept_h + rmse_h)
+                growth_l[date] = np.exp(slope_l * index + intercept_l)
+                growth_lower_l[date] = np.exp(slope_l * index + intercept_l - rmse_l)
+                growth_upper_l[date] = np.exp(slope_l * index + intercept_l + rmse_l)
+
     last_date = df.index[-1]
     future_dates = pd.bdate_range(start=last_date + pd.offsets.BDay(), periods=future)
-    # future_dates = [get_date(last_date, i + 1) for i in range(future)]
 
     future_growth_h = pd.Series(index=future_dates)
     future_growth_lower_h = pd.Series(index=future_dates)
