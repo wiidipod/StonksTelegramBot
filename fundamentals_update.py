@@ -11,6 +11,25 @@ from constants import DictionaryKeys
 import time
 import argparse
 from message_utility import round_down, round_up
+import message_utility
+
+
+def get_plot_and_message_paths_for(ticker):
+    df = yf.download(
+        [ticker],
+        period='10y',
+        interval='1d',
+        group_by='ticker',
+    )
+    ticker_df = yfinance_service.extract_ticker_df(df=df, ticker=ticker)
+
+    future = len(ticker_df) // 10
+
+    dictionary, plot_path = analyze(df=ticker_df, ticker=ticker, future=future, full=True)
+
+    message_path = message_utility.write_message_by_dictionary(dictionary=dictionary, ticker=ticker)
+
+    return plot_path, message_path
 
 
 def chunk_list(lst, chunk_size):
@@ -61,9 +80,10 @@ def analyze(df, ticker, future=250, full=False):
     df = regression_utility.add_window_growths(df, window=window, future=future)
 
     if (
-        df['Growth Upper (High)'].iat[-1 - future] >= df['Growth Upper (Low)'].iat[-1]
-        or df['Growth (High)'].iat[-1 - future] >= df['Growth (Low)'].iat[-1]
-        or df['Growth Lower (High)'].iat[-1 - future] >= df['Growth Lower (Low)'].iat[-1]
+        # df['Growth Upper (High)'].iat[-1 - future] >= df['Growth Upper (Low)'].iat[-1]
+        # or df['Growth (High)'].iat[-1 - future] >= df['Growth (Low)'].iat[-1]
+        # or df['Growth Lower (High)'].iat[-1 - future] >= df['Growth Lower (Low)'].iat[-1]
+        df['Growth Upper (High)'].iat[-1 - future * 5] >= df['Growth Lower (Low)'].iat[-1]
     ):
         dictionary[DictionaryKeys.growth_too_low] = True
 
@@ -149,12 +169,12 @@ if __name__ == '__main__':
         )
 
         for ticker_main in tqdm(ticker_chunk):
-            ticker_df = yfinance_service.extract_ticker_df(df=df_main, ticker=ticker_main)
+            ticker_df_main = yfinance_service.extract_ticker_df(df=df_main, ticker=ticker_main)
 
-            future_main = len(ticker_df) // 10
+            future_main = len(ticker_df_main) // 10
 
             try:
-                dictionary_main, plot_path_main = analyze(df=ticker_df, ticker=ticker_main, future=future_main)
+                dictionary_main, plot_path_main = analyze(df=ticker_df_main, ticker=ticker_main, future=future_main)
             except Exception as e:
                 print(f'Error processing {ticker_main}: {e}')
                 continue

@@ -11,6 +11,7 @@ import ta_utility
 import yfinance_service
 
 subscribers_file = '/home/moritz/PycharmProjects/StonksTelegramBot/subscribers.txt'
+subscriptions_file = '/home/moritz/PycharmProjects/StonksTelegramBot/subscriptions.txt'
 
 
 logging.basicConfig(
@@ -38,6 +39,55 @@ def get_subscribers():
     return subscribers
 
 
+def get_subscriptions():
+    try:
+        with open(subscriptions_file, 'r') as file:
+            subscriptions = file.read().splitlines()
+    except FileNotFoundError:
+        subscriptions = []
+    return subscriptions
+
+
+async def handle_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = str(update.effective_chat.id)
+    subscriptions = get_subscriptions()
+
+    if len(context.args) < 1:
+        await update.message.reply_text("Invalid input. Try /subscribe AAPL")
+        return
+
+    ticker = context.args[0]
+    if f'{chat_id}${ticker}' not in subscriptions:
+        subscriptions.append(f'{chat_id}${ticker}')
+        with open(subscriptions_file, 'w') as file:
+            file.write('\n'.join(subscriptions))
+            message = f"You have been subscribed to {ticker}!"
+    else:
+        message = f"You are already subscribed to {ticker}!"
+
+    await context.bot.send_message(chat_id=chat_id, text=message)
+
+
+async def handle_unsubscribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = str(update.effective_chat.id)
+    subscriptions = get_subscriptions()
+
+    if len(context.args) < 1:
+        await update.message.reply_text("Invalid input. Try /unsubscribe AAPL")
+        return
+
+    ticker = context.args[0]
+    if f'{chat_id}${ticker}' in subscriptions:
+        subscriptions.remove(f'{chat_id}${ticker}')
+        with open(subscriptions_file, 'w') as file:
+            file.write('\n'.join(subscriptions))
+            message = f"You have been unsubscribed from {ticker}!"
+    else:
+        message = f"You are not subscribed to {ticker}!"
+
+    await context.bot.send_message(chat_id=chat_id, text=message)
+
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
     subscribers = get_subscribers()
@@ -60,19 +110,8 @@ async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         ticker = context.args[0]
-        df = yf.download(
-            [ticker],
-            period='10y',
-            interval='1d',
-            group_by='ticker',
-        )
-        ticker_df = yfinance_service.extract_ticker_df(df=df, ticker=context.args[0])
 
-        future = len(ticker_df) // 10
-
-        dictionary, plot_path = fundamentals_update.analyze(df=ticker_df, ticker=ticker, future=future, full=True)
-
-        message_path = message_utility.write_message_by_dictionary(dictionary=dictionary, ticker=ticker)
+        plot_path, message_path = fundamentals_update.get_plot_and_message_paths_for(ticker)
 
         await send_plot_with_message(plot_path=plot_path, message_path=message_path, chat_id=update.effective_chat.id, context=context)
     except Exception as e:
@@ -80,6 +119,7 @@ async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(f"An error occurred: {str(e)}")
         except Exception as send_error:
             logging.error(f"Failed to send error message to chat: {send_error}. Original error: {e}")
+
 
 async def handle_stop_loss(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
@@ -251,6 +291,8 @@ async def set_commands(context: ContextTypes.DEFAULT_TYPE):
         BotCommand(command='start', description='Subscribe to daily updates'),
         BotCommand(command='end', description='Unsubscribe from daily updates'),
         BotCommand(command='analyze', description='/analyze AAPL'),
+        BotCommand(command='subscribe', description='/subscribe AAPL'),
+        BotCommand(command='unsubscribe', description='/unsubscribe AAPL'),
     ]
     await context.bot.set_my_commands(commands)
 
@@ -273,6 +315,12 @@ def get_handling_application():
 
     analyze_handler = CommandHandler('analyze', handle_analyze)
     application.add_handler(analyze_handler)
+
+    subscribe_handler = CommandHandler('subscribe', handle_subscribe)
+    application.add_handler(subscribe_handler)
+
+    unsubscribe_handler = CommandHandler('unsubscribe', handle_unsubscribe)
+    application.add_handler(unsubscribe_handler)
 
     return application
 
