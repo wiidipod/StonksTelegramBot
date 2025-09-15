@@ -5,10 +5,10 @@ from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
 import yfinance as yf
 
 import fundamentals_update
-import message_utility
 import option_utility
 import ta_utility
 import yfinance_service
+
 
 subscribers_file = '/home/moritz/PycharmProjects/StonksTelegramBot/subscribers.txt'
 subscriptions_file = '/home/moritz/PycharmProjects/StonksTelegramBot/subscriptions.txt'
@@ -57,13 +57,17 @@ async def handle_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     ticker = context.args[0]
+    try:
+        name = yfinance_service.get_name(ticker)
+    except:
+        name = ticker
     if f'{chat_id}${ticker}' not in subscriptions:
         subscriptions.append(f'{chat_id}${ticker}')
         with open(subscriptions_file, 'w') as file:
             file.write('\n'.join(subscriptions))
-            message = f"You have been subscribed to {ticker}!"
+            message = f"You have been subscribed to {name}!"
     else:
-        message = f"You are already subscribed to {ticker}!"
+        message = f"You are already subscribed to {name}!"
 
     await context.bot.send_message(chat_id=chat_id, text=message)
 
@@ -77,13 +81,18 @@ async def handle_unsubscribe(update: Update, context: ContextTypes.DEFAULT_TYPE)
         return
 
     ticker = context.args[0]
+    try:
+        name = yfinance_service.get_name(ticker)
+    except:
+        name = ticker
     if f'{chat_id}${ticker}' in subscriptions:
         subscriptions.remove(f'{chat_id}${ticker}')
         with open(subscriptions_file, 'w') as file:
             file.write('\n'.join(subscriptions))
-            message = f"You have been unsubscribed from {ticker}!"
+            message = f"You have been unsubscribed from {name}!"
     else:
-        message = f"You are not subscribed to {ticker}!"
+
+        message = f"You are not subscribed to {name}!"
 
     await context.bot.send_message(chat_id=chat_id, text=message)
 
@@ -109,9 +118,15 @@ async def handle_subscriptions(update: Update, context: ContextTypes.DEFAULT_TYP
     chat_id = str(update.effective_chat.id)
     subscriptions = get_subscriptions()
 
-    user_subscriptions = [sub.split('$')[1] for sub in subscriptions if sub.startswith(f'{chat_id}$')]
-    if user_subscriptions:
-        message = "Your subscriptions:\n" + "\n".join(user_subscriptions)
+    tickers = [sub.split('$')[1] for sub in subscriptions if sub.startswith(f'{chat_id}$')]
+    if tickers:
+        for ticker in tickers:
+            message = "Your subscriptions:\n"
+            try:
+                name = yfinance_service.get_name(ticker)
+            except:
+                name = ticker
+            message += f"- {name}\n"
     else:
         message = "You have no subscriptions."
 
