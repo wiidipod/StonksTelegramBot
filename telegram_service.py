@@ -88,6 +88,36 @@ async def handle_unsubscribe(update: Update, context: ContextTypes.DEFAULT_TYPE)
     await context.bot.send_message(chat_id=chat_id, text=message)
 
 
+async def handle_unsubscribe_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = str(update.effective_chat.id)
+    subscriptions = get_subscriptions()
+
+    original_length = len(subscriptions)
+    subscriptions = [sub for sub in subscriptions if not sub.startswith(f'{chat_id}$')]
+
+    if len(subscriptions) < original_length:
+        with open(subscriptions_file, 'w') as file:
+            file.write('\n'.join(subscriptions))
+            message = "You have been unsubscribed from all tickers!"
+    else:
+        message = "You have no subscriptions to unsubscribe from!"
+
+    await context.bot.send_message(chat_id=chat_id, text=message)
+
+
+async def handle_subscriptions(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = str(update.effective_chat.id)
+    subscriptions = get_subscriptions()
+
+    user_subscriptions = [sub.split('$')[1] for sub in subscriptions if sub.startswith(f'{chat_id}$')]
+    if user_subscriptions:
+        message = "Your subscriptions:\n" + "\n".join(user_subscriptions)
+    else:
+        message = "You have no subscriptions."
+
+    await context.bot.send_message(chat_id=chat_id, text=message)
+
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
     subscribers = get_subscribers()
@@ -293,6 +323,8 @@ async def set_commands(context: ContextTypes.DEFAULT_TYPE):
         BotCommand(command='analyze', description='/analyze AAPL'),
         BotCommand(command='subscribe', description='/subscribe AAPL'),
         BotCommand(command='unsubscribe', description='/unsubscribe AAPL'),
+        BotCommand(command='unsubscribe_all', description='/unsubscribe_all'),
+        BotCommand(command='subscriptions', description='List your subscriptions'),
     ]
     await context.bot.set_my_commands(commands)
 
@@ -321,6 +353,12 @@ def get_handling_application():
 
     unsubscribe_handler = CommandHandler('unsubscribe', handle_unsubscribe)
     application.add_handler(unsubscribe_handler)
+
+    unsubscribe_all_handler = CommandHandler('unsubscribe_all', handle_unsubscribe_all)
+    application.add_handler(unsubscribe_all_handler)
+
+    subscriptions_handler = CommandHandler('subscriptions', handle_subscriptions)
+    application.add_handler(subscriptions_handler)
 
     return application
 
