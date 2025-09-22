@@ -80,16 +80,13 @@ def analyze(df, ticker, future=250, full=False):
     df = regression_utility.add_window_growths(df, window=window, future=future)
 
     if (
-        # df['Growth Upper (High)'].iat[-1 - future] >= df['Growth Upper (Low)'].iat[-1]
-        # or df['Growth (High)'].iat[-1 - future] >= df['Growth (Low)'].iat[-1]
-        # or df['Growth Lower (High)'].iat[-1 - future] >= df['Growth Lower (Low)'].iat[-1]
         df['Growth Upper (High)'].iat[-1 - future * 5] >= df['Growth Lower (Low)'].iat[-1]
     ):
         dictionary[DictionaryKeys.growth_too_low] = True
 
     if (
         df[P.H.value].iat[-1 - future] >= df['Growth Lower (Low)'].iat[-1 - future]
-        or df[P.L.value].iat[-1 - future] >= min(df[P.H.value].iloc[-1 - future - len(df) // 10:-1 - future])
+        # or df[P.L.value].iat[-1 - future] >= min(df[P.H.value].iloc[-1 - future - len(df) // 10:-1 - future])
     ):
         dictionary[DictionaryKeys.too_expensive] = True
 
