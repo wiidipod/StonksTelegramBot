@@ -86,7 +86,7 @@ def analyze(df, ticker, future=250, full=False):
 
     if (
         df[P.H.value].iat[-1 - future] >= df['Growth Lower (Low)'].iat[-1 - future]
-        # or df[P.L.value].iat[-1 - future] >= min(df[P.H.value].iloc[-1 - future - len(df) // 10:-1 - future])
+        or df[P.L.value].iat[-1 - future] >= min(df[P.H.value].iloc[-1 - future - len(df) // 10:-1 - future])
     ):
         dictionary[DictionaryKeys.too_expensive] = True
 
@@ -95,7 +95,7 @@ def analyze(df, ticker, future=250, full=False):
     else:
         price_target = min(price_target, df['Growth Lower (Low)'].iat[-1])
 
-    if 0.9 * price_target <= df[P.H.value].iat[-1]:
+    if 0.8 * price_target <= df[P.H.value].iat[-1 - future]:
         dictionary[DictionaryKeys.price_target_too_low] = True
 
     if not full and not has_buy_signal(dictionary):
