@@ -120,8 +120,8 @@ async def handle_subscriptions(update: Update, context: ContextTypes.DEFAULT_TYP
 
     tickers = [sub.split('$')[1] for sub in subscriptions if sub.startswith(f'{chat_id}$')]
     if tickers:
+        message = "Your subscriptions:\n"
         for ticker in tickers:
-            message = "Your subscriptions:\n"
             try:
                 name = yfinance_service.get_name(ticker)
             except:
