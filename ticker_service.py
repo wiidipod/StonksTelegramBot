@@ -291,7 +291,7 @@ def is_index(ticker):
 
 
 def is_crypto(ticker):
-    if ticker[-4:] == '-USD':
+    if ticker[-4:] == '-USD' or ticker[-4:] == '-EUR':
         return True
     return False
 
