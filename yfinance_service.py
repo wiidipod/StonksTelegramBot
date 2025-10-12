@@ -91,7 +91,7 @@ def get_close_as_series(ticker, period='10y', interval='1d'):
 def get_name(ticker):
     info = yf.Ticker(ticker).info
     name = info["shortName"] or info["longName"]
-    currency = info["currency"]
+    currency = get_currency(ticker)
     return f'{name} ({ticker}) - {currency}'
 
 
@@ -211,8 +211,11 @@ def get_price_in_currency(ticker, to_convert=None, target_currency='EUR'):
 
 
 def get_currency(ticker):
-    info = yf.Ticker(ticker).info
-    return info["currency"]
+    try:
+        info = yf.Ticker(ticker).info
+        return info["currency"]
+    except:
+        return ""
 
 
 def extract_ticker_df(df, ticker):
