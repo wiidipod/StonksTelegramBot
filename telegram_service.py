@@ -58,7 +58,7 @@ async def handle_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     ticker = context.args[0]
     try:
-        name = yfinance_service.get_name(ticker)
+        name = yfinance_service.get_name(ticker, mono=True)
     except:
         name = ticker
     if f'{chat_id}${ticker}' not in subscriptions:
@@ -82,7 +82,7 @@ async def handle_unsubscribe(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     ticker = context.args[0]
     try:
-        name = yfinance_service.get_name(ticker)
+        name = yfinance_service.get_name(ticker, mono=True)
     except:
         name = ticker
     if f'{chat_id}${ticker}' in subscriptions:
@@ -123,9 +123,9 @@ async def handle_subscriptions(update: Update, context: ContextTypes.DEFAULT_TYP
         message = "Your subscriptions:\n"
         for ticker in tickers:
             try:
-                name = yfinance_service.get_name(ticker)
+                name = yfinance_service.get_name(ticker, mono=True)
             except:
-                name = ticker
+                name = f"```{ticker}```"
             message += f"- {name}\n"
     else:
         message = "You have no subscriptions."

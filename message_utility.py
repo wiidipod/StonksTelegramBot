@@ -109,7 +109,7 @@ def get_rsi_emoji(rsi, rsi_sma):
 
 
 def write_message_by_dictionary(dictionary, ticker):
-    name = yfinance_service.get_name(ticker)
+    name = yfinance_service.get_name(ticker, mono=True)
     message = start_message(name=name)
     if dictionary[DictionaryKeys.too_short]:
         message += "   Too short \n "

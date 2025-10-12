@@ -88,11 +88,14 @@ def get_close_as_series(ticker, period='10y', interval='1d'):
     return data
 
 
-def get_name(ticker):
+def get_name(ticker, mono=False):
     info = yf.Ticker(ticker).info
     name = info["shortName"] or info["longName"]
     currency = get_currency(ticker)
-    return f'{name} ({ticker}) - {currency}'
+    if mono:
+        return f'{name} (```{ticker}```) - {currency}'
+    else:
+        return f'{name} ({ticker}) - {currency}'
 
 
 def get_pe_ratio(ticker):
