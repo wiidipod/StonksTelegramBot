@@ -93,7 +93,7 @@ def get_name(ticker, mono=False):
     name = info["shortName"] or info["longName"]
     currency = get_currency(ticker)
     if mono:
-        return f'{name} (```{ticker}```) - {currency}'
+        return f'{name} (`{ticker}`) - {currency}'
     else:
         return f'{name} ({ticker}) - {currency}'
 
