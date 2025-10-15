@@ -12,6 +12,7 @@ import time
 import argparse
 from message_utility import round_down, round_up
 import message_utility
+from ticker_service import is_stock
 
 
 def get_plot_and_message_paths_for(ticker):
@@ -56,12 +57,10 @@ def analyze(df, ticker, future=250, full=False):
         DictionaryKeys.too_expensive: False,
     }
 
-    is_stock = not ticker_service.is_index(ticker) and not ticker_service.is_crypto(ticker) and not ticker_service.is_future(ticker)
-
     if len(df) <= 2500:
         dictionary[DictionaryKeys.too_short] = True
 
-    if is_stock:
+    if is_stock(ticker):
         peg_ratio = yfinance_service.get_peg_ratio(ticker)
         if peg_ratio is None or peg_ratio > 1.0:
             dictionary[DictionaryKeys.peg_ratio_too_high] = True
@@ -95,7 +94,7 @@ def analyze(df, ticker, future=250, full=False):
     else:
         price_target = min(price_target, df['Growth Lower (Low)'].iat[-1])
 
-    if 0.8 * price_target <= df[P.H.value].iat[-1 - future]:
+    if 0.9 * price_target <= df[P.H.value].iat[-1 - future]:
         dictionary[DictionaryKeys.price_target_too_low] = True
 
     if not full and not has_buy_signal(dictionary):

@@ -286,21 +286,18 @@ def get_etf_tickers(index_ticker):
 
 
 def is_index(ticker):
-    if ticker[0] == '^':
-        return True
-    return False
+    return ticker[0] == '^'
 
 
 def is_crypto(ticker):
-    if ticker[-4:] == '-USD' or ticker[-4:] == '-EUR':
-        return True
-    return False
+    return ticker[-4:] == '-USD' or ticker[-4:] == '-EUR'
 
 
 def is_future(ticker):
-    if ticker[-2:] == '=F':
-        return True
-    return False
+    return ticker[-2:] == '=F'
+
+def is_stock(ticker):
+    return not is_index(ticker) and not is_crypto(ticker) and not is_future(ticker)
 
 
 def get_hype_tickers():
