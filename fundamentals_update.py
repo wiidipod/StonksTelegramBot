@@ -81,7 +81,7 @@ def analyze(df, ticker, future=250, full=False):
         pe_ratio = None
 
     macd, macd_signal, macd_diff = get_macd(df[P.C.value])
-    if macd_diff.iat[-1] <= 0.0:
+    if macd_diff[-1] <= 0.0:
         dictionary[DictionaryKeys.no_momentum] = True
 
     window = len(df) - 1
