@@ -65,14 +65,16 @@ def analyze(df, ticker, future=250, full=False):
         if peg_ratio is None or peg_ratio > 1.0:
             dictionary[DictionaryKeys.peg_ratio_too_high] = True
 
-        price_target = yfinance_service.get_price_target(ticker)
-        if price_target is None:
+        price_target_low = yfinance_service.get_price_target(ticker, low=True)
+        price_target_high = yfinance_service.get_price_target(ticker, low=False)
+        if price_target_low is None:
             dictionary[DictionaryKeys.price_target_too_low] = True
 
         pe_ratio = yfinance_service.get_pe_ratio(ticker)
     else:
         peg_ratio = None
-        price_target = None
+        price_target_low = None
+        price_target_high = None
         pe_ratio = None
 
     window = len(df) - 1
@@ -89,12 +91,17 @@ def analyze(df, ticker, future=250, full=False):
     ):
         dictionary[DictionaryKeys.too_expensive] = True
 
-    if price_target is None:
-        price_target = df['Growth Lower (Low)'].iat[-1]
+    if price_target_low is None:
+        price_target_low = df['Growth Lower (Low)'].iat[-1]
     else:
-        price_target = min(price_target, df['Growth Lower (Low)'].iat[-1])
+        price_target_low = min(price_target_low, df['Growth Lower (Low)'].iat[-1])
 
-    if 0.9 * price_target <= df[P.H.value].iat[-1 - future]:
+    if price_target_high is None:
+        price_target_high = df['Growth Upper (High)'].iat[-1]
+    else:
+        price_target_high = max(price_target_high, df['Growth Upper (High)'].iat[-1])
+
+    if 0.9 * price_target_low <= df[P.H.value].iat[-1 - future]:
         dictionary[DictionaryKeys.price_target_too_low] = True
 
     if not full and not has_buy_signal(dictionary):
@@ -104,11 +111,11 @@ def analyze(df, ticker, future=250, full=False):
     ev_to_ebitda = yfinance_service.get_ev_to_ebitda(ticker)
     subtitle = None
 
-    if price_target is not None or peg_ratio is not None or pe_ratio is not None or ev_to_ebitda is not None:
+    if price_target_low is not None or peg_ratio is not None or pe_ratio is not None or ev_to_ebitda is not None:
         subtitle = ''
-        if price_target is not None:
-            relative_offset = ((df[P.H.value].iat[-1 - future] / price_target) - 1.0) * 100.0
-            subtitle += f'PT: {round_down(price_target)} ({round_down(relative_offset)}%) - '
+        if price_target_low is not None:
+            relative_offset = ((df[P.H.value].iat[-1 - future] / price_target_low) - 1.0) * 100.0
+            subtitle += f'PT: {round_down(price_target_low)} ({round_down(relative_offset)}%) / {round_up(price_target_high)} - '
         if peg_ratio is not None:
             subtitle += f'PEG: {round_up(peg_ratio)} - '
         if pe_ratio is not None:
