@@ -11,3 +11,4 @@ class DictionaryKeys(Enum):
     growth_too_low = 'growth_too_low'
     too_expensive = 'too_expensive'
     not_enough_undervaluation = 'not_enough_undervaluation'
+    no_momentum = 'no_momentum'

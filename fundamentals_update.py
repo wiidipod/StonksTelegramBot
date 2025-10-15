@@ -13,6 +13,7 @@ import argparse
 from message_utility import round_down, round_up
 import message_utility
 from ticker_service import is_stock
+from ta_utility import get_macd
 
 
 def get_plot_and_message_paths_for(ticker):
@@ -45,6 +46,7 @@ def has_buy_signal(dictionary):
         and dictionary[DictionaryKeys.growth_too_low] is False
         and dictionary[DictionaryKeys.price_target_too_low] is False
         and dictionary[DictionaryKeys.too_expensive] is False
+        and dictionary[DictionaryKeys.no_momentum] is False
     )
 
 
@@ -55,6 +57,7 @@ def analyze(df, ticker, future=250, full=False):
         DictionaryKeys.growth_too_low: False,
         DictionaryKeys.price_target_too_low: False,
         DictionaryKeys.too_expensive: False,
+        DictionaryKeys.no_momentum: False,
     }
 
     if len(df) <= 2500:
@@ -77,6 +80,10 @@ def analyze(df, ticker, future=250, full=False):
         price_target_high = None
         pe_ratio = None
 
+    macd, macd_signal, macd_diff = get_macd(df[P.C.value])
+    if macd_diff.iat[-1] <= 0.0:
+        dictionary[DictionaryKeys.no_momentum] = True
+
     window = len(df) - 1
     df = regression_utility.add_window_growths(df, window=window, future=future)
 
@@ -88,7 +95,7 @@ def analyze(df, ticker, future=250, full=False):
 
     if (
         df[P.H.value].iat[-1 - future] >= df['Growth Lower (Low)'].iat[-1 - future]
-        or df[P.L.value].iat[-1 - future] >= min(df[P.H.value].iloc[-1 - future - len(df) // 10:-1 - future])
+        # or df[P.L.value].iat[-1 - future] >= min(df[P.H.value].iloc[-1 - future - len(df) // 10:-1 - future])
     ):
         dictionary[DictionaryKeys.too_expensive] = True
 
@@ -154,6 +161,7 @@ if __name__ == '__main__':
     price_target_too_low = 0
     growth_too_low = 0
     too_expensive = 0
+    no_momentum = 0
     undervalued = 0
 
     plot_paths = []
@@ -193,6 +201,8 @@ if __name__ == '__main__':
                 growth_too_low += 1
             if dictionary_main[DictionaryKeys.too_expensive]:
                 too_expensive += 1
+            if dictionary_main[DictionaryKeys.no_momentum]:
+                no_momentum += 1
 
             if plot_path_main is None:
                 continue
@@ -205,6 +215,7 @@ if __name__ == '__main__':
     print(f'Price target too low: {price_target_too_low}')
     print(f'Growth too low: {growth_too_low}')
     print(f'Too expensive: {too_expensive}')
+    print(f'No momentum: {no_momentum}')
     print(f'Total tickers: {len(tickers)}')
     print(f'Undervalued: {undervalued}')
 

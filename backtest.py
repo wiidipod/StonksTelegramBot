@@ -35,6 +35,6 @@ async def main(ticker, end):
 
 
 if __name__ == "__main__":
-    ticker_main = 'ADBE'
-    end_main = date(2022, 9, 26)
+    ticker_main = 'NFLX'
+    end_main = date(2022, 1, 31)
     asyncio.run(main(ticker_main, end_main))
