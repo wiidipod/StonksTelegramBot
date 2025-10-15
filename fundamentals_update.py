@@ -80,6 +80,7 @@ def analyze(df, ticker, future=250, full=False):
     window = len(df) - 1
     df = regression_utility.add_window_growths(df, window=window, future=future)
 
+    # 5y growth outperforms volatility
     if (
         df['Growth Upper (High)'].iat[-1 - future * 5] >= df['Growth Lower (Low)'].iat[-1]
     ):
