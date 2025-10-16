@@ -121,6 +121,8 @@ def write_message_by_dictionary(dictionary, ticker):
         message += "   Growth to volatility too low \n "
     if dictionary[DictionaryKeys.too_expensive]:
         message += "   Not cheap \n "
+    if dictionary[DictionaryKeys.no_momentum]:
+        message += "   No momentum\n "
     # if dictionary[DictionaryKeys.not_52w_low]:
     #     message += "   Not 52w low \n "
     return save_message(message, ticker)
