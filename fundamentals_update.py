@@ -13,7 +13,7 @@ import argparse
 from message_utility import round_down, round_up
 import message_utility
 from ticker_service import is_stock
-from ta_utility import get_macd
+from ta_utility import df_has_momentum
 
 
 def get_plot_and_message_paths_for(ticker):
@@ -80,8 +80,7 @@ def analyze(df, ticker, future=250, full=False):
         price_target_high = None
         pe_ratio = None
 
-    macd, macd_signal, macd_diff = get_macd(df[P.C.value])
-    if macd_diff[-1] <= 0.0:
+    if df_has_momentum(df):
         dictionary[DictionaryKeys.no_momentum] = True
 
     window = len(df) - 1
