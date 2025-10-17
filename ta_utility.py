@@ -19,7 +19,7 @@ def get_macd(close):
 
 def has_momentum(close):
     macd, macd_signal, macd_diff = get_macd(close)
-    return macd[-1] > 0.0 and macd_signal[-1] > 0.0 and macd_diff[-1] > 0.0:
+    return macd[-1] > 0.0 and macd_signal[-1] > 0.0 and macd_diff[-1] > 0.0
 
 
 def df_has_momentum(df):
