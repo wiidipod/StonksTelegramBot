@@ -53,7 +53,7 @@ async def handle_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
     subscriptions = get_subscriptions()
 
     if len(context.args) < 1:
-        await update.message.reply_text("Invalid input. Try /subscribe AAPL")
+        await update.message.reply_text("Invalid input. Try `/subscribe AAPL`", parse_mode='MarkdownV2')
         return
 
     ticker = context.args[0]
@@ -69,7 +69,7 @@ async def handle_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         message = f"You are already subscribed to {name}!"
 
-    await context.bot.send_message(chat_id=chat_id, text=message)
+    await context.bot.send_message(chat_id=chat_id, text=message, parse_mode='MarkdownV2')
 
 
 async def handle_unsubscribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -77,7 +77,7 @@ async def handle_unsubscribe(update: Update, context: ContextTypes.DEFAULT_TYPE)
     subscriptions = get_subscriptions()
 
     if len(context.args) < 1:
-        await update.message.reply_text("Invalid input. Try /unsubscribe AAPL")
+        await update.message.reply_text("Invalid input. Try `/unsubscribe AAPL`", parse_mode='MarkdownV2')
         return
 
     ticker = context.args[0]
@@ -94,7 +94,7 @@ async def handle_unsubscribe(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
         message = f"You are not subscribed to {name}!"
 
-    await context.bot.send_message(chat_id=chat_id, text=message)
+    await context.bot.send_message(chat_id=chat_id, text=message, parse_mode='MarkdownV2')
 
 
 async def handle_unsubscribe_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -120,17 +120,17 @@ async def handle_subscriptions(update: Update, context: ContextTypes.DEFAULT_TYP
 
     tickers = [sub.split('$')[1] for sub in subscriptions if sub.startswith(f'{chat_id}$')]
     if tickers:
-        message = "Your subscriptions:\n"
+        message = ""
         for ticker in tickers:
             try:
                 name = yfinance_service.get_name(ticker, mono=True)
             except:
-                name = f"```{ticker}```"
+                name = f"`{ticker}`"
             message += f"- {name}\n"
     else:
         message = "You have no subscriptions."
 
-    await context.bot.send_message(chat_id=chat_id, text=message)
+    await context.bot.send_message(chat_id=chat_id, text=message, parse_mode='MarkdownV2')
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -151,7 +151,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         if len(context.args) < 1:
-            await update.message.reply_text("Invalid input. Try /analyze AAPL")
+            await update.message.reply_text("Invalid input. Try `/analyze AAPL`", parse_mode='MarkdownV2')
             return
 
         ticker = context.args[0]
@@ -169,7 +169,7 @@ async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def handle_stop_loss(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         if len(context.args) < 1:
-            await update.message.reply_text("Invalid input. Try /stoploss 1.23")
+            await update.message.reply_text("Invalid input. Try `/stoploss 1.23`", parse_mode='MarkdownV2')
             return
 
         option_close, delta, ticker = extract_option_close_delta_and_ticker(context)
