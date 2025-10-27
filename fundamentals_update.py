@@ -16,10 +16,10 @@ from ticker_service import is_stock
 from ta_utility import df_has_momentum
 
 
-def get_plot_and_message_paths_for(ticker):
+def get_plot_and_message_paths_for(ticker, period='10y'):
     df = yf.download(
         [ticker],
-        period='10y',
+        period=period,
         interval='1d',
         group_by='ticker',
     )

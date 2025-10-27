@@ -88,14 +88,31 @@ def get_close_as_series(ticker, period='10y', interval='1d'):
     return data
 
 
+def get_industry(ticker):
+    try:
+        info = yf.Ticker(ticker).info
+        return info["industry"]
+    except:
+        return ""
+
+
 def get_name(ticker, mono=False):
     info = yf.Ticker(ticker).info
-    name = info["shortName"] or info["longName"]
-    currency = get_currency(ticker)
+    name = info["shortName"] or info["longName"] or ticker
+    try:
+        currency = f" - {info['currency']}"
+    except:
+        currency = ""
+
+    try:
+        industry = f" - {info['industry']}"
+    except:
+        industry = ""
+
     if mono:
-        return f'{name} (`{ticker}`) - {currency}'
+        return f'{name} (`{ticker}`){currency}{industry}'
     else:
-        return f'{name} ({ticker}) - {currency}'
+        return f'{name} ({ticker}){currency}{industry}'
 
 
 def get_pe_ratio(ticker):
@@ -235,4 +252,4 @@ def extract_ticker_df(df, ticker):
 
 
 if __name__ == '__main__':
-    print(yf.Ticker('AAPL').info.get("trailingPegRatio"))
+    print(yf.Ticker('NVDA').info.get("industry"))
