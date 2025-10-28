@@ -51,8 +51,8 @@ def get_tickers(
             ticker = ticker.replace('.', '-')
 
         if is_crypto:
-            ticker = ticker + '-USD'
             tickers.append(ticker + '-EUR')
+            ticker = ticker + '-USD'
 
         if is_future:
             ticker = ticker + '=F'
