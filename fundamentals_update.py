@@ -134,7 +134,7 @@ def analyze(df, ticker, future=250, full=False):
         subtitle = subtitle[:-3]
 
     plot_path = plot_utility.plot_bands_by_labels(
-        df=df,
+        df=df.iloc[window:],
         ticker=ticker,
         title=name,
         subtitle=subtitle,

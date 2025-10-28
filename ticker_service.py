@@ -480,12 +480,12 @@ def get_all_tickers():
     except Exception as e:
         print(f'Error fetching precious metals tickers: {e}')
 
-    try:
-        hype_tickers = get_hype_tickers()
-        print(f'Hype tickers: {len(hype_tickers)}')
-        tickers.extend(hype_tickers)
-    except Exception as e:
-        print(f'Error fetching hype tickers: {e}')
+    # try:
+    #     hype_tickers = get_hype_tickers()
+    #     print(f'Hype tickers: {len(hype_tickers)}')
+    #     tickers.extend(hype_tickers)
+    # except Exception as e:
+    #     print(f'Error fetching hype tickers: {e}')
 
     # tickers.extend(get_asx_50_tickers())  # Australia
     # tickers.extend(get_hang_seng_tickers())  # Hong Kong
