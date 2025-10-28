@@ -70,7 +70,7 @@ async def handle_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         message = f"You are already subscribed to {name}!"
 
-    await context.bot.send_message(chat_id=chat_id, text=message, parse_mode='MarkdownV2')
+    await send_message_to_chat_id(chat_id, message, context=context)
 
 
 async def handle_unsubscribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -95,7 +95,7 @@ async def handle_unsubscribe(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
         message = f"You are not subscribed to {name}!"
 
-    await context.bot.send_message(chat_id=chat_id, text=message, parse_mode='MarkdownV2')
+    await send_message_to_chat_id(chat_id, message, context=context)
 
 
 async def handle_unsubscribe_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -112,7 +112,7 @@ async def handle_unsubscribe_all(update: Update, context: ContextTypes.DEFAULT_T
     else:
         message = "You have no subscriptions to unsubscribe from!"
 
-    await context.bot.send_message(chat_id=chat_id, text=message)
+    await send_message_to_chat_id(chat_id, message, context=context)
 
 
 async def handle_subscriptions(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -120,7 +120,7 @@ async def handle_subscriptions(update: Update, context: ContextTypes.DEFAULT_TYP
 
     message = await message_utility.get_subscriptions_message(chat_id)
 
-    await context.bot.send_message(chat_id=chat_id, text=message, parse_mode='MarkdownV2')
+    await send_message_to_chat_id(chat_id, message, context=context)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -135,7 +135,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         message = "You are already subscribed!"
 
-    await context.bot.send_message(chat_id=chat_id, text=message)
+    await send_message_to_chat_id(chat_id, message, context=context)
 
 
 async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -248,7 +248,7 @@ async def end(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         message = "You are not subscribed!"
 
-    await context.bot.send_message(chat_id=chat_id, text=message)
+    await send_message_to_chat_id(chat_id, message, context=context)
 
 
 async def send_plots_to_chat_id(plot_paths, chat_id, context: ContextTypes.DEFAULT_TYPE):
@@ -290,11 +290,25 @@ async def send_plots_to_all(plot_paths, context: ContextTypes.DEFAULT_TYPE):
                 continue
 
 
-async def send_message_to_chat_id(message_path, chat_id, context: ContextTypes.DEFAULT_TYPE):
+async def send_message_path_to_chat_id(message_path, chat_id, context: ContextTypes.DEFAULT_TYPE):
     try:
         with open(message_path, 'r', encoding="utf-8") as file:
             message = file.read()
-            await context.bot.send_message(chat_id=chat_id, text=message, parse_mode='MarkdownV2')
+            await send_message_to_chat_id(chat_id, message, context=context)
+    except Exception as e:
+        logging.error(f"Failed to send message to {chat_id}: {e}")
+
+
+async def send_subscriptions_to_first_chat_id(context: ContextTypes.DEFAULT_TYPE):
+    chat_id = get_subscribers()[0]
+    message = await message_utility.get_subscriptions_message(chat_id)
+    await send_message_path_to_chat_id(message, chat_id, context)
+
+
+async def send_message_to_chat_id(chat_id, message, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        message = message.replace("-", "\\-").replace(".", "\\.").replace("(", "\\(").replace(")", "\\)")
+        await context.bot.send_message(chat_id=chat_id, text=message, parse_mode='MarkdownV2')
     except Exception as e:
         logging.error(f"Failed to send message to {chat_id}: {e}")
 
@@ -305,7 +319,7 @@ async def send_messages_to_all(message_paths, context: ContextTypes.DEFAULT_TYPE
     for chat_id in subscribers:
         for message in messages:
             try:
-                await context.bot.send_message(chat_id=chat_id, text=message, parse_mode='MarkdownV2')
+                await send_message_to_chat_id(chat_id, message, context=context)
             except Exception as e:
                 logging.error(f"Failed to send message to {chat_id}: {e}")
                 continue
@@ -323,7 +337,7 @@ async def send_plots_to_first(plot_paths, context: ContextTypes.DEFAULT_TYPE):
 
 async def send_message_to_first(message, context: ContextTypes.DEFAULT_TYPE):
     chat_id = get_subscribers()[0]
-    await send_message_to_chat_id(message, chat_id, context)
+    await send_message_path_to_chat_id(message, chat_id, context)
 
 
 async def set_commands(context: ContextTypes.DEFAULT_TYPE):
@@ -377,6 +391,4 @@ if __name__ == "__main__":
     main_application = get_application()
     # asyncio.run(set_commands(main_application))
 
-    chat_id = get_subscribers()[0]
-    message = message_utility.get_subscriptions_message(chat_id)
-    asyncio.run(send_message_to_chat_id(message_path=message, chat_id=chat_id, context=main_application))
+    asyncio.run(send_subscriptions_to_first_chat_id(context=main_application))

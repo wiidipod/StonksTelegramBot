@@ -395,7 +395,6 @@ async def get_subscriptions_message(chat_id):
             message += f"- {name}\n"
     else:
         message = "You have no subscriptions."
-    message.replace("-", "\\-").replace(".", "\\.")
     return message
 
 
