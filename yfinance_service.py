@@ -96,8 +96,12 @@ def get_industry(ticker):
         return ""
 
 
-def get_name(ticker, mono=False):
-    info = yf.Ticker(ticker).info
+def get_name(ticker, mono=False, with_info=True):
+    if with_info:
+        info = yf.Ticker(ticker).info
+    else:
+        info = {}
+
     name = info["shortName"] or info["longName"] or ticker
     # try:
     #     currency = f" - {info['currency']}"

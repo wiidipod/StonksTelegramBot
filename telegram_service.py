@@ -51,7 +51,7 @@ async def handle_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     ticker = context.args[0]
     try:
-        name = yfinance_service.get_name(ticker, mono=True)
+        name = yfinance_service.get_name(ticker, mono=True, with_info=False)
     except:
         name = ticker
     if f'{chat_id}${ticker}' not in subscriptions:
@@ -75,7 +75,7 @@ async def handle_unsubscribe(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     ticker = context.args[0]
     try:
-        name = yfinance_service.get_name(ticker, mono=True)
+        name = yfinance_service.get_name(ticker, mono=True, with_info=False)
     except:
         name = ticker
     if f'{chat_id}${ticker}' in subscriptions:
