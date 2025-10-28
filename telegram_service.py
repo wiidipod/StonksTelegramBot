@@ -130,7 +130,7 @@ async def handle_subscriptions(update: Update, context: ContextTypes.DEFAULT_TYP
     else:
         message = "You have no subscriptions."
 
-    message.replace("-", "\-").replace(".", "\.")
+    message.replace("-", "\\-").replace(".", "\\.")
 
     await context.bot.send_message(chat_id=chat_id, text=message, parse_mode='MarkdownV2')
 
