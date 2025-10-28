@@ -1,5 +1,6 @@
 import math
 
+import telegram_service
 import yfinance_service
 from constants import output_directory
 from yfinance_service import P
@@ -379,6 +380,23 @@ def round_up(value):
     rounded = math.ceil(value / factor) * factor
     precision = max(0, -order + 2)
     return f"{sign}{rounded:.{precision}f}"
+
+
+async def get_subscriptions_message(chat_id):
+    subscriptions = telegram_service.get_subscriptions()
+    tickers = [sub.split('$')[1] for sub in subscriptions if sub.startswith(f'{chat_id}$')]
+    if tickers:
+        message = ""
+        for ticker in tickers:
+            try:
+                name = yfinance_service.get_name(ticker, mono=True)
+            except:
+                name = f"`{ticker}`"
+            message += f"- {name}\n"
+    else:
+        message = "You have no subscriptions."
+    message.replace("-", "\\-").replace(".", "\\.")
+    return message
 
 
 if __name__ == "__main__":

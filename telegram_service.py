@@ -8,6 +8,7 @@ import fundamentals_update
 import option_utility
 import ta_utility
 import yfinance_service
+import message_utility
 
 
 subscribers_file = '/home/moritz/PycharmProjects/StonksTelegramBot/subscribers.txt'
@@ -116,21 +117,8 @@ async def handle_unsubscribe_all(update: Update, context: ContextTypes.DEFAULT_T
 
 async def handle_subscriptions(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
-    subscriptions = get_subscriptions()
 
-    tickers = [sub.split('$')[1] for sub in subscriptions if sub.startswith(f'{chat_id}$')]
-    if tickers:
-        message = ""
-        for ticker in tickers:
-            try:
-                name = yfinance_service.get_name(ticker, mono=True)
-            except:
-                name = f"`{ticker}`"
-            message += f"- {name}\n"
-    else:
-        message = "You have no subscriptions."
-
-    message.replace("-", "\\-").replace(".", "\\.")
+    message = await message_utility.get_subscriptions_message(chat_id)
 
     await context.bot.send_message(chat_id=chat_id, text=message, parse_mode='MarkdownV2')
 
@@ -333,6 +321,11 @@ async def send_plots_to_first(plot_paths, context: ContextTypes.DEFAULT_TYPE):
     await send_plots_to_chat_id(plot_paths, chat_id, context)
 
 
+async def send_message_to_first(message, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = get_subscribers()[0]
+    await send_message_to_chat_id(message, chat_id, context)
+
+
 async def set_commands(context: ContextTypes.DEFAULT_TYPE):
     commands = [
         BotCommand(command='start', description='Subscribe to daily updates'),
@@ -382,4 +375,8 @@ def get_handling_application():
 
 if __name__ == "__main__":
     main_application = get_application()
-    asyncio.run(set_commands(main_application))
+    # asyncio.run(set_commands(main_application))
+
+    chat_id = get_subscribers()[0]
+    message = message_utility.get_subscriptions_message(chat_id)
+    asyncio.run(send_message_to_chat_id(message_path=message, chat_id=chat_id, context=main_application))
