@@ -80,17 +80,18 @@ def analyze(df, ticker, future=250, full=False):
         price_target_high = None
         pe_ratio = None
 
-    if df_has_momentum(df):
+    if not df_has_momentum(df):
         dictionary[DictionaryKeys.no_momentum] = True
 
-    window = len(df) - 1
+    # window = len(df) - 1
+    window = len(df) // 2
     df = regression_utility.add_window_growths(df, window=window, future=future)
 
     # 5y growth outperforms volatility
-    if (
-        df['Growth Upper (High)'].iat[-1 - future * 5] >= df['Growth Lower (Low)'].iat[-1]
-    ):
-        dictionary[DictionaryKeys.growth_too_low] = True
+    # if (
+    #     df['Growth Upper (High)'].iat[-1 - future * 5] >= df['Growth Lower (Low)'].iat[-1]
+    # ):
+    #     dictionary[DictionaryKeys.growth_too_low] = True
 
     if (
         df[P.H.value].iat[-1 - future] >= df['Growth Lower (Low)'].iat[-1 - future]
@@ -108,7 +109,8 @@ def analyze(df, ticker, future=250, full=False):
     else:
         price_target_high = max(price_target_high, df['Growth Upper (High)'].iat[-1])
 
-    if 0.9 * price_target_low <= df[P.H.value].iat[-1 - future]:
+    # if 0.9 * price_target_low <= df[P.H.value].iat[-1 - future]:
+    if price_target_low <= df[P.H.value].iat[-1 - future]:
         dictionary[DictionaryKeys.price_target_too_low] = True
 
     if not full and not has_buy_signal(dictionary):

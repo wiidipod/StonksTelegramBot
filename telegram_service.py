@@ -8,11 +8,12 @@ import fundamentals_update
 import option_utility
 import ta_utility
 import yfinance_service
-import message_utility
+from message_utility import get_subscriptions
+from message_utility import subscriptions_file
+from message_utility import get_subscriptions_message
 
 
 subscribers_file = '/home/moritz/PycharmProjects/StonksTelegramBot/subscribers.txt'
-subscriptions_file = '/home/moritz/PycharmProjects/StonksTelegramBot/subscriptions.txt'
 
 
 logging.basicConfig(
@@ -38,15 +39,6 @@ def get_subscribers():
     except FileNotFoundError:
         subscribers = []
     return subscribers
-
-
-def get_subscriptions():
-    try:
-        with open(subscriptions_file, 'r') as file:
-            subscriptions = file.read().splitlines()
-    except FileNotFoundError:
-        subscriptions = []
-    return subscriptions
 
 
 async def handle_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -118,7 +110,7 @@ async def handle_unsubscribe_all(update: Update, context: ContextTypes.DEFAULT_T
 async def handle_subscriptions(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
 
-    message = await message_utility.get_subscriptions_message(chat_id)
+    message = await get_subscriptions_message(chat_id)
 
     await send_message_to_chat_id(chat_id, message, context=context)
 
@@ -301,7 +293,7 @@ async def send_message_path_to_chat_id(message_path, chat_id, context: ContextTy
 
 async def send_subscriptions_to_first_chat_id(context: ContextTypes.DEFAULT_TYPE):
     chat_id = get_subscribers()[0]
-    message = await message_utility.get_subscriptions_message(chat_id)
+    message = await get_subscriptions_message(chat_id)
     await send_message_path_to_chat_id(message, chat_id, context)
 
 

@@ -1,11 +1,13 @@
 import math
 
-import telegram_service
+# import telegram_service
 import yfinance_service
 from constants import output_directory
 from yfinance_service import P
 from constants import DictionaryKeys
 
+
+subscriptions_file = '/home/moritz/PycharmProjects/StonksTelegramBot/subscriptions.txt'
 
 bearish_emoji = "📉"
 bullish_emoji = "📈"
@@ -383,7 +385,7 @@ def round_up(value):
 
 
 async def get_subscriptions_message(chat_id):
-    subscriptions = telegram_service.get_subscriptions()
+    subscriptions = get_subscriptions()
     tickers = [sub.split('$')[1] for sub in subscriptions if sub.startswith(f'{chat_id}$')]
     if tickers:
         message = ""
@@ -396,6 +398,15 @@ async def get_subscriptions_message(chat_id):
     else:
         message = "You have no subscriptions."
     return message
+
+
+def get_subscriptions():
+    try:
+        with open(subscriptions_file, 'r') as file:
+            subscriptions = file.read().splitlines()
+    except FileNotFoundError:
+        subscriptions = []
+    return subscriptions
 
 
 if __name__ == "__main__":
