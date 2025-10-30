@@ -390,20 +390,21 @@ def plot_bands_by_labels(df, ticker, title, labels, subtitle=None, fname=None, y
 
 
 if __name__ == '__main__':
-    main_ticker = '^990100-USD-STRD'
+    # main_ticker = '^990100-USD-STRD'
+    main_ticker = 'NVDA'
 
     df = yf.download(
         [main_ticker],
-        period='max',
+        period='10y',
         interval='1d',
         group_by='ticker',
     )
     ticker_df = yfinance_service.extract_ticker_df(df=df, ticker=main_ticker)
 
-    future = 0
+    future = len(df) // 10
 
-    window = len(df) - 1
-    ticker_df = regression_utility.add_window_growths(ticker_df, window=window, future=future)
+    window = len(df) // 2
+    ticker_df = regression_utility.add_window_growths(ticker_df, window=window, future=future, add_full_length_growth=True, add_string='5y')
 
     plot_path = plot_bands_by_labels(
         df=ticker_df,
@@ -414,6 +415,9 @@ if __name__ == '__main__':
             'Growth',
             'Growth Lower',
             'Growth Upper',
+            '5yGrowth',
+            '5yGrowth Lower',
+            '5yGrowth Upper',
         ],
         yscale='log',
         today=-1-future,

@@ -96,21 +96,18 @@ def get_industry(ticker):
         return ""
 
 
-def get_name(ticker, mono=False, with_info=True):
-    if with_info:
-        info = yf.Ticker(ticker).info
-    else:
-        info = {}
+def get_name(ticker, mono=False, industry_pe_ratio=None):
+    info = yf.Ticker(ticker).info
 
     name = info["shortName"] or info["longName"] or ticker
-    # try:
-    #     currency = f" - {info['currency']}"
-    # except:
-    #     currency = ""
-    currency = ""
+
+    if mono:
+        info = {}
 
     try:
         industry = f" - {info['industry']}"
+        if industry_pe_ratio is not None:
+            industry += f" (P/E: {industry_pe_ratio})"
     except:
         industry = ""
 
@@ -120,9 +117,9 @@ def get_name(ticker, mono=False, with_info=True):
         country = ""
 
     if mono:
-        return f'{name} (`{ticker}`){currency}{industry}{country}'
+        return f'{name} (`{ticker}`)'
     else:
-        return f'{name} ({ticker}){currency}{industry}{country}'
+        return f'{name} ({ticker}){industry}{country}'
 
 
 def get_pe_ratio(ticker):

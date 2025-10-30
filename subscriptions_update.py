@@ -2,10 +2,12 @@ import telegram_service
 import fundamentals_update
 import logging
 import asyncio
+import pe_utility
 
 async def send_all(tickers, application):
+    pe_ratios = pe_utility.get_pe_ratios()
     for ticker in tickers:
-        plot_path, message_path = fundamentals_update.get_plot_and_message_paths_for(ticker)
+        plot_path, message_path = fundamentals_update.get_plot_and_message_paths_for(ticker, pe_ratios=pe_ratios)
         for chat_id in tickers[ticker]:
             try:
                 await telegram_service.send_plot_with_message(
