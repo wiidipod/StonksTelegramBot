@@ -3,6 +3,8 @@ import fundamentals_update
 import logging
 import asyncio
 import pe_utility
+import argparse
+
 
 async def send_all(tickers, application):
     pe_ratios = pe_utility.get_pe_ratios()
@@ -20,17 +22,28 @@ async def send_all(tickers, application):
                 logging.error(f'Error sending to {chat_id} for {ticker}: {e}')
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Send plots for subscriptions.')
+    parser.add_argument('--all', action='store_true', help='Send plots for every subscription to all subscribers')
+    args = parser.parse_args()
+
     subscriptions = telegram_service.get_subscriptions()
     tickers_main = dict()
     application_main = telegram_service.get_application()
 
+    first_chat_id = telegram_service.get_subscribers()[0]
+
     for subscription in subscriptions:
         chat_id_main, ticker_main = subscription.split('$')
+
+        if not args.all and chat_id_main != first_chat_id:
+            continue
+
         if ticker_main not in tickers_main:
             tickers_main[ticker_main] = []
         tickers_main[ticker_main].append(chat_id_main)
 
     asyncio.run(send_all(tickers_main, application_main))
+
 
 # if __name__ == '__main__':
 #     subscriptions = telegram_service.get_subscriptions()
