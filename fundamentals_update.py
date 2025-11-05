@@ -89,7 +89,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         industry = yfinance_service.get_industry(ticker)
         industry_pe_ratio = pe_ratios.get(industry) or max(pe_ratios.values())
         # if pe_ratio is not None and industry_pe_ratio is not None:
-        if pe_ratio is None or pe_ratio > 2.0 * industry_pe_ratio:
+        if pe_ratio is None or pe_ratio > 2.0 * industry_pe_ratio or (pe_ratio > industry_pe_ratio and peg_ratio > 1.0):
             dictionary[DictionaryKeys.pe_ratio_too_high] = True
     else:
         peg_ratio = None
@@ -121,7 +121,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     # window = len(df) - 1
     window = len(df) // 2
     add_string_5y = '5y '
-    # df = regression_utility.add_window_growths(df, window=window, future=future, add_full_length_growth=True, add_string=add_string)
+    # df = regression_utility.add_window_growths(df, window=window, future=future)
     df = regression_utility.add_close_window_growths(df, window=window, future=future, add_full_length_growth=True, add_string=add_string_5y)
 
     if (
@@ -149,7 +149,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         # price not below lower 5y regression
         or df[P.C.value].iat[-1 - future] > df[f'{add_string_5y}Growth Lower'].iat[-1 - future]
         # 10y regression not growing
-        or df[f'{add_string_5y}Growth'].iat[-1 - future] > df['Growth'].iat[-1 - future]
+        # or df[f'{add_string_5y}Growth'].iat[-1 - future] > df['Growth'].iat[-1 - future]
         or df[P.L.value].iat[-1 - future] > min(df[P.H.value].iloc[-1 - days_to_outperform_volitality:-1 - future])
         # or df[P.L.value].iat[-1 - future] >= min(df[P.H.value].iloc[-1 - future - len(df) // 10:-1 - future])
     ):
@@ -157,13 +157,17 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
 
     if price_target_low is None:
         price_target_low = min(df['Growth Lower'].iat[-1], df[f'{add_string_5y}Growth Lower'].iat[-1])
+        # price_target_low = df['Growth Lower'].iat[-1]
     else:
         price_target_low = min(price_target_low, df['Growth Lower'].iat[-1], df[f'{add_string_5y}Growth Lower'].iat[-1])
+        # price_target_low = min(price_target_low, df['Growth Lower'].iat[-1])
 
     if price_target_high is None:
         price_target_high = max(df['Growth Upper'].iat[-1], df[f'{add_string_5y}Growth Upper'].iat[-1])
+        # price_target_high = df['Growth Upper'].iat[-1]
     else:
         price_target_high = max(price_target_high, df['Growth Upper'].iat[-1], df[f'{add_string_5y}Growth Upper'].iat[-1])
+        # price_target_high = max(price_target_high, df['Growth Upper'].iat[-1])
 
     # if 0.9 * price_target_low <= df[P.H.value].iat[-1 - future]:
     if price_target_low < df[P.C.value].iat[-1 - future]:
@@ -179,8 +183,9 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     if price_target_low is not None or peg_ratio is not None or pe_ratio is not None or ev_to_ebitda is not None:
         subtitle = ''
         if price_target_low is not None:
-            relative_offset = ((df[P.H.value].iat[-1 - future] / price_target_low) - 1.0) * 100.0
-            subtitle += f'PT: {round_down(price_target_low)} ({round_down(relative_offset)}%) / {round_up(price_target_high)} - '
+            # relative_offset = ((df[P.C.value].iat[-1 - future] / price_target_low) - 1.0) * 100.0
+            # subtitle += f'PT: {round_down(price_target_low)} ({round_down(relative_offset)}%) / {round_up(price_target_high)} - '-
+            subtitle += f'PT: {round_down(price_target_low)} / {round_up(price_target_high)} - '
         if peg_ratio is not None:
             subtitle += f'PEG: {round_up(peg_ratio)} - '
         if pe_ratio is not None:
