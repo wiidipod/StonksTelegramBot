@@ -368,21 +368,36 @@ def plot_reversal(df, ticker):
     return fname
 
 
-def plot_bands_by_labels(df, ticker, title, labels, subtitle=None, fname=None, yscale='linear', today=-1):
+def plot_bands_by_labels(df, ticker, title, labels, subtitle=None, fname=None, yscale='linear', today=-1, close_only=False, sma_label=None):
     if fname is None:
         fname = f'{output_directory}{ticker}_two_bands_plot.png'
+
     fig = plt.figure(figsize=(9.0, 9.0), dpi=300)
     fig.suptitle(title)
     subplot = fig.add_subplot(111)
+
     if subtitle:
         subplot.set_title(subtitle)
+
     subplot.set_yscale(yscale)
     subplot.set_ylabel(yfinance_service.get_currency(ticker))
     subplot.set_xlabel('Date')
     subplot.grid(True)
+
     for label in labels:
-        subplot.fill_between(df.index, df[f'{label} (High)'], df[f'{label} (Low)'], label=f'{label} ({round_up(df[f"{label} (High)"].iat[today])} / {round_down(df[f"{label} (Low)"].iat[today])})')
-    subplot.fill_between(df.index, df[P.H.value], df[P.L.value], label=f'Price ({round_up(df[P.H.value].iat[today])} / {round_down(df[P.L.value].iat[today])})')
+        if not close_only:
+            subplot.fill_between(df.index, df[f'{label} (High)'], df[f'{label} (Low)'], label=f'{label} ({round_up(df[f"{label} (High)"].iat[today])} / {round_down(df[f"{label} (Low)"].iat[today])})')
+        else:
+            subplot.plot(df.index, df[label], label=f'{label} ({round_down(df[label].iat[today])})')
+
+    if not close_only:
+        subplot.fill_between(df.index, df[P.H.value], df[P.L.value], label=f'Price ({round_up(df[P.H.value].iat[today])} / {round_down(df[P.L.value].iat[today])})')
+    else:
+        subplot.plot(df.index, df[P.C.value], label=f'Price ({round_up(df[P.C.value].iat[today])})')
+
+    if sma_label:
+        subplot.plot(df.index, df[sma_label], label=f'{sma_label} ({round_down(df[sma_label].iat[today])})')
+
     subplot.legend()
     fig.tight_layout()
     fig.savefig(fname)
