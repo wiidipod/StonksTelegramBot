@@ -77,20 +77,28 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
 
     if is_stock(ticker):
         peg_ratio = yfinance_service.get_peg_ratio(ticker)
-        if peg_ratio is None or peg_ratio > 2.0:
+        pe_ratio = yfinance_service.get_pe_ratio(ticker)
+        industry = yfinance_service.get_industry(ticker)
+        industry_pe_ratio = pe_ratios.get(industry) or max(pe_ratios.values())
+        if peg_ratio is None and pe_ratio is None:
             dictionary[DictionaryKeys.peg_ratio_too_high] = True
+            dictionary[DictionaryKeys.pe_ratio_too_high] = True
+        elif peg_ratio is not None and pe_ratio is not None:
+            if peg_ratio > 1.0 and pe_ratio > industry_pe_ratio:
+                dictionary[DictionaryKeys.peg_ratio_too_high] = True
+                dictionary[DictionaryKeys.pe_ratio_too_high] = True
+        elif pe_ratio is not None:
+            if pe_ratio > industry_pe_ratio:
+                dictionary[DictionaryKeys.pe_ratio_too_high] = True
+        elif peg_ratio is not None:
+            if peg_ratio > 1.0:
+                dictionary[DictionaryKeys.peg_ratio_too_high] = True
 
         price_target_low = yfinance_service.get_price_target(ticker, low=True)
         price_target_high = yfinance_service.get_price_target(ticker, low=False)
         if price_target_low is None:
             dictionary[DictionaryKeys.price_target_too_low] = True
 
-        pe_ratio = yfinance_service.get_pe_ratio(ticker)
-        industry = yfinance_service.get_industry(ticker)
-        industry_pe_ratio = pe_ratios.get(industry) or max(pe_ratios.values())
-        # if pe_ratio is not None and industry_pe_ratio is not None:
-        if pe_ratio is None or pe_ratio > 2.0 * industry_pe_ratio or (pe_ratio > industry_pe_ratio and peg_ratio > 1.0):
-            dictionary[DictionaryKeys.pe_ratio_too_high] = True
     else:
         peg_ratio = None
         price_target_low = None
