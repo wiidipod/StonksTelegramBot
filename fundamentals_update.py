@@ -2,6 +2,7 @@ import asyncio
 from tqdm import tqdm
 import plot_utility
 import regression_utility
+import ta_utility
 import telegram_service
 import ticker_service
 from yfinance_service import P
@@ -13,10 +14,16 @@ import argparse
 from message_utility import round_down, round_up
 import message_utility
 from ticker_service import is_stock
-from ta_utility import df_has_momentum
+from ta_utility import has_technicals
+import pe_utility
+import pandas as pd
+from bisect import bisect_left
 
 
-def get_plot_and_message_paths_for(ticker, period='10y'):
+def get_plot_and_message_paths_for(ticker, period='10y', pe_ratios=None):
+    if pe_ratios is None:
+        pe_ratios = {}
+
     df = yf.download(
         [ticker],
         period=period,
@@ -27,7 +34,7 @@ def get_plot_and_message_paths_for(ticker, period='10y'):
 
     future = len(ticker_df) // 10
 
-    dictionary, plot_path = analyze(df=ticker_df, ticker=ticker, future=future, full=True)
+    dictionary, plot_path = analyze(df=ticker_df, ticker=ticker, future=future, full=True, pe_ratios=pe_ratios)
 
     message_path = message_utility.write_message_by_dictionary(dictionary=dictionary, ticker=ticker)
 
@@ -41,23 +48,28 @@ def chunk_list(lst, chunk_size):
 
 def has_buy_signal(dictionary):
     return (
-        dictionary[DictionaryKeys.too_short] is False
-        and dictionary[DictionaryKeys.peg_ratio_too_high] is False
-        and dictionary[DictionaryKeys.growth_too_low] is False
-        and dictionary[DictionaryKeys.price_target_too_low] is False
-        and dictionary[DictionaryKeys.too_expensive] is False
-        and dictionary[DictionaryKeys.no_momentum] is False
+            dictionary[DictionaryKeys.too_short] is False
+            and dictionary[DictionaryKeys.peg_ratio_too_high] is False
+            and dictionary[DictionaryKeys.growth_too_low] is False
+            and dictionary[DictionaryKeys.price_target_too_low] is False
+            and dictionary[DictionaryKeys.too_expensive] is False
+            and dictionary[DictionaryKeys.no_technicals] is False
+            and dictionary[DictionaryKeys.pe_ratio_too_high] is False
     )
 
 
-def analyze(df, ticker, future=250, full=False):
+def analyze(df, ticker, future=250, full=False, pe_ratios=None):
+    if pe_ratios is None:
+        pe_ratios = {}
+
     dictionary = {
         DictionaryKeys.too_short: False,
         DictionaryKeys.peg_ratio_too_high: False,
         DictionaryKeys.growth_too_low: False,
         DictionaryKeys.price_target_too_low: False,
         DictionaryKeys.too_expensive: False,
-        DictionaryKeys.no_momentum: False,
+        DictionaryKeys.no_technicals: False,
+        DictionaryKeys.pe_ratio_too_high: False,
     }
 
     if len(df) <= 2500:
@@ -65,7 +77,7 @@ def analyze(df, ticker, future=250, full=False):
 
     if is_stock(ticker):
         peg_ratio = yfinance_service.get_peg_ratio(ticker)
-        if peg_ratio is None or peg_ratio > 1.0:
+        if peg_ratio is None or peg_ratio > 2.0:
             dictionary[DictionaryKeys.peg_ratio_too_high] = True
 
         price_target_low = yfinance_service.get_price_target(ticker, low=True)
@@ -74,65 +86,120 @@ def analyze(df, ticker, future=250, full=False):
             dictionary[DictionaryKeys.price_target_too_low] = True
 
         pe_ratio = yfinance_service.get_pe_ratio(ticker)
+        industry = yfinance_service.get_industry(ticker)
+        industry_pe_ratio = pe_ratios.get(industry) or max(pe_ratios.values())
+        # if pe_ratio is not None and industry_pe_ratio is not None:
+        if pe_ratio is None or pe_ratio > 2.0 * industry_pe_ratio or (pe_ratio > industry_pe_ratio and peg_ratio > 1.0):
+            dictionary[DictionaryKeys.pe_ratio_too_high] = True
     else:
         peg_ratio = None
         price_target_low = None
         price_target_high = None
         pe_ratio = None
+        industry_pe_ratio = None
 
-    if df_has_momentum(df):
-        dictionary[DictionaryKeys.no_momentum] = True
+    # df = ta_utility.add_rsi(df)
+    # df = ta_utility.add_macd(df)
+    # df = ta_utility.add_sma(df, window=200)
+    # try:
+    #     macd = df["MACD Diff"].iat[-1]
+    # except:
+    #     macd = None
+    # try:
+    #     rsi = df["RSI"].iat[-1]
+    # except:
+    #     rsi = None
+    # if macd is not None and rsi is not None:
+    #     if (macd < 0.0 and rsi > 30.0) or rsi > 70.0:
+    #         dictionary[DictionaryKeys.no_technicals] = True
+    # else:
+    #     dictionary[DictionaryKeys.no_technicals] = True
 
-    window = len(df) - 1
-    df = regression_utility.add_window_growths(df, window=window, future=future)
+    # if not has_technicals(df[P.C.value].iloc[-len(df) // 10:]):
+    #     dictionary[DictionaryKeys.no_technicals] = True
 
-    # 5y growth outperforms volatility
+    # window = len(df) - 1
+    window = len(df) // 2
+    add_string_5y = '5y '
+    # df = regression_utility.add_window_growths(df, window=window, future=future)
+    df = regression_utility.add_close_window_growths(df, window=window, future=future, add_full_length_growth=True, add_string=add_string_5y)
+
     if (
-        df['Growth Upper (High)'].iat[-1 - future * 5] >= df['Growth Lower (Low)'].iat[-1]
+        # 10y regression not beating volatility in 5y
+        df['Growth Upper'].iat[-1 - window - future] > df['Growth Lower'].iat[-1 - future]
+        # df['Growth Lower'].iat[-1 - future] > df['Growth Lower'].iat[-1]
+        # 5y regression not growing
+        or df[f'{add_string_5y}Growth'].iat[-1 - future] > df[f'{add_string_5y}Growth'].iat[-1]
+        # 5y regression not beating volatility in 5y
+        or df[f'{add_string_5y}Growth Upper'].iat[-1 - future - window] > df[f'{add_string_5y}Growth Lower'].iat[-1 - future]
     ):
         dictionary[DictionaryKeys.growth_too_low] = True
 
+    # pd.set_option('display.max_columns', None)
+    # pd.set_option('display.width', None)
+    # pd.set_option('display.max_colwidth', None)
+    # print(df.tail())
+    # print(df.head())
+
+    days_to_outperform_volitality = bisect_left(df['Growth Lower'].to_numpy(), df['Growth Upper'].iat[0])
+
     if (
-        df[P.H.value].iat[-1 - future] >= df['Growth Lower (Low)'].iat[-1 - future]
+        # price not below lower 10y regression
+        df[P.C.value].iat[-1 - future] > df['Growth Lower'].iat[-1 - future]
+        # price not below lower 5y regression
+        or df[P.C.value].iat[-1 - future] > df[f'{add_string_5y}Growth Lower'].iat[-1 - future]
+        # 10y regression not growing
+        # or df[f'{add_string_5y}Growth'].iat[-1 - future] > df['Growth'].iat[-1 - future]
+        or df[P.L.value].iat[-1 - future] > min(df[P.H.value].iloc[-1 - days_to_outperform_volitality:-1 - future])
         # or df[P.L.value].iat[-1 - future] >= min(df[P.H.value].iloc[-1 - future - len(df) // 10:-1 - future])
     ):
         dictionary[DictionaryKeys.too_expensive] = True
 
     if price_target_low is None:
-        price_target_low = df['Growth Lower (Low)'].iat[-1]
+        price_target_low = min(df['Growth Lower'].iat[-1], df[f'{add_string_5y}Growth Lower'].iat[-1])
+        # price_target_low = df['Growth Lower'].iat[-1]
     else:
-        price_target_low = min(price_target_low, df['Growth Lower (Low)'].iat[-1])
+        price_target_low = min(price_target_low, df['Growth Lower'].iat[-1], df[f'{add_string_5y}Growth Lower'].iat[-1])
+        # price_target_low = min(price_target_low, df['Growth Lower'].iat[-1])
 
     if price_target_high is None:
-        price_target_high = df['Growth Upper (High)'].iat[-1]
+        price_target_high = max(df['Growth Upper'].iat[-1], df[f'{add_string_5y}Growth Upper'].iat[-1])
+        # price_target_high = df['Growth Upper'].iat[-1]
     else:
-        price_target_high = max(price_target_high, df['Growth Upper (High)'].iat[-1])
+        price_target_high = max(price_target_high, df['Growth Upper'].iat[-1], df[f'{add_string_5y}Growth Upper'].iat[-1])
+        # price_target_high = max(price_target_high, df['Growth Upper'].iat[-1])
 
-    if 0.9 * price_target_low <= df[P.H.value].iat[-1 - future]:
+    # if 0.9 * price_target_low <= df[P.H.value].iat[-1 - future]:
+    if price_target_low < df[P.C.value].iat[-1 - future]:
         dictionary[DictionaryKeys.price_target_too_low] = True
 
     if not full and not has_buy_signal(dictionary):
         return dictionary, None
 
-    name = yfinance_service.get_name(ticker=ticker)
+    name = yfinance_service.get_name(ticker=ticker, industry_pe_ratio=industry_pe_ratio)
     ev_to_ebitda = yfinance_service.get_ev_to_ebitda(ticker)
     subtitle = None
 
     if price_target_low is not None or peg_ratio is not None or pe_ratio is not None or ev_to_ebitda is not None:
         subtitle = ''
         if price_target_low is not None:
-            relative_offset = ((df[P.H.value].iat[-1 - future] / price_target_low) - 1.0) * 100.0
-            subtitle += f'PT: {round_down(price_target_low)} ({round_down(relative_offset)}%) / {round_up(price_target_high)} - '
+            # relative_offset = ((df[P.C.value].iat[-1 - future] / price_target_low) - 1.0) * 100.0
+            # subtitle += f'PT: {round_down(price_target_low)} ({round_down(relative_offset)}%) / {round_up(price_target_high)} - '-
+            subtitle += f'PT: {round_down(price_target_low)} / {round_up(price_target_high)} - '
         if peg_ratio is not None:
             subtitle += f'PEG: {round_up(peg_ratio)} - '
         if pe_ratio is not None:
             subtitle += f'P/E: {round_up(pe_ratio)} - '
         if ev_to_ebitda is not None:
             subtitle += f'EV/EBITDA: {round_up(ev_to_ebitda)} - '
+        # if macd is not None:
+        #     subtitle += f'MACD Diff: {round_down(macd)} - '
+        # if rsi is not None:
+        #     subtitle += f'RSI: {round_up(rsi)} - '
         subtitle = subtitle[:-3]
 
     plot_path = plot_utility.plot_bands_by_labels(
-        df=df,
+        df=df.iloc[window:],
         ticker=ticker,
         title=name,
         subtitle=subtitle,
@@ -140,9 +207,14 @@ def analyze(df, ticker, future=250, full=False):
             'Growth',
             'Growth Lower',
             'Growth Upper',
+            f'{add_string_5y}Growth',
+            f'{add_string_5y}Growth Lower',
+            f'{add_string_5y}Growth Upper',
         ],
         yscale='linear',
         today=-1-future,
+        close_only=True,
+        # sma_label=f'SMA-200',
     )
 
     return dictionary, plot_path
@@ -154,6 +226,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     tickers = ticker_service.get_all_tickers()
+    # tickers = ticker_service.get_s_p_500_tickers()
+    # tickers = ticker_service.get_dow_jones_tickers()
 
     too_short = 0
     peg_ratio_too_high = 0
@@ -161,16 +235,19 @@ if __name__ == '__main__':
     growth_too_low = 0
     too_expensive = 0
     no_momentum = 0
+    pe_ratio_too_high = 0
     undervalued = 0
 
     plot_paths = []
+
+    main_pe_ratios = pe_utility.get_pe_ratios()
 
     chunk_size_main = 100
     for i, ticker_chunk in enumerate(chunk_list(tickers, chunk_size_main)):
         print(f'Processing chunk {i + 1} of {len(tickers) // chunk_size_main + 1}')
 
-        if i > 0:
-            time.sleep(chunk_size_main)
+        # if i > 0:
+        #     time.sleep(chunk_size_main)
 
         df_main = yf.download(
             ticker_chunk,
@@ -185,7 +262,7 @@ if __name__ == '__main__':
             future_main = len(ticker_df_main) // 10
 
             try:
-                dictionary_main, plot_path_main = analyze(df=ticker_df_main, ticker=ticker_main, future=future_main)
+                dictionary_main, plot_path_main = analyze(df=ticker_df_main, ticker=ticker_main, future=future_main, pe_ratios=main_pe_ratios)
             except Exception as e:
                 print(f'Error processing {ticker_main}: {e}')
                 continue
@@ -200,8 +277,10 @@ if __name__ == '__main__':
                 growth_too_low += 1
             if dictionary_main[DictionaryKeys.too_expensive]:
                 too_expensive += 1
-            if dictionary_main[DictionaryKeys.no_momentum]:
+            if dictionary_main[DictionaryKeys.no_technicals]:
                 no_momentum += 1
+            if dictionary_main[DictionaryKeys.pe_ratio_too_high]:
+                pe_ratio_too_high += 1
 
             if plot_path_main is None:
                 continue
@@ -214,7 +293,8 @@ if __name__ == '__main__':
     print(f'Price target too low: {price_target_too_low}')
     print(f'Growth too low: {growth_too_low}')
     print(f'Too expensive: {too_expensive}')
-    print(f'No momentum: {no_momentum}')
+    print(f'No technicals: {no_momentum}')
+    print(f'PE ratio too high: {pe_ratio_too_high}')
     print(f'Total tickers: {len(tickers)}')
     print(f'Undervalued: {undervalued}')
 

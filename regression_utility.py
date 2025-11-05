@@ -2,8 +2,10 @@ import numpy as np
 from scipy.optimize import linprog
 from scipy.sparse import vstack, hstack, eye, csr_matrix
 import pandas as pd
+import yfinance as yf
 
 from yfinance_service import P
+import yfinance_service
 
 
 def get_fit(closes):
@@ -35,7 +37,59 @@ def get_date(date, offset):
     return date + pd.DateOffset(days=offset + weekends * 2)
 
 
-def add_window_growths(df, window=1250, future=0):
+def add_close_window_growths(df, window=1250, future=0, add_full_length_growth=False, add_string=''):
+    growth = pd.Series(index=df.index)
+    growth_lower = pd.Series(index=df.index)
+    growth_upper = pd.Series(index=df.index)
+
+    slope = 0.0
+    intercept = 0.0
+    rmse = 0.0
+
+    for start_index in range(len(df) - window):
+        end_index = start_index + window
+        date = df.index[end_index]
+
+        sub_df = df.iloc[start_index:end_index]
+        g, g_l, g_u, slope, intercept, rmse = get_growth_and_final_coefficients(sub_df[P.C.value])
+
+        growth[date] = g
+        growth_lower[date] = g_l
+        growth_upper[date] = g_u
+
+        if start_index == 0:
+            for index in range(window):
+                date = df.index[index]
+                growth[date] = np.exp(slope * index + intercept)
+                growth_lower[date] = np.exp(slope * index + intercept - rmse)
+                growth_upper[date] = np.exp(slope * index + intercept + rmse)
+
+    last_date = df.index[-1]
+    future_dates = pd.bdate_range(start=last_date + pd.offsets.BDay(), periods=future)
+
+    future_growth = pd.Series(index=future_dates)
+    future_growth_lower = pd.Series(index=future_dates)
+    future_growth_upper = pd.Series(index=future_dates)
+
+    for i, n in enumerate(range(window, window + future)):
+        fit = slope * n + intercept
+        future_growth[future_dates[i]] = np.exp(fit)
+        future_growth_lower[future_dates[i]] = np.exp(fit - rmse)
+        future_growth_upper[future_dates[i]] = np.exp(fit + rmse)
+
+    if not add_full_length_growth:
+        df = df.reindex(df.index.union(future_dates))
+    else:
+        df = add_close_window_growths(df, window=len(df)-1, future=future, add_full_length_growth=False)
+
+    df[f'{add_string}Growth'] = safe_concat([growth, future_growth])
+    df[f'{add_string}Growth Lower'] = safe_concat([growth_lower, future_growth_lower])
+    df[f'{add_string}Growth Upper'] = safe_concat([growth_upper, future_growth_upper])
+
+    return df
+
+
+def add_window_growths(df, window=1250, future=0, add_full_length_growth=False, add_string=''):
     growth_h = pd.Series(index=df.index)
     growth_lower_h = pd.Series(index=df.index)
     growth_upper_h = pd.Series(index=df.index)
@@ -95,14 +149,17 @@ def add_window_growths(df, window=1250, future=0):
         future_growth_lower_l[future_dates[i]] = np.exp(fit_l - rmse_l)
         future_growth_upper_l[future_dates[i]] = np.exp(fit_l + rmse_l)
 
-    df = df.reindex(df.index.union(future_dates))
+    if not add_full_length_growth:
+        df = df.reindex(df.index.union(future_dates))
+    else:
+        df = add_window_growths(df, window=len(df)-1, future=future, add_full_length_growth=False)
 
-    df['Growth (High)'] = safe_concat([growth_h, future_growth_h])
-    df['Growth Lower (High)'] = safe_concat([growth_lower_h, future_growth_lower_h])
-    df['Growth Upper (High)'] = safe_concat([growth_upper_h, future_growth_upper_h])
-    df['Growth (Low)'] = safe_concat([growth_l, future_growth_l])
-    df['Growth Lower (Low)'] = safe_concat([growth_lower_l, future_growth_lower_l])
-    df['Growth Upper (Low)'] = safe_concat([growth_upper_l, future_growth_upper_l])
+    df[f'{add_string}Growth (High)'] = safe_concat([growth_h, future_growth_h])
+    df[f'{add_string}Growth Lower (High)'] = safe_concat([growth_lower_h, future_growth_lower_h])
+    df[f'{add_string}Growth Upper (High)'] = safe_concat([growth_upper_h, future_growth_upper_h])
+    df[f'{add_string}Growth (Low)'] = safe_concat([growth_l, future_growth_l])
+    df[f'{add_string}Growth Lower (Low)'] = safe_concat([growth_lower_l, future_growth_lower_l])
+    df[f'{add_string}Growth Upper (Low)'] = safe_concat([growth_upper_l, future_growth_upper_l])
 
     return df
 
@@ -275,3 +332,28 @@ def get_growths(closes, future=0):
     double_upper_growth = [g * error_factor ** 2 for g in growth]
 
     return growth, lower_growth, upper_growth, double_lower_growth, double_upper_growth
+
+
+if __name__ == "__main__":
+    ticker = 'NVDA'
+    period = '10y'
+
+    main_df = yf.download(
+        [ticker],
+        period=period,
+        interval='1d',
+        group_by='ticker',
+    )
+    ticker_df = yfinance_service.extract_ticker_df(df=main_df, ticker=ticker)
+
+    main_window = len(ticker_df) // 2
+    main_future = len(ticker_df) // 10
+
+    main_df = add_window_growths(ticker_df, window=main_window, future=main_future, add_full_length_growth=True, add_string='5y ')
+
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.width', None)
+    pd.set_option('display.max_colwidth', None)
+
+    print(main_df.tail(10))
+    print(main_df.head(10))

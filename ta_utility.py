@@ -19,15 +19,40 @@ def get_macd(close):
 
 def has_momentum(close):
     macd, macd_signal, macd_diff = get_macd(close)
-    return macd[-1] > 0.0 and macd_signal[-1] > 0.0 and macd_diff[-1] > 0.0
+    # return macd[-1] > 0.0 and macd_signal[-1] > 0.0 and macd_diff[-1] > 0.0
+    # return macd[-1] > 0.0 or macd_signal[-1] > 0.0 or macd_diff[-1] > 0.0
+    return macd_diff[-1] > 0.0
 
 
-def df_has_momentum(df):
-    open_momentum = has_momentum(df[P.O.value])
-    high_momentum = has_momentum(df[P.H.value])
-    low_momentum = has_momentum(df[P.L.value])
-    close_momentum = has_momentum(df[P.C.value])
-    return open_momentum or high_momentum or low_momentum or close_momentum
+def add_rsi(df):
+    rsi = RSIIndicator(df[P.C.value], fillna=True)
+    df["RSI"] = rsi.rsi()
+    return df
+
+
+def add_macd(df):
+    macd = MACD(df[P.C.value], fillna=True)
+    df["MACD"] = macd.macd()
+    df["MACD Signal"] = macd.macd_signal()
+    df["MACD Diff"] = macd.macd_diff()
+    return df
+
+
+def add_sma(df, window=200):
+    sma = SMAIndicator(df[P.C.value], window=window, fillna=True)
+    df[f"SMA-{window}"] = sma.sma_indicator()
+    return df
+
+
+def has_technicals(close):
+    # open_momentum = has_momentum(df[P.O.value])
+    # high_momentum = has_momentum(df[P.H.value])
+    # low_momentum = has_momentum(df[P.L.value])
+    # close_momentum = has_momentum(close)
+    macd, macd_signal, macd_diff = get_macd(close)
+    rsi, rsi_sma = get_rsi(close)
+    # return open_momentum or high_momentum or low_momentum or close_momentum
+    return (macd_diff[-1] > 0.0 and rsi[-1] < 70.0) or rsi_sma[-1] < 30.0
 
 
 def get_ema(close, window=200):

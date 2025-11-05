@@ -1,11 +1,13 @@
 import math
 
-import telegram_service
+# import telegram_service
 import yfinance_service
 from constants import output_directory
 from yfinance_service import P
 from constants import DictionaryKeys
 
+
+subscriptions_file = '/home/moritz/PycharmProjects/StonksTelegramBot/subscriptions.txt'
 
 bearish_emoji = "📉"
 bullish_emoji = "📈"
@@ -122,7 +124,7 @@ def write_message_by_dictionary(dictionary, ticker):
         message += "   Growth to volatility too low \n "
     if dictionary[DictionaryKeys.too_expensive]:
         message += "   Not cheap \n "
-    if dictionary[DictionaryKeys.no_momentum]:
+    if dictionary[DictionaryKeys.no_technicals]:
         message += "   No momentum\n "
     # if dictionary[DictionaryKeys.not_52w_low]:
     #     message += "   Not 52w low \n "
@@ -370,6 +372,7 @@ def round_down(value):
     precision = max(0, -order + 2)
     return f"{sign}{rounded:.{precision}f}"
 
+
 def round_up(value):
     if value == 0.0:
         return "0.0"
@@ -383,7 +386,7 @@ def round_up(value):
 
 
 async def get_subscriptions_message(chat_id):
-    subscriptions = telegram_service.get_subscriptions()
+    subscriptions = get_subscriptions()
     tickers = [sub.split('$')[1] for sub in subscriptions if sub.startswith(f'{chat_id}$')]
     if tickers:
         message = ""
@@ -395,8 +398,16 @@ async def get_subscriptions_message(chat_id):
             message += f"- {name}\n"
     else:
         message = "You have no subscriptions."
-    message.replace("-", "\\-").replace(".", "\\.")
     return message
+
+
+def get_subscriptions():
+    try:
+        with open(subscriptions_file, 'r') as file:
+            subscriptions = file.read().splitlines()
+    except FileNotFoundError:
+        subscriptions = []
+    return subscriptions
 
 
 if __name__ == "__main__":

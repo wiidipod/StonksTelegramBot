@@ -368,21 +368,36 @@ def plot_reversal(df, ticker):
     return fname
 
 
-def plot_bands_by_labels(df, ticker, title, labels, subtitle=None, fname=None, yscale='linear', today=-1):
+def plot_bands_by_labels(df, ticker, title, labels, subtitle=None, fname=None, yscale='linear', today=-1, close_only=False, sma_label=None):
     if fname is None:
         fname = f'{output_directory}{ticker}_two_bands_plot.png'
+
     fig = plt.figure(figsize=(9.0, 9.0), dpi=300)
     fig.suptitle(title)
     subplot = fig.add_subplot(111)
+
     if subtitle:
         subplot.set_title(subtitle)
+
     subplot.set_yscale(yscale)
     subplot.set_ylabel(yfinance_service.get_currency(ticker))
     subplot.set_xlabel('Date')
     subplot.grid(True)
+
     for label in labels:
-        subplot.fill_between(df.index, df[f'{label} (High)'], df[f'{label} (Low)'], label=f'{label} ({round_up(df[f"{label} (High)"].iat[today])} / {round_down(df[f"{label} (Low)"].iat[today])})')
-    subplot.fill_between(df.index, df[P.H.value], df[P.L.value], label=f'Price ({round_up(df[P.H.value].iat[today])} / {round_down(df[P.L.value].iat[today])})')
+        if not close_only:
+            subplot.fill_between(df.index, df[f'{label} (High)'], df[f'{label} (Low)'], label=f'{label} ({round_up(df[f"{label} (High)"].iat[today])} / {round_down(df[f"{label} (Low)"].iat[today])})')
+        else:
+            subplot.plot(df.index, df[label], label=f'{label} ({round_down(df[label].iat[today])})')
+
+    if not close_only:
+        subplot.fill_between(df.index, df[P.H.value], df[P.L.value], label=f'Price ({round_up(df[P.H.value].iat[today])} / {round_down(df[P.L.value].iat[today])})')
+    else:
+        subplot.plot(df.index, df[P.C.value], label=f'Price ({round_up(df[P.C.value].iat[today])})')
+
+    if sma_label:
+        subplot.plot(df.index, df[sma_label], label=f'{sma_label} ({round_down(df[sma_label].iat[today])})')
+
     subplot.legend()
     fig.tight_layout()
     fig.savefig(fname)
@@ -390,20 +405,21 @@ def plot_bands_by_labels(df, ticker, title, labels, subtitle=None, fname=None, y
 
 
 if __name__ == '__main__':
-    main_ticker = '^990100-USD-STRD'
+    # main_ticker = '^990100-USD-STRD'
+    main_ticker = 'NVDA'
 
     df = yf.download(
         [main_ticker],
-        period='max',
+        period='10y',
         interval='1d',
         group_by='ticker',
     )
     ticker_df = yfinance_service.extract_ticker_df(df=df, ticker=main_ticker)
 
-    future = 0
+    future = len(df) // 10
 
-    window = len(df) - 1
-    ticker_df = regression_utility.add_window_growths(ticker_df, window=window, future=future)
+    window = len(df) // 2
+    ticker_df = regression_utility.add_window_growths(ticker_df, window=window, future=future, add_full_length_growth=True, add_string='5y')
 
     plot_path = plot_bands_by_labels(
         df=ticker_df,
@@ -414,6 +430,9 @@ if __name__ == '__main__':
             'Growth',
             'Growth Lower',
             'Growth Upper',
+            '5yGrowth',
+            '5yGrowth Lower',
+            '5yGrowth Upper',
         ],
         yscale='log',
         today=-1-future,
