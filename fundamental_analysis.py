@@ -474,6 +474,6 @@ def analyze_stock(ticker):
 
 if __name__ == '__main__':
     # Just change the ticker here
-    ticker = 'FDS'
+    ticker = 'KKR'
 
     analyze_stock(ticker)
