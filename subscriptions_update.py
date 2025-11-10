@@ -42,8 +42,7 @@ if __name__ == '__main__':
             tickers_main[ticker_main] = []
         tickers_main[ticker_main].append(chat_id_main)
 
-    asyncio.run(send_all(tickers_main, application_main))
-
+    asyncio.run(send_all(dict(sorted(tickers_main.items())), application_main))
 
 # if __name__ == '__main__':
 #     subscriptions = telegram_service.get_subscriptions()
