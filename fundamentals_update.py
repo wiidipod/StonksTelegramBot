@@ -114,7 +114,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         pe_ratio = yfinance_service.get_pe_ratio(ticker)
         peg_ratio = yfinance_service.get_peg_ratio(ticker)
         industry = yfinance_service.get_industry(ticker)
-        industry_pe_ratio = pe_ratios.get(industry) or None
+        industry_pe_ratio = pe_ratios.get(industry) or pe_ratios.get('S&P 500') or 19.38
         price_target_low = yfinance_service.get_price_target(ticker, low=True)
         price_target_high = yfinance_service.get_price_target(ticker, low=False)
         if price_target_low is None:
@@ -152,6 +152,10 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
             if peg_ratio > 2.0 and pe_ratio > 2.0 * industry_pe_ratio:
                 dictionary[DictionaryKeys.peg_ratio_too_high] = True
                 dictionary[DictionaryKeys.pe_ratio_too_high] = True
+            elif peg_ratio > 1.0 and pe_ratio > 2.0 * industry_pe_ratio:
+                dictionary[DictionaryKeys.pe_ratio_too_high] = True
+            elif peg_ratio > 2.0 and pe_ratio > industry_pe_ratio:
+                dictionary[DictionaryKeys.peg_ratio_too_high] = True
         elif pe_ratio is not None and industry_pe_ratio is not None:
             if pe_ratio > 2.0 * industry_pe_ratio:
                 dictionary[DictionaryKeys.pe_ratio_too_high] = True
@@ -231,7 +235,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         subtitle = subtitle[:-3]
 
     plot_path = plot_utility.plot_bands_by_labels(
-        df=df.iloc[window:],
+        df=df,  # .iloc[window:],
         ticker=ticker,
         title=name,
         subtitle=subtitle,
@@ -260,6 +264,7 @@ if __name__ == '__main__':
     tickers = ticker_service.get_all_tickers()
     # tickers = ticker_service.get_s_p_500_tickers()
     # tickers = ticker_service.get_dow_jones_tickers()
+    # tickers = ['AAPL']
 
     too_short = 0
     peg_ratio_too_high = 0
