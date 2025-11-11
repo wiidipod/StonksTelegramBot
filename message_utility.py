@@ -390,7 +390,7 @@ async def get_subscriptions_message(chat_id):
     tickers = [sub.split('$')[1] for sub in subscriptions if sub.startswith(f'{chat_id}$')]
     if tickers:
         message = ""
-        for ticker in tickers:
+        for ticker in sorted(tickers):
             try:
                 name = yfinance_service.get_name(ticker, mono=True)
             except:
