@@ -296,8 +296,13 @@ def is_crypto(ticker):
 def is_future(ticker):
     return ticker[-2:] == '=F'
 
+
+def is_currency(ticker):
+    return ticker[-2:] == '=X'
+
+
 def is_stock(ticker):
-    return not is_index(ticker) and not is_crypto(ticker) and not is_future(ticker)
+    return not is_index(ticker) and not is_crypto(ticker) and not is_future(ticker) and not is_currency(ticker)
 
 
 def get_hype_tickers():
