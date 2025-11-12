@@ -3,6 +3,7 @@ import math
 # import telegram_service
 import yfinance_service
 from constants import output_directory
+from ticker_service import sort_tickers
 from yfinance_service import P
 from constants import DictionaryKeys
 
@@ -390,7 +391,7 @@ async def get_subscriptions_message(chat_id):
     tickers = [sub.split('$')[1] for sub in subscriptions if sub.startswith(f'{chat_id}$')]
     if tickers:
         message = ""
-        for ticker in sorted(tickers):
+        for ticker in sort_tickers(tickers):
             try:
                 name = yfinance_service.get_name(ticker, mono=True)
             except:
