@@ -224,6 +224,17 @@ def get_precious_metals_tickers():
     return get_tickers(source, attribute=attribute, name=name, table_index=table_index, column=column, is_future=True)
 
 
+def get_energy_tickers():
+    source = 'https://en.wikipedia.org/wiki/List_of_traded_commodities'
+    attribute = 'class'
+    name = 'wikitable'
+    table_index = 3
+    column = 3
+    tickers = get_tickers(source, attribute=attribute, name=name, table_index=table_index, column=column, is_future=True)
+    tickers = [ticker.split(' ') for ticker in tickers]
+    return [ticker for ticker in tickers if '(' not in ticker]
+
+
 def get_atx_tickers():
     source = 'https://www.wienerborse.at/en/index/atx-AT0000999982/composition/'
     resp = requests.get(source)
@@ -303,6 +314,15 @@ def is_currency(ticker):
 
 def is_stock(ticker):
     return not is_index(ticker) and not is_crypto(ticker) and not is_future(ticker) and not is_currency(ticker)
+
+
+def sort_tickers(tickers):
+    stock_tickers = sorted([t for t in tickers if is_stock(t)])
+    index_tickers = sorted([t for t in tickers if is_index(t)])
+    future_tickers = sorted([t for t in tickers if is_future(t)])
+    currency_tickers = sorted([t for t in tickers if is_currency(t)])
+    crypto_tickers = sorted([t for t in tickers if is_crypto(t)])
+    return stock_tickers + index_tickers + future_tickers + currency_tickers + crypto_tickers
 
 
 def get_hype_tickers():
@@ -480,10 +500,23 @@ def get_all_tickers():
 
     try:
         precious_metals_tickers = get_precious_metals_tickers()
-        print(f'Precious metals tickers: {len(precious_metals_tickers)}')
+        if len(precious_metals_tickers) != 4:
+            print('Precious metals tickers missing!')
+        else:
+            print(f'Precious metals tickers: {len(precious_metals_tickers)}')
         tickers.extend(precious_metals_tickers)
     except Exception as e:
         print(f'Error fetching precious metals tickers: {e}')
+
+    try:
+        energy_tickers = get_energy_tickers()
+        if len(energy_tickers) != 10:
+            print('Energy tickers missing!')
+        else:
+            print(f'Energy tickers: {len(energy_tickers)}')
+        tickers.extend(energy_tickers)
+    except Exception as e:
+        print(f'Error fetching energy tickers: {e}')
 
     # try:
     #     hype_tickers = get_hype_tickers()
@@ -497,7 +530,7 @@ def get_all_tickers():
     # tickers.extend(get_kospi_tickers())  # South Korea
     # tickers.extend(get_cryptocurrency_tickers())  # Cryptocurrencies
     # tickers.extend(get_precious_metals_tickers())  # Precious Metals
-    return sorted(list(set(tickers)))
+    return sort_tickers(list(set(tickers)))
 
 
 if __name__ == '__main__':
