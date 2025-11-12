@@ -5,6 +5,8 @@ import asyncio
 import pe_utility
 import argparse
 
+from ticker_service import sort_tickers
+
 
 async def send_all(tickers, application):
     pe_ratios = pe_utility.get_pe_ratios()
@@ -42,7 +44,9 @@ if __name__ == '__main__':
             tickers_main[ticker_main] = []
         tickers_main[ticker_main].append(chat_id_main)
 
-    asyncio.run(send_all(dict(sorted(tickers_main.items())), application_main))
+    # asyncio.run(send_all(dict(sorted(tickers_main.items())), application_main))
+    sorted_tickers = {ticker: tickers_main[ticker] for ticker in sort_tickers(tickers_main.keys())}
+    asyncio.run(send_all(sorted_tickers, application_main))
 
 # if __name__ == '__main__':
 #     subscriptions = telegram_service.get_subscriptions()
