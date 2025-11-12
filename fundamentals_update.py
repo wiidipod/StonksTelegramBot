@@ -188,7 +188,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         # price not below lower 5y regression
         # or df[P.C.value].iat[-1 - future] > df[f'{add_string_5y}Growth Lower'].iat[-1 - future]
         # price not low for volatility and growth
-        or min(df[P.C.value].iloc[-1-future-26:-future]) > min(df[P.C.value].iloc[-1-future-days_to_outperform_volatility:-1-future-26])
+        or min(df[P.L.value].iloc[-1-future-26:-future]) > min(df[P.H.value].iloc[-1-future-days_to_outperform_volatility:-1-future-26])
     ):
         dictionary[DictionaryKeys.too_expensive] = True
 
