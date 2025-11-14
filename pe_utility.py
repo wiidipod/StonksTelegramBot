@@ -4,10 +4,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
-import statistics
+import csv
+import os
 
 
-def get_pe_ratios():
+def update_pe_ratios(csv_file='pe_ratios.csv'):
     chrome_options = Options()
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--no-sandbox')
@@ -60,6 +61,14 @@ def get_pe_ratios():
                         pass
 
         driver.quit()
+
+        # Save to CSV
+        with open(csv_file, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            writer.writerow(['Industry', 'PE_Ratio'])
+            for industry, ratio in pe_ratios.items():
+                writer.writerow([industry, ratio])
+
         return pe_ratios
 
     except Exception as e:
@@ -67,8 +76,28 @@ def get_pe_ratios():
         return {}
 
 
+def get_pe_ratios(csv_file='pe_ratios.csv'):
+    """Read PE ratios from CSV file, fallback to scraping if file doesn't exist."""
+    if os.path.exists(csv_file):
+        try:
+            pe_ratios = {}
+            with open(csv_file, 'r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    pe_ratios[row['Industry']] = float(row['PE_Ratio'])
+            return pe_ratios
+        except Exception as e:
+            print(f"Error reading CSV: {e}. Fetching fresh data...")
+            return update_pe_ratios(csv_file)
+    else:
+        print("CSV file not found. Fetching fresh data...")
+        return update_pe_ratios(csv_file)
+
+
 if __name__ == "__main__":
+    pe_ratios = update_pe_ratios()
+    for industry, ratio in pe_ratios.items():
+        print(f"{industry}: {ratio}")
     pe_ratios = get_pe_ratios()
-    print(pe_ratios['S&P 500'])
-    # for industry, ratio in pe_ratios.items():
-    #     print(f"{industry}: {ratio}")
+    for industry, ratio in pe_ratios.items():
+        print(f"{industry}: {ratio}")

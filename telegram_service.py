@@ -12,7 +12,7 @@ from message_utility import get_subscriptions
 from message_utility import subscriptions_file
 from message_utility import get_subscriptions_message
 import pe_utility
-
+from ticker_service import is_stock
 
 subscribers_file = '/home/moritz/PycharmProjects/StonksTelegramBot/subscribers.txt'
 
@@ -133,9 +133,22 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
-        pe_ratios = pe_utility.get_pe_ratios()
-    except:
-        pe_ratios = {}
+        if len(context.args) < 1:
+            await update.message.reply_text("Invalid input. Try `/analyze AAPL`", parse_mode='MarkdownV2')
+            return
+
+        ticker = context.args[0]
+    except Exception as e:
+        try:
+            await update.message.reply_text(f"An error occurred: {str(e)}")
+        except Exception as send_error:
+            logging.error(f"Failed to send error message to chat: {send_error}. Original error: {e}")
+
+    if is_stock(ticker):
+        try:
+            pe_ratios = pe_utility.get_pe_ratios()
+        except:
+            pe_ratios = {}
 
     try:
         if len(context.args) < 1:
