@@ -132,6 +132,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    pe_ratios = {}
+    ticker = ''
     try:
         if len(context.args) < 1:
             await update.message.reply_text("Invalid input. Try `/analyze AAPL`", parse_mode='MarkdownV2')
@@ -149,14 +151,10 @@ async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
             pe_ratios = pe_utility.get_pe_ratios()
         except:
             pe_ratios = {}
+    else:
+        pe_ratios = {}
 
     try:
-        if len(context.args) < 1:
-            await update.message.reply_text("Invalid input. Try `/analyze AAPL`", parse_mode='MarkdownV2')
-            return
-
-        ticker = context.args[0]
-
         plot_path, message_path = fundamentals_update.get_plot_and_message_paths_for(ticker, pe_ratios=pe_ratios)
 
         await send_plot_with_message(plot_path=plot_path, message_path=message_path, chat_id=update.effective_chat.id, context=context)
