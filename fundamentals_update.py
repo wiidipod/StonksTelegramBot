@@ -13,7 +13,7 @@ import time
 import argparse
 from message_utility import round_down, round_up
 import message_utility
-from ticker_service import is_stock
+from ticker_service import is_stock, is_crypto
 from ta_utility import has_technicals
 import pe_utility
 import pandas as pd
@@ -134,6 +134,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         df,
         window=window,
         future=future,
+        is_crypto=is_crypto(ticker)
         # add_full_length_growth=True,
         # add_string=add_string_5y
     )
@@ -144,26 +145,34 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
                 peg_ratio = get_peg_ratio(df, labels=["Growth"], one_year=future, pe_ratio=pe_ratio)
             else:
                 peg_ratio = max(peg_ratio, get_peg_ratio(df, labels=["Growth"], one_year=future, pe_ratio=pe_ratio))
-
-        if peg_ratio is None and (pe_ratio is None or industry_pe_ratio is None):
-            dictionary[DictionaryKeys.peg_ratio_too_high] = True
+        else:
             dictionary[DictionaryKeys.pe_ratio_too_high] = True
-        elif peg_ratio is not None and pe_ratio is not None and industry_pe_ratio is not None:
-            if peg_ratio > 2.0 and pe_ratio > 2.0 * industry_pe_ratio:
-                dictionary[DictionaryKeys.peg_ratio_too_high] = True
-                dictionary[DictionaryKeys.pe_ratio_too_high] = True
-            elif peg_ratio > 1.0 and pe_ratio > 2.0 * industry_pe_ratio:
-                dictionary[DictionaryKeys.pe_ratio_too_high] = True
-            elif peg_ratio > 2.0 and pe_ratio > industry_pe_ratio:
-                dictionary[DictionaryKeys.peg_ratio_too_high] = True
-        elif pe_ratio is not None and industry_pe_ratio is not None:
-            if pe_ratio > 2.0 * industry_pe_ratio:
-                dictionary[DictionaryKeys.pe_ratio_too_high] = True
-        elif peg_ratio is not None:
-            if peg_ratio > 2.0:
-                dictionary[DictionaryKeys.peg_ratio_too_high] = True
 
-    days_to_outperform_volatility = bisect_left(df['Growth Lower'].to_numpy(), df['Growth Upper'].iat[0])
+        if peg_ratio is None:
+            dictionary[DictionaryKeys.peg_ratio_too_high] = True
+        elif peg_ratio > 1.0:
+            dictionary[DictionaryKeys.peg_ratio_too_high] = True
+
+
+        # if peg_ratio is None and (pe_ratio is None or industry_pe_ratio is None):
+        #     dictionary[DictionaryKeys.peg_ratio_too_high] = True
+        #     dictionary[DictionaryKeys.pe_ratio_too_high] = True
+        # elif peg_ratio is not None and pe_ratio is not None and industry_pe_ratio is not None:
+        #     if peg_ratio > 2.0 and pe_ratio > 2.0 * industry_pe_ratio:
+        #         dictionary[DictionaryKeys.peg_ratio_too_high] = True
+        #         dictionary[DictionaryKeys.pe_ratio_too_high] = True
+        #     elif peg_ratio > 1.0 and pe_ratio > 2.0 * industry_pe_ratio:
+        #         dictionary[DictionaryKeys.pe_ratio_too_high] = True
+        #     elif peg_ratio > 2.0 and pe_ratio > industry_pe_ratio:
+        #         dictionary[DictionaryKeys.peg_ratio_too_high] = True
+        # elif pe_ratio is not None and industry_pe_ratio is not None:
+        #     if pe_ratio > 2.0 * industry_pe_ratio:
+        #         dictionary[DictionaryKeys.pe_ratio_too_high] = True
+        # elif peg_ratio is not None:
+        #     if peg_ratio > 2.0:
+        #         dictionary[DictionaryKeys.peg_ratio_too_high] = True
+
+    # days_to_outperform_volatility = bisect_left(df['Growth Lower'].to_numpy(), df['Growth Upper'].iat[0])
 
     if (
         # 10y regression not beating volatility in 5y
@@ -174,7 +183,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         # or df[f'{add_string_5y}Growth'].iat[-1 - future] > df[f'{add_string_5y}Growth'].iat[-1]
         # 5y regression not beating volatility in 5y
         # or df[f'{add_string_5y}Growth Upper'].iat[-1 - future - window] > df[f'{add_string_5y}Growth Lower'].iat[-1 - future]
-        or days_to_outperform_volatility >= len(df) - future
+        # or days_to_outperform_volatility >= len(df) - future
     ):
         dictionary[DictionaryKeys.growth_too_low] = True
 
@@ -188,7 +197,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         # price not below lower 5y regression
         # or df[P.C.value].iat[-1 - future] > df[f'{add_string_5y}Growth Lower'].iat[-1 - future]
         # price not low for volatility and growth
-        or min(df[P.C.value].iloc[-1-future-26:-future]) > min(df[P.C.value].iloc[-1-future-days_to_outperform_volatility:-1-future-26])
+        # or min(df[P.C.value].iloc[-1-future-26:-future]) > min(df[P.C.value].iloc[-1-future-days_to_outperform_volatility:-1-future-26])
     ):
         dictionary[DictionaryKeys.too_expensive] = True
 

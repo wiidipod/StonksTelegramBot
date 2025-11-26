@@ -37,7 +37,7 @@ def get_date(date, offset):
     return date + pd.DateOffset(days=offset + weekends * 2)
 
 
-def add_close_window_growths(df, window=1250, future=0, add_full_length_growth=False, add_string=''):
+def add_close_window_growths(df, window=1250, future=0, add_full_length_growth=False, add_string='', is_crypto=False):
     growth = pd.Series(index=df.index)
     growth_lower = pd.Series(index=df.index)
     growth_upper = pd.Series(index=df.index)
@@ -51,7 +51,7 @@ def add_close_window_growths(df, window=1250, future=0, add_full_length_growth=F
         date = df.index[end_index]
 
         sub_df = df.iloc[start_index:end_index]
-        g, g_l, g_u, slope, intercept, rmse = get_growth_and_final_coefficients(sub_df[P.C.value])
+        g, g_l, g_u, slope, intercept, rmse = get_growth_and_final_coefficients(sub_df[P.C.value], is_crypto=is_crypto)
 
         growth[date] = g
         growth_lower[date] = g_l
@@ -60,12 +60,23 @@ def add_close_window_growths(df, window=1250, future=0, add_full_length_growth=F
         if start_index == 0:
             for index in range(window):
                 date = df.index[index]
-                growth[date] = np.exp(slope * index + intercept)
-                growth_lower[date] = np.exp(slope * index + intercept - rmse)
-                growth_upper[date] = np.exp(slope * index + intercept + rmse)
+                if is_crypto:
+                    # Linear regression values
+                    growth[date] = slope * index + intercept
+                    growth_lower[date] = slope * index + intercept - rmse
+                    growth_upper[date] = slope * index + intercept + rmse
+                else:
+                    # Exponential regression values
+                    growth[date] = np.exp(slope * index + intercept)
+                    growth_lower[date] = np.exp(slope * index + intercept - rmse)
+                    growth_upper[date] = np.exp(slope * index + intercept + rmse)
 
     last_date = df.index[-1]
-    future_dates = pd.bdate_range(start=last_date + pd.offsets.BDay(), periods=future)
+    # Use regular date range for crypto (7 days/week), business days for stocks (5 days/week)
+    if is_crypto:
+        future_dates = pd.date_range(start=last_date + pd.DateOffset(days=1), periods=future)
+    else:
+        future_dates = pd.bdate_range(start=last_date + pd.offsets.BDay(), periods=future)
 
     future_growth = pd.Series(index=future_dates)
     future_growth_lower = pd.Series(index=future_dates)
@@ -73,14 +84,21 @@ def add_close_window_growths(df, window=1250, future=0, add_full_length_growth=F
 
     for i, n in enumerate(range(window, window + future)):
         fit = slope * n + intercept
-        future_growth[future_dates[i]] = np.exp(fit)
-        future_growth_lower[future_dates[i]] = np.exp(fit - rmse)
-        future_growth_upper[future_dates[i]] = np.exp(fit + rmse)
+        if is_crypto:
+            # Linear regression values
+            future_growth[future_dates[i]] = fit
+            future_growth_lower[future_dates[i]] = fit - rmse
+            future_growth_upper[future_dates[i]] = fit + rmse
+        else:
+            # Exponential regression values
+            future_growth[future_dates[i]] = np.exp(fit)
+            future_growth_lower[future_dates[i]] = np.exp(fit - rmse)
+            future_growth_upper[future_dates[i]] = np.exp(fit + rmse)
 
     if not add_full_length_growth:
         df = df.reindex(df.index.union(future_dates))
     else:
-        df = add_close_window_growths(df, window=len(df)-1, future=future, add_full_length_growth=False)
+        df = add_close_window_growths(df, window=len(df)-1, future=future, add_full_length_growth=False, is_crypto=is_crypto)
 
     df[f'{add_string}Growth'] = safe_concat([growth, future_growth])
     df[f'{add_string}Growth Lower'] = safe_concat([growth_lower, future_growth_lower])
@@ -89,7 +107,7 @@ def add_close_window_growths(df, window=1250, future=0, add_full_length_growth=F
     return df
 
 
-def add_window_growths(df, window=1250, future=0, add_full_length_growth=False, add_string=''):
+def add_window_growths(df, window=1250, future=0, add_full_length_growth=False, add_string='', is_crypto=False):
     growth_h = pd.Series(index=df.index)
     growth_lower_h = pd.Series(index=df.index)
     growth_upper_h = pd.Series(index=df.index)
@@ -109,8 +127,8 @@ def add_window_growths(df, window=1250, future=0, add_full_length_growth=False, 
         date = df.index[end_index]
 
         sub_df = df.iloc[start_index:end_index]
-        g_h, g_l_h, g_u_h, slope_h, intercept_h, rmse_h = get_growth_and_final_coefficients(sub_df[P.H.value])
-        g_l, g_l_l, g_u_l, slope_l, intercept_l, rmse_l = get_growth_and_final_coefficients(sub_df[P.L.value])
+        g_h, g_l_h, g_u_h, slope_h, intercept_h, rmse_h = get_growth_and_final_coefficients(sub_df[P.H.value], is_crypto=is_crypto)
+        g_l, g_l_l, g_u_l, slope_l, intercept_l, rmse_l = get_growth_and_final_coefficients(sub_df[P.L.value], is_crypto=is_crypto)
 
         growth_h[date] = g_h
         growth_lower_h[date] = g_l_h
@@ -122,15 +140,29 @@ def add_window_growths(df, window=1250, future=0, add_full_length_growth=False, 
         if start_index == 0:
             for index in range(window):
                 date = df.index[index]
-                growth_h[date] = np.exp(slope_h * index + intercept_h)
-                growth_lower_h[date] = np.exp(slope_h * index + intercept_h - rmse_h)
-                growth_upper_h[date] = np.exp(slope_h * index + intercept_h + rmse_h)
-                growth_l[date] = np.exp(slope_l * index + intercept_l)
-                growth_lower_l[date] = np.exp(slope_l * index + intercept_l - rmse_l)
-                growth_upper_l[date] = np.exp(slope_l * index + intercept_l + rmse_l)
+                if is_crypto:
+                    # Linear regression values
+                    growth_h[date] = slope_h * index + intercept_h
+                    growth_lower_h[date] = slope_h * index + intercept_h - rmse_h
+                    growth_upper_h[date] = slope_h * index + intercept_h + rmse_h
+                    growth_l[date] = slope_l * index + intercept_l
+                    growth_lower_l[date] = slope_l * index + intercept_l - rmse_l
+                    growth_upper_l[date] = slope_l * index + intercept_l + rmse_l
+                else:
+                    # Exponential regression values
+                    growth_h[date] = np.exp(slope_h * index + intercept_h)
+                    growth_lower_h[date] = np.exp(slope_h * index + intercept_h - rmse_h)
+                    growth_upper_h[date] = np.exp(slope_h * index + intercept_h + rmse_h)
+                    growth_l[date] = np.exp(slope_l * index + intercept_l)
+                    growth_lower_l[date] = np.exp(slope_l * index + intercept_l - rmse_l)
+                    growth_upper_l[date] = np.exp(slope_l * index + intercept_l + rmse_l)
 
     last_date = df.index[-1]
-    future_dates = pd.bdate_range(start=last_date + pd.offsets.BDay(), periods=future)
+    # Use regular date range for crypto (7 days/week), business days for stocks (5 days/week)
+    if is_crypto:
+        future_dates = pd.date_range(start=last_date + pd.DateOffset(days=1), periods=future)
+    else:
+        future_dates = pd.bdate_range(start=last_date + pd.offsets.BDay(), periods=future)
 
     future_growth_h = pd.Series(index=future_dates)
     future_growth_lower_h = pd.Series(index=future_dates)
@@ -142,17 +174,27 @@ def add_window_growths(df, window=1250, future=0, add_full_length_growth=False, 
     for i, n in enumerate(range(window, window + future)):
         fit_h = slope_h * n + intercept_h
         fit_l = slope_l * n + intercept_l
-        future_growth_h[future_dates[i]] = np.exp(fit_h)
-        future_growth_lower_h[future_dates[i]] = np.exp(fit_h - rmse_h)
-        future_growth_upper_h[future_dates[i]] = np.exp(fit_h + rmse_h)
-        future_growth_l[future_dates[i]] = np.exp(fit_l)
-        future_growth_lower_l[future_dates[i]] = np.exp(fit_l - rmse_l)
-        future_growth_upper_l[future_dates[i]] = np.exp(fit_l + rmse_l)
+        if is_crypto:
+            # Linear regression values
+            future_growth_h[future_dates[i]] = fit_h
+            future_growth_lower_h[future_dates[i]] = fit_h - rmse_h
+            future_growth_upper_h[future_dates[i]] = fit_h + rmse_h
+            future_growth_l[future_dates[i]] = fit_l
+            future_growth_lower_l[future_dates[i]] = fit_l - rmse_l
+            future_growth_upper_l[future_dates[i]] = fit_l + rmse_l
+        else:
+            # Exponential regression values
+            future_growth_h[future_dates[i]] = np.exp(fit_h)
+            future_growth_lower_h[future_dates[i]] = np.exp(fit_h - rmse_h)
+            future_growth_upper_h[future_dates[i]] = np.exp(fit_h + rmse_h)
+            future_growth_l[future_dates[i]] = np.exp(fit_l)
+            future_growth_lower_l[future_dates[i]] = np.exp(fit_l - rmse_l)
+            future_growth_upper_l[future_dates[i]] = np.exp(fit_l + rmse_l)
 
     if not add_full_length_growth:
         df = df.reindex(df.index.union(future_dates))
     else:
-        df = add_window_growths(df, window=len(df)-1, future=future, add_full_length_growth=False)
+        df = add_window_growths(df, window=len(df)-1, future=future, add_full_length_growth=False, is_crypto=is_crypto)
 
     df[f'{add_string}Growth (High)'] = safe_concat([growth_h, future_growth_h])
     df[f'{add_string}Growth Lower (High)'] = safe_concat([growth_lower_h, future_growth_lower_h])
@@ -168,13 +210,16 @@ def safe_concat(series_list):
     return pd.concat([s for s in series_list if not s.empty])
 
 
-def add_growths(df, future=0):
-    growth_h, growth_lower_h, growth_upper_h, slope_h, intercept_h, rmse_h = get_growths_and_final_coefficients(df[P.H.value])
-    growth_l, growth_lower_l, growth_upper_l, slope_l, intercept_l, rmse_l = get_growths_and_final_coefficients(df[P.L.value])
+def add_growths(df, future=0, is_crypto=False):
+    growth_h, growth_lower_h, growth_upper_h, slope_h, intercept_h, rmse_h = get_growths_and_final_coefficients(df[P.H.value], is_crypto=is_crypto)
+    growth_l, growth_lower_l, growth_upper_l, slope_l, intercept_l, rmse_l = get_growths_and_final_coefficients(df[P.L.value], is_crypto=is_crypto)
 
     last_date = df.index[-1]
-    future_dates = pd.bdate_range(start=last_date + pd.offsets.BDay(), periods=future)
-    # future_dates = [get_date(last_date, i + 1) for i in range(future)]
+    # Use regular date range for crypto (7 days/week), business days for stocks (5 days/week)
+    if is_crypto:
+        future_dates = pd.date_range(start=last_date + pd.DateOffset(days=1), periods=future)
+    else:
+        future_dates = pd.bdate_range(start=last_date + pd.offsets.BDay(), periods=future)
 
     new_growth_h = []
     new_growth_lower_h = []
@@ -186,12 +231,22 @@ def add_growths(df, future=0):
     for i in range(len(df), len(df) + future):
         fit_h = slope_h * i + intercept_h
         fit_l = slope_l * i + intercept_l
-        new_growth_h.append(np.exp(fit_h))
-        new_growth_lower_h.append(np.exp(fit_h - rmse_h))
-        new_growth_upper_h.append(np.exp(fit_h + rmse_h))
-        new_growth_l.append(np.exp(fit_l))
-        new_growth_lower_l.append(np.exp(fit_l - rmse_l))
-        new_growth_upper_l.append(np.exp(fit_l + rmse_l))
+        if is_crypto:
+            # Linear regression values
+            new_growth_h.append(fit_h)
+            new_growth_lower_h.append(fit_h - rmse_h)
+            new_growth_upper_h.append(fit_h + rmse_h)
+            new_growth_l.append(fit_l)
+            new_growth_lower_l.append(fit_l - rmse_l)
+            new_growth_upper_l.append(fit_l + rmse_l)
+        else:
+            # Exponential regression values
+            new_growth_h.append(np.exp(fit_h))
+            new_growth_lower_h.append(np.exp(fit_h - rmse_h))
+            new_growth_upper_h.append(np.exp(fit_h + rmse_h))
+            new_growth_l.append(np.exp(fit_l))
+            new_growth_lower_l.append(np.exp(fit_l - rmse_l))
+            new_growth_upper_l.append(np.exp(fit_l + rmse_l))
 
     new_growth_h = pd.Series(new_growth_h, index=future_dates)
     new_growth_lower_h = pd.Series(new_growth_lower_h, index=future_dates)
@@ -212,11 +267,20 @@ def add_growths(df, future=0):
     return df
 
 
-def get_growth_and_final_coefficients(series):
-    series_log = np.log(series)
-    n = len(series_log)
-    sum_y = np.sum(series_log)
-    sum_xy = np.sum(np.arange(n) * series_log)
+def get_growth_and_final_coefficients(series, is_crypto=False):
+    if is_crypto:
+        # Linear regression for cryptocurrencies
+        series_data = series.values
+        n = len(series_data)
+        sum_y = np.sum(series_data)
+        sum_xy = np.sum(np.arange(n) * series_data)
+    else:
+        # Exponential regression (log-linear) for stocks
+        series_data = np.log(series)
+        n = len(series_data)
+        sum_y = np.sum(series_data)
+        sum_xy = np.sum(np.arange(n) * series_data)
+
     sum_x = n * (n - 1.0) / 2.0
     sum_xx = (n - 1.0) * n * (2.0 * n - 1.0) / 6.0
     denominator = sum_xx - (sum_x ** 2.0) / n
@@ -229,16 +293,30 @@ def get_growth_and_final_coefficients(series):
         intercept = (sum_y / n) - slope * (sum_x / n)
 
     fit = slope * np.arange(n) + intercept
-    rmse = np.sqrt(np.sum((series_log - fit) ** 2.0) / n)
-    growth = np.exp(fit[-1])
-    growth_lower = np.exp(fit[-1] - rmse)
-    growth_upper = np.exp(fit[-1] + rmse)
+    rmse = np.sqrt(np.sum((series_data - fit) ** 2.0) / n)
+
+    if is_crypto:
+        # Linear values directly
+        growth = fit[-1]
+        growth_lower = fit[-1] - rmse
+        growth_upper = fit[-1] + rmse
+    else:
+        # Exponential values (exp of log regression)
+        growth = np.exp(fit[-1])
+        growth_lower = np.exp(fit[-1] - rmse)
+        growth_upper = np.exp(fit[-1] + rmse)
 
     return growth, growth_lower, growth_upper, slope, intercept, rmse
 
 
-def get_growths_and_final_coefficients(series):
-    series_log = np.log(series)
+def get_growths_and_final_coefficients(series, is_crypto=False):
+    if is_crypto:
+        # Linear regression for cryptocurrencies
+        series_data = series
+    else:
+        # Exponential regression (log-linear) for stocks
+        series_data = np.log(series)
+
     growth = pd.Series(index=series.index)
     growth_lower = pd.Series(index=series.index)
     growth_upper = pd.Series(index=series.index)
@@ -249,7 +327,7 @@ def get_growths_and_final_coefficients(series):
     intercept = 0.0
     rmse = 0.0
 
-    for i, (date, y) in enumerate(series_log.items()):
+    for i, (date, y) in enumerate(series_data.items()):
         n += 1.0
         sum_y += y
         sum_xy += i * y
@@ -266,9 +344,17 @@ def get_growths_and_final_coefficients(series):
 
         fit = slope * i + intercept
         rmse = ((rmse ** 2.0 * i + (y - fit) ** 2.0) / (i + 1.0)) ** 0.5
-        growth[date] = np.exp(fit)
-        growth_lower[date] = np.exp(fit - rmse)
-        growth_upper[date] = np.exp(fit + rmse)
+
+        if is_crypto:
+            # Linear values directly
+            growth[date] = fit
+            growth_lower[date] = fit - rmse
+            growth_upper[date] = fit + rmse
+        else:
+            # Exponential values (exp of log regression)
+            growth[date] = np.exp(fit)
+            growth_lower[date] = np.exp(fit - rmse)
+            growth_upper[date] = np.exp(fit + rmse)
 
     return growth, growth_lower, growth_upper, slope, intercept, rmse
 
