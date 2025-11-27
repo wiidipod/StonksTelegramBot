@@ -92,7 +92,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     df = ta_utility.add_macd(df)
     # df = ta_utility.add_sma(df, window=200)
     try:
-        macd = df["MACD Diff"].iat[-1]
+        macd = df["MACD Diff"].iat[-1] > df["MACD Diff"].iat[-2]
     except:
         macd = None
     try:
@@ -105,7 +105,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     # else:
     #     dictionary[DictionaryKeys.no_technicals] = True
     if macd is not None and rsi is not None:
-        if macd < 0.0 or rsi > 70.0:
+        if not macd or rsi > 70.0:
             dictionary[DictionaryKeys.no_technicals] = True
     else:
         dictionary[DictionaryKeys.no_technicals] = True
