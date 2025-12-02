@@ -93,134 +93,8 @@ def add_close_window_growths(df, window=1250, future=0, add_full_length_growth=F
     return df
 
 
-def add_window_growths(df, window=1250, future=0, add_full_length_growth=False, add_string='', is_crypto=False):
-    growth_h = pd.Series(index=df.index)
-    growth_lower_h = pd.Series(index=df.index)
-    growth_upper_h = pd.Series(index=df.index)
-    growth_l = pd.Series(index=df.index)
-    growth_lower_l = pd.Series(index=df.index)
-    growth_upper_l = pd.Series(index=df.index)
-
-    slope_h = 0.0
-    intercept_h = 0.0
-    rmse_h = 0.0
-    slope_l = 0.0
-    intercept_l = 0.0
-    rmse_l = 0.0
-
-    for start_index in range(len(df) - window):
-        end_index = start_index + window
-        date = df.index[end_index]
-
-        sub_df = df.iloc[start_index:end_index]
-        g_h, g_l_h, g_u_h, slope_h, intercept_h, rmse_h = get_growth_and_final_coefficients(sub_df[P.H.value])
-        g_l, g_l_l, g_u_l, slope_l, intercept_l, rmse_l = get_growth_and_final_coefficients(sub_df[P.L.value])
-
-        growth_h[date] = g_h
-        growth_lower_h[date] = g_l_h
-        growth_upper_h[date] = g_u_h
-        growth_l[date] = g_l
-        growth_lower_l[date] = g_l_l
-        growth_upper_l[date] = g_u_l
-
-        if start_index == 0:
-            for index in range(window):
-                date = df.index[index]
-                growth_h[date] = np.exp(slope_h * index + intercept_h)
-                growth_lower_h[date] = np.exp(slope_h * index + intercept_h - rmse_h)
-                growth_upper_h[date] = np.exp(slope_h * index + intercept_h + rmse_h)
-                growth_l[date] = np.exp(slope_l * index + intercept_l)
-                growth_lower_l[date] = np.exp(slope_l * index + intercept_l - rmse_l)
-                growth_upper_l[date] = np.exp(slope_l * index + intercept_l + rmse_l)
-
-    last_date = df.index[-1]
-    # Use regular date range for crypto (7 days/week), business days for stocks (5 days/week)
-    if is_crypto:
-        future_dates = pd.date_range(start=last_date + pd.DateOffset(days=1), periods=future)
-    else:
-        future_dates = pd.bdate_range(start=last_date + pd.offsets.BDay(), periods=future)
-
-    future_growth_h = pd.Series(index=future_dates)
-    future_growth_lower_h = pd.Series(index=future_dates)
-    future_growth_upper_h = pd.Series(index=future_dates)
-    future_growth_l = pd.Series(index=future_dates)
-    future_growth_lower_l = pd.Series(index=future_dates)
-    future_growth_upper_l = pd.Series(index=future_dates)
-
-    for i, n in enumerate(range(window, window + future)):
-        fit_h = slope_h * n + intercept_h
-        fit_l = slope_l * n + intercept_l
-        future_growth_h[future_dates[i]] = np.exp(fit_h)
-        future_growth_lower_h[future_dates[i]] = np.exp(fit_h - rmse_h)
-        future_growth_upper_h[future_dates[i]] = np.exp(fit_h + rmse_h)
-        future_growth_l[future_dates[i]] = np.exp(fit_l)
-        future_growth_lower_l[future_dates[i]] = np.exp(fit_l - rmse_l)
-        future_growth_upper_l[future_dates[i]] = np.exp(fit_l + rmse_l)
-
-    if not add_full_length_growth:
-        df = df.reindex(df.index.union(future_dates))
-    else:
-        df = add_window_growths(df, window=len(df)-1, future=future, add_full_length_growth=False, is_crypto=is_crypto)
-
-    df[f'{add_string}Growth (High)'] = safe_concat([growth_h, future_growth_h])
-    df[f'{add_string}Growth Lower (High)'] = safe_concat([growth_lower_h, future_growth_lower_h])
-    df[f'{add_string}Growth Upper (High)'] = safe_concat([growth_upper_h, future_growth_upper_h])
-    df[f'{add_string}Growth (Low)'] = safe_concat([growth_l, future_growth_l])
-    df[f'{add_string}Growth Lower (Low)'] = safe_concat([growth_lower_l, future_growth_lower_l])
-    df[f'{add_string}Growth Upper (Low)'] = safe_concat([growth_upper_l, future_growth_upper_l])
-
-    return df
-
-
 def safe_concat(series_list):
     return pd.concat([s for s in series_list if not s.empty])
-
-
-def add_growths(df, future=0, is_crypto=False):
-    growth_h, growth_lower_h, growth_upper_h, slope_h, intercept_h, rmse_h = get_growths_and_final_coefficients(df[P.H.value])
-    growth_l, growth_lower_l, growth_upper_l, slope_l, intercept_l, rmse_l = get_growths_and_final_coefficients(df[P.L.value])
-
-    last_date = df.index[-1]
-    # Use regular date range for crypto (7 days/week), business days for stocks (5 days/week)
-    if is_crypto:
-        future_dates = pd.date_range(start=last_date + pd.DateOffset(days=1), periods=future)
-    else:
-        future_dates = pd.bdate_range(start=last_date + pd.offsets.BDay(), periods=future)
-
-    new_growth_h = []
-    new_growth_lower_h = []
-    new_growth_upper_h = []
-    new_growth_l = []
-    new_growth_lower_l = []
-    new_growth_upper_l = []
-
-    for i in range(len(df), len(df) + future):
-        fit_h = slope_h * i + intercept_h
-        fit_l = slope_l * i + intercept_l
-        new_growth_h.append(np.exp(fit_h))
-        new_growth_lower_h.append(np.exp(fit_h - rmse_h))
-        new_growth_upper_h.append(np.exp(fit_h + rmse_h))
-        new_growth_l.append(np.exp(fit_l))
-        new_growth_lower_l.append(np.exp(fit_l - rmse_l))
-        new_growth_upper_l.append(np.exp(fit_l + rmse_l))
-
-    new_growth_h = pd.Series(new_growth_h, index=future_dates)
-    new_growth_lower_h = pd.Series(new_growth_lower_h, index=future_dates)
-    new_growth_upper_h = pd.Series(new_growth_upper_h, index=future_dates)
-    new_growth_l = pd.Series(new_growth_l, index=future_dates)
-    new_growth_lower_l = pd.Series(new_growth_lower_l, index=future_dates)
-    new_growth_upper_l = pd.Series(new_growth_upper_l, index=future_dates)
-
-    df = df.reindex(df.index.union(future_dates))
-
-    df['Growth (High)'] = safe_concat([growth_h, new_growth_h])
-    df['Growth Lower (High)'] = safe_concat([growth_lower_h, new_growth_lower_h])
-    df['Growth Upper (High)'] = safe_concat([growth_upper_h, new_growth_upper_h])
-    df['Growth (Low)'] = safe_concat([growth_l, new_growth_l])
-    df['Growth Lower (Low)'] = safe_concat([growth_lower_l, new_growth_lower_l])
-    df['Growth Upper (Low)'] = safe_concat([growth_upper_l, new_growth_upper_l])
-
-    return df
 
 
 def get_growth_and_final_coefficients(series):
@@ -364,7 +238,7 @@ if __name__ == "__main__":
     main_window = len(ticker_df) // 2
     main_future = len(ticker_df) // 10
 
-    main_df = add_window_growths(ticker_df, window=main_window, future=main_future, add_full_length_growth=True, add_string='5y ')
+    main_df = add_close_window_growths(ticker_df, window=main_window, future=main_future, add_full_length_growth=True, add_string='5y ')
 
     pd.set_option('display.max_columns', None)
     pd.set_option('display.width', None)

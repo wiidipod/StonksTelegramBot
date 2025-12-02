@@ -405,7 +405,6 @@ def plot_bands_by_labels(df, ticker, title, labels, subtitle=None, fname=None, y
 
 
 if __name__ == '__main__':
-    # main_ticker = '^990100-USD-STRD'
     main_ticker = 'NVDA'
 
     df = yf.download(
@@ -419,7 +418,11 @@ if __name__ == '__main__':
     future = len(df) // 10
 
     window = len(df) // 2
-    ticker_df = regression_utility.add_window_growths(ticker_df, window=window, future=future, add_full_length_growth=True, add_string='5y')
+    ticker_df = regression_utility.add_close_window_growths(
+        ticker_df,
+        window=window,
+        future=future,
+    )
 
     plot_path = plot_bands_by_labels(
         df=ticker_df,
@@ -441,23 +444,3 @@ if __name__ == '__main__':
     print(plot_path)
     print(ticker_df['Growth (High)'].iat[-1])
     print(ticker_df['Growth (Low)'].iat[-1])
-
-    # main_name = yfinance_service.get_name(main_ticker)
-    # main_high, main_low, main_close = yfinance_service.get_high_low_close(main_ticker, period='max', interval='1d')
-    # fit_high, lower_fit_high, upper_fit_high, double_lower_fit_high, double_upper_fit_high, final_growth_high = regression_utility.get_daily_growths(main_high)
-    # fit_low, lower_fit_low, upper_fit_low, double_lower_fit_low, double_upper_fit_low, final_growth_low = regression_utility.get_daily_growths(main_low)
-    # fit_high_2, _, _, _, _, growth_of_fit_high = regression_utility.get_daily_growths(fit_high)
-    # fit_low_2, _, _, _, _, growth_of_fit_low = regression_utility.get_daily_growths(fit_low)
-    # fit_high_3, _, _, _, _, _ = regression_utility.get_daily_growths(fit_high_2)
-    # fit_low_3, _, _, _, _, _ = regression_utility.get_daily_growths(fit_low_2)
-    #
-    # plot_with_growths(
-    #     main_ticker,
-    #     main_name,
-    #     main_close,
-    #     main_high,
-    #     main_low,
-    #     [fit_high, fit_high_2, fit_high_3],
-    #     [fit_low, fit_low_2, fit_low_3],
-    #     show=False,
-    # )

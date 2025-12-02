@@ -22,6 +22,8 @@ logging.basicConfig(
     level=logging.INFO
 )
 
+characters_to_escape = ['-', '.', '(', ')', '!', '+']
+
 
 def get_token():
     try:
@@ -316,7 +318,8 @@ async def send_subscriptions_to_first_chat_id(context: ContextTypes.DEFAULT_TYPE
 
 async def send_message_to_chat_id(chat_id, message, context: ContextTypes.DEFAULT_TYPE):
     try:
-        message = message.replace("-", "\\-").replace(".", "\\.").replace("(", "\\(").replace(")", "\\)").replace("!", "\\!")
+        for char in characters_to_escape:
+            message = message.replace(char, f"\\{char}")
         await context.bot.send_message(chat_id=chat_id, text=message, parse_mode='MarkdownV2')
     except Exception as e:
         logging.error(f"Failed to send message to {chat_id}: {e}")

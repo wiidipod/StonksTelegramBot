@@ -199,7 +199,6 @@ def format_large_number(value):
 if __name__ == '__main__':
 
     tickers_main = [
-        'APO',
         'BLDR',
         'CDW',
         'ELV',
@@ -210,11 +209,8 @@ if __name__ == '__main__':
         'NVR',
         'CI',
         'DECK',
-        'FDS',
         'FI',
         'ODFL',
         'PGR',
-        'PLTR',
-        'SPT',
     ]
     analyze_stocks(tickers_main)
