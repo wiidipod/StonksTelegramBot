@@ -105,7 +105,8 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     # else:
     #     dictionary[DictionaryKeys.no_technicals] = True
     if macd is not None and rsi is not None:
-        if (not macd and rsi > 30.0) or rsi > 70.0:
+        # if (not macd and rsi > 30.0) or rsi > 70.0:
+        if not macd or rsi > 70.0:
             dictionary[DictionaryKeys.no_technicals] = True
     else:
         dictionary[DictionaryKeys.no_technicals] = True
