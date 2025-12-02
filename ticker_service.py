@@ -501,7 +501,7 @@ def get_all_tickers():
     #     tickers.extend(cryptocurrency_tickers)
     # except Exception as e:
     #     print(f'Error fetching cryptocurrency tickers: {e}')
-    tickers.extend(["BTC-EUR", "ETH-EUR"])
+    tickers.extend(["BTC-EUR", "ETH-EUR", "XRP-EUR", "SOL-EUR", "ADA-EUR", "DOGE-EUR"])
 
     # try:
     #     precious_metals_tickers = get_precious_metals_tickers()
@@ -523,7 +523,7 @@ def get_all_tickers():
     #     tickers.extend(energy_tickers) # Energy
     # except Exception as e:
     #     print(f'Error fetching energy tickers: {e}')
-    tickers.extend(['BZ=F'])  # Energy
+    tickers.extend(['BZ=F', 'CL=F'])  # Energy
 
     tickers.extend(get_currency_tickers())  # Currencies
 
