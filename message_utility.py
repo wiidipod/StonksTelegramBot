@@ -15,6 +15,15 @@ bullish_emoji = "📈"
 rocket_emoji = "🚀"
 skull_emoji = "💀"
 
+characters_to_escape = ['-', '.', '(', ')', '!', '+']
+
+
+def escape_characters_for_markdown(text):
+    for char in characters_to_escape:
+        text = text.replace(char, f'\\{char}')
+    return text
+
+
 def write_hype_message(
         ticker,
         name,

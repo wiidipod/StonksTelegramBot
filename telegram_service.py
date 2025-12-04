@@ -11,6 +11,7 @@ import yfinance_service
 from message_utility import get_subscriptions
 from message_utility import subscriptions_file
 from message_utility import get_subscriptions_message
+from message_utility import escape_characters_for_markdown
 import pe_utility
 from ticker_service import is_stock
 
@@ -21,8 +22,6 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
-
-characters_to_escape = ['-', '.', '(', ')', '!', '+']
 
 
 def get_token():
@@ -318,8 +317,7 @@ async def send_subscriptions_to_first_chat_id(context: ContextTypes.DEFAULT_TYPE
 
 async def send_message_to_chat_id(chat_id, message, context: ContextTypes.DEFAULT_TYPE):
     try:
-        for char in characters_to_escape:
-            message = message.replace(char, f"\\{char}")
+        message = escape_characters_for_markdown(message)
         await context.bot.send_message(chat_id=chat_id, text=message, parse_mode='MarkdownV2')
     except Exception as e:
         logging.error(f"Failed to send message to {chat_id}: {e}")
