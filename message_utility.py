@@ -322,7 +322,7 @@ def write_message(
 
 
 def save_message(message, ticker):
-    message = message.replace('(', '\(').replace(')', '\)').replace('-', '\-')
+    message = escape_characters_for_markdown(message)
     message_path = f"{output_directory}{ticker}_message.txt"
     with open(message_path, "w", encoding="utf-8") as file:
         file.write(message)
