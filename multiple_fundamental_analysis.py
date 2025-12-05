@@ -8,6 +8,9 @@ def analyze_stocks(tickers):
         print(f"\n{'=' * 80}")
         print(f"Fetching data for {ticker}...")
         print(f"{'=' * 80}\n")
+        # print today's date
+        from datetime import datetime
+        print(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
 
         try:
             stock = yf.Ticker(ticker)
@@ -197,7 +200,6 @@ def format_large_number(value):
 
 
 if __name__ == '__main__':
-
     tickers_main = [
         'BLDR',
         'CDW',
@@ -207,10 +209,8 @@ if __name__ == '__main__':
         'LULU',
         'MOH',
         'NVR',
-        'CI',
-        'DECK',
         'FI',
-        'ODFL',
-        'PGR',
+        # 'PLTR',
+        # 'SPT',
     ]
     analyze_stocks(tickers_main)
