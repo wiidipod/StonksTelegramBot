@@ -1,7 +1,10 @@
 import asyncio
 import logging
+
+import telegram
 from telegram import Update, InputMediaPhoto, BotCommand
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
+from telegram.helpers import escape_markdown
 import yfinance as yf
 
 import fundamentals_update
@@ -11,7 +14,7 @@ import yfinance_service
 from message_utility import get_subscriptions
 from message_utility import subscriptions_file
 from message_utility import get_subscriptions_message
-from message_utility import escape_characters_for_markdown
+# from message_utility import escape_characters_for_markdown
 import pe_utility
 from ticker_service import is_stock
 
@@ -275,7 +278,7 @@ async def send_plots_to_chat_id(plot_paths, chat_id, context: ContextTypes.DEFAU
 async def send_plot_with_message(plot_path, message_path, chat_id, context: ContextTypes.DEFAULT_TYPE):
     try:
         with open(plot_path, 'rb') as photo_file, open(message_path, 'r', encoding='utf-8') as message_file:
-            caption = message_file.read()
+            caption = escape_markdown(message_file.read())
             await context.bot.send_photo(
                 chat_id=chat_id,
                 photo=photo_file,
@@ -317,7 +320,8 @@ async def send_subscriptions_to_first_chat_id(context: ContextTypes.DEFAULT_TYPE
 
 async def send_message_to_chat_id(chat_id, message, context: ContextTypes.DEFAULT_TYPE):
     try:
-        message = escape_characters_for_markdown(message)
+        # message = escape_characters_for_markdown(message)
+        message = escape_markdown(message)
         await context.bot.send_message(chat_id=chat_id, text=message, parse_mode='MarkdownV2')
     except Exception as e:
         logging.error(f"Failed to send message to {chat_id}: {e}")

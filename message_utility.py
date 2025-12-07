@@ -15,13 +15,13 @@ bullish_emoji = "📈"
 rocket_emoji = "🚀"
 skull_emoji = "💀"
 
-characters_to_escape = ['-', '.', '(', ')', '!', '+']
+# characters_to_escape = ['-', '.', '(', ')', '!', '+']
 
 
-def escape_characters_for_markdown(text):
-    for char in characters_to_escape:
-        text = text.replace(char, f'\\{char}')
-    return text
+# def escape_characters_for_markdown(text):
+#     for char in characters_to_escape:
+#         text = text.replace(char, f'\\{char}')
+#     return text
 
 
 def write_hype_message(
@@ -322,7 +322,8 @@ def write_message(
 
 
 def save_message(message, ticker):
-    message = escape_characters_for_markdown(message)
+    # message = escape_characters_for_markdown(message)
+    # message = telegram.helpers.escape_markdown(message)
     message_path = f"{output_directory}{ticker}_message.txt"
     with open(message_path, "w", encoding="utf-8") as file:
         file.write(message)
