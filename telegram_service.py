@@ -278,7 +278,7 @@ async def send_plots_to_chat_id(plot_paths, chat_id, context: ContextTypes.DEFAU
 async def send_plot_with_message(plot_path, message_path, chat_id, context: ContextTypes.DEFAULT_TYPE):
     try:
         with open(plot_path, 'rb') as photo_file, open(message_path, 'r', encoding='utf-8') as message_file:
-            caption = escape_markdown(message_file.read())
+            caption = escape_markdown(message_file.read(), version=2)
             await context.bot.send_photo(
                 chat_id=chat_id,
                 photo=photo_file,
@@ -321,7 +321,7 @@ async def send_subscriptions_to_first_chat_id(context: ContextTypes.DEFAULT_TYPE
 async def send_message_to_chat_id(chat_id, message, context: ContextTypes.DEFAULT_TYPE):
     try:
         # message = escape_characters_for_markdown(message)
-        message = escape_markdown(message)
+        message = escape_markdown(message, version=2)
         await context.bot.send_message(chat_id=chat_id, text=message, parse_mode='MarkdownV2')
     except Exception as e:
         logging.error(f"Failed to send message to {chat_id}: {e}")
@@ -402,7 +402,10 @@ def get_handling_application():
 
 
 if __name__ == "__main__":
-    main_application = get_application()
+    # main_application = get_application()
     # asyncio.run(set_commands(main_application))
 
-    asyncio.run(send_subscriptions_to_first_chat_id(context=main_application))
+    # asyncio.run(send_subscriptions_to_first_chat_id(context=main_application))
+
+    text = "EUZ.DE (P/E: 12.34)"
+    print(escape_markdown(text, version=2))
