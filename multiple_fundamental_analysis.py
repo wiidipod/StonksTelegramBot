@@ -201,16 +201,13 @@ def format_large_number(value):
 
 if __name__ == '__main__':
     tickers_main = [
-        'BLDR',
         'CDW',
-        'ELV',
         'EUZ.DE',
-        'FISV',
-        'LULU',
         'MOH',
-        'NVR',
+        'BLDR',
+        'ELV',
+        'FISV',
         'FI',
-        # 'PLTR',
-        # 'SPT',
+        'NVR',
     ]
     analyze_stocks(tickers_main)

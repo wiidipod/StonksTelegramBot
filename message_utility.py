@@ -15,13 +15,13 @@ bullish_emoji = "📈"
 rocket_emoji = "🚀"
 skull_emoji = "💀"
 
-# characters_to_escape = ['-', '.', '(', ')', '!', '+']
+characters_to_escape = ['-', '.', '(', ')', '!', '+']
 
 
-# def escape_characters_for_markdown(text):
-#     for char in characters_to_escape:
-#         text = text.replace(char, f'\\{char}')
-#     return text
+def escape_characters_for_markdown(text):
+    for char in characters_to_escape:
+        text = text.replace(char, f'\\{char}')
+    return text
 
 
 def write_hype_message(
@@ -422,18 +422,21 @@ def get_subscriptions():
 
 
 if __name__ == "__main__":
-    print(round_down(0.0))
-    print(round_down(12345))
-    print(round_down(543))
-    print(round_down(0.0098765))
-    print(round_down(-10.12345))
-    print(round_down(1.23))
-    print(round_down(0.01012345))
+    text = "EUZ.DE (P/E: 12.34)"
+    print(escape_characters_for_markdown(text))
 
-    print(round_up(0.0))
-    print(round_up(12345))
-    print(round_up(543))
-    print(round_up(0.0098765))
-    print(round_up(-10.12345))
-    print(round_up(1.23))
-    print(round_up(0.01012345))
+    # print(round_down(0.0))
+    # print(round_down(12345))
+    # print(round_down(543))
+    # print(round_down(0.0098765))
+    # print(round_down(-10.12345))
+    # print(round_down(1.23))
+    # print(round_down(0.01012345))
+    #
+    # print(round_up(0.0))
+    # print(round_up(12345))
+    # print(round_up(543))
+    # print(round_up(0.0098765))
+    # print(round_up(-10.12345))
+    # print(round_up(1.23))
+    # print(round_up(0.01012345))
