@@ -4,7 +4,6 @@ import logging
 import telegram
 from telegram import Update, InputMediaPhoto, BotCommand
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
-from telegram.helpers import escape_markdown
 import yfinance as yf
 
 import fundamentals_update
@@ -25,6 +24,10 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
+
+
+def escape_markdown(text):
+    return telegram.helpers.escape_markdown(text, version=2)
 
 
 def get_token():
@@ -279,7 +282,8 @@ async def send_plot_with_message(plot_path, message_path, chat_id, context: Cont
     try:
         with open(plot_path, 'rb') as photo_file, open(message_path, 'r', encoding='utf-8') as message_file:
             # caption = escape_markdown(message_file.read(), version=2)
-            caption = escape_characters_for_markdown(message_file.read())
+            # caption = escape_characters_for_markdown(message_file.read())
+            caption = message_file.read()
             await context.bot.send_photo(
                 chat_id=chat_id,
                 photo=photo_file,

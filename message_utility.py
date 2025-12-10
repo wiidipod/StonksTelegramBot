@@ -1,6 +1,6 @@
 import math
 
-# import telegram_service
+import telegram_service
 import yfinance_service
 from constants import output_directory
 from ticker_service import sort_tickers
@@ -19,9 +19,10 @@ characters_to_escape = ['-', '.', '(', ')', '!', '+']
 
 
 def escape_characters_for_markdown(text):
-    for char in characters_to_escape:
-        text = text.replace(char, f'\\{char}')
-    return text
+    # for char in characters_to_escape:
+    #     text = text.replace(char, f'\\{char}')
+    # return text
+    return telegram_service.escape_markdown(text)
 
 
 def write_hype_message(
@@ -50,35 +51,35 @@ def write_hype_message(
 
     macd_emoji = get_macd_emoji(macd_diff)
 
-    message = start_message(name)
-    message += f" \n **Price** ``` "
-    message += f"High:  {high[-1]:16.8f} \n "
-    message += f"Close: {close[-1]:16.8f} \n "
-    message += f"Low:   {low[-1]:16.8f} ``` "
+    start_message = generate_start_message(name)
+    message_to_escape = f" \n **Price** ``` "
+    message_to_escape += f"High:  {high[-1]:16.8f} \n "
+    message_to_escape += f"Close: {close[-1]:16.8f} \n "
+    message_to_escape += f"Low:   {low[-1]:16.8f} ``` "
 
-    message += f" \n {hype_emoji} **Quarters** ``` "
-    message += f"ATH:    {constants[4]:16.8f} \n "
-    message += f"Upper:  {constants[3]:16.8f} \n "
-    message += f"Center: {constants[2]:16.8f} \n "
-    message += f"Lower:  {constants[1]:16.8f} \n "
-    message += f"Low:    {constants[0]:16.8f} ``` "
+    message_to_escape += f" \n {hype_emoji} **Quarters** ``` "
+    message_to_escape += f"ATH:    {constants[4]:16.8f} \n "
+    message_to_escape += f"Upper:  {constants[3]:16.8f} \n "
+    message_to_escape += f"Center: {constants[2]:16.8f} \n "
+    message_to_escape += f"Lower:  {constants[1]:16.8f} \n "
+    message_to_escape += f"Low:    {constants[0]:16.8f} ``` "
 
-    message = add_macd_message(
-        message=message,
+    message_to_escape = add_macd_message(
+        message=message_to_escape,
         macd_emoji=macd_emoji,
         macd=macd,
         macd_signal=macd_signal,
         macd_diff=macd_diff,
     )
 
-    message = add_rsi_message(
-        message=message,
+    message_to_escape = add_rsi_message(
+        message=message_to_escape,
         rsi_emoji=rsi_emoji,
         rsi=rsi,
         rsi_sma=rsi_sma,
     )
 
-    return save_message(message, ticker)
+    return save_message(start_message=start_message, message_to_escape=message_to_escape, ticker=ticker)
 
 
 # def get_supertrend_emoji(upperband, lowerband, close):
@@ -123,22 +124,23 @@ def get_rsi_emoji(rsi, rsi_sma):
 
 def write_message_by_dictionary(dictionary, ticker):
     name = yfinance_service.get_name(ticker, mono=True)
-    message = start_message(name=name)
+    start_message = generate_start_message(name=name)
+    message_to_escape = ""
     if dictionary[DictionaryKeys.too_short]:
-        message += "   Too short \n "
+        message_to_escape += "   Too short \n "
     if dictionary[DictionaryKeys.peg_ratio_too_high]:
-        message += "   PEG Ratio too high \n "
+        message_to_escape += "   PEG Ratio too high \n "
     if dictionary[DictionaryKeys.price_target_too_low]:
-        message += "   Price target too low \n "
+        message_to_escape += "   Price target too low \n "
     if dictionary[DictionaryKeys.growth_too_low]:
-        message += "   Growth to volatility too low \n "
+        message_to_escape += "   Growth to volatility too low \n "
     if dictionary[DictionaryKeys.too_expensive]:
-        message += "   Not cheap \n "
+        message_to_escape += "   Not cheap \n "
     if dictionary[DictionaryKeys.no_technicals]:
-        message += "   No momentum\n "
+        message_to_escape += "   No momentum\n "
     # if dictionary[DictionaryKeys.not_52w_low]:
     #     message += "   Not 52w low \n "
-    return save_message(message, ticker)
+    return save_message(start_message=start_message, message_to_escape=message_to_escape, ticker=ticker)
 
 
 def write_message_by_df(
@@ -152,24 +154,24 @@ def write_message_by_df(
     currency = yfinance_service.get_currency(ticker)
     index_today = -1 - future
 
-    message = start_message(name)
-    message += f"\n {df.index[index_today].date()} ``` "
-    message += f"Open:                {df[P.O.value].iat[index_today]:16.8f} {currency} \n "
-    message += f"High:                {df[P.H.value].iat[index_today]:16.8f} {currency} \n "
-    message += f"Low:                 {df[P.L.value].iat[index_today]:16.8f} {currency} \n "
-    message += f"Close:               {df[P.C.value].iat[index_today]:16.8f} {currency} \n \n "
-    message += get_growth_message(currency, df, index_today)
-    message += "\n "
+    start_message = generate_start_message(name)
+    message_to_escape = f"\n {df.index[index_today].date()} ``` "
+    message_to_escape += f"Open:                {df[P.O.value].iat[index_today]:16.8f} {currency} \n "
+    message_to_escape += f"High:                {df[P.H.value].iat[index_today]:16.8f} {currency} \n "
+    message_to_escape += f"Low:                 {df[P.L.value].iat[index_today]:16.8f} {currency} \n "
+    message_to_escape += f"Close:               {df[P.C.value].iat[index_today]:16.8f} {currency} \n \n "
+    message_to_escape += get_growth_message(currency, df, index_today)
+    message_to_escape += "\n "
     if fair_value is None:
-        message += "``` \n "
+        message_to_escape += "``` \n "
     else:
-        message += f"Fair Value:          {fair_value:16.8f} {currency} ``` \n "
-    message += f"PEG Ratio: {peg_ratio:5.2f} \n ".replace('.', '\.')
-    message += f"\n {df.index[-1].date()} ``` "
-    message += get_growth_message(currency, df, -1)
-    message += " ``` "
+        message_to_escape += f"Fair Value:          {fair_value:16.8f} {currency} ``` \n "
+    message_to_escape += f"PEG Ratio: {peg_ratio:5.2f} \n ".replace('.', '\.')
+    message_to_escape += f"\n {df.index[-1].date()} ``` "
+    message_to_escape += get_growth_message(currency, df, -1)
+    message_to_escape += " ``` "
 
-    return save_message(message, ticker)
+    return save_message(start_message=start_message, message_to_escape=message_to_escape, ticker=ticker)
 
 
 def get_growth_message(currency, df, index):
@@ -258,79 +260,78 @@ def write_message(
         else:
             value_emoji = bearish_emoji
 
-    message = start_message(name)
-    message += f" \n {sma_emoji} **Price** ``` "
-    message += f"Close:   {close[-1]:16.8f}"
+    start_message = generate_start_message(name)
+    message_to_escape = f" \n {sma_emoji} **Price** ``` "
+    message_to_escape += f"Close:   {close[-1]:16.8f}"
     if smas:
-        message += " \n "
-        message += f"SMA-200: {smas[0][-1]:16.8f} \n "
-        message += f"EMA-{window_long:3.0f}: {smas[1][-1]:16.8f} \n "
-        message += f"EMA-{window_short:3.0f}: {smas[2][-1]:16.8f} ``` "
+        message_to_escape += " \n "
+        message_to_escape += f"SMA-200: {smas[0][-1]:16.8f} \n "
+        message_to_escape += f"EMA-{window_long:3.0f}: {smas[1][-1]:16.8f} \n "
+        message_to_escape += f"EMA-{window_short:3.0f}: {smas[2][-1]:16.8f} ``` "
     else:
-        message += " ``` "
+        message_to_escape += " ``` "
 
-    message += f" \n {growth_emoji} **Growth** ``` "
-    message += f"Upper Fit 2: {growths[4][-future]:16.8f} \n "
-    message += f"Upper Fit:   {growths[3][-future]:16.8f} \n "
-    message += f"Fit:         {growths[2][-future]:16.8f} \n "
-    message += f"Lower Fit:   {growths[1][-future]:16.8f} \n "
-    message += f"Lower Fit 2: {growths[0][-future]:16.8f} ``` "
+    message_to_escape += f" \n {growth_emoji} **Growth** ``` "
+    message_to_escape += f"Upper Fit 2: {growths[4][-future]:16.8f} \n "
+    message_to_escape += f"Upper Fit:   {growths[3][-future]:16.8f} \n "
+    message_to_escape += f"Fit:         {growths[2][-future]:16.8f} \n "
+    message_to_escape += f"Lower Fit:   {growths[1][-future]:16.8f} \n "
+    message_to_escape += f"Lower Fit 2: {growths[0][-future]:16.8f} ``` "
 
-    # message = add_supertrend_message(
-    #     message=message,
+    # message_to_escape = add_supertrend_message(
+    #     message_to_escape=message_to_escape,
     #     supertrend_emoji=supertrend_emoji,
     #     upperband=upperband,
     #     lowerband=lowerband,
     # )
 
     if reversal_long is not None:
-        message = add_reversal_message(
-            message=message,
+        message_to_escape = add_reversal_message(
+            message=message_to_escape,
             reversal_emoji=reversal_emoji,
             entry=entry,
             etf_entry=etf_entry,
         )
 
-    message = add_macd_message(
-        message=message,
+    message_to_escape = add_macd_message(
+        message=message_to_escape,
         macd_emoji=macd_emoji,
         macd=macd,
         macd_signal=macd_signal,
         macd_diff=macd_diff,
     )
 
-    message = add_rsi_message(
-        message=message,
+    message_to_escape = add_rsi_message(
+        message=message_to_escape,
         rsi_emoji=rsi_emoji,
         rsi=rsi,
         rsi_sma=rsi_sma,
     )
 
-    message += f" \n {value_emoji} **Value** ``` "
+    message_to_escape += f" \n {value_emoji} **Value** ``` "
     if value_investing:
-        message += f"PEG Ratio:    {peg_ratio:16.8f} \n "
-        message += f"Fair Value:   {fair_value:16.8f} \n "
-    message += f"52w Estimate: {one_year_estimate:16.8f} \n "
-    message += f"Upside:       {upside*100.0:16.8f} % \n "
-    message += f"Upper Fit 2:  {growths[4][-1]:16.8f} \n "
-    message += f"Upper Fit:    {growths[3][-1]:16.8f} \n "
-    message += f"Fit:          {growths[2][-1]:16.8f} \n "
-    message += f"Lower Fit:    {growths[1][-1]:16.8f} \n "
-    message += f"Lower Fit 2:  {growths[0][-1]:16.8f} ``` "
+        message_to_escape += f"PEG Ratio:    {peg_ratio:16.8f} \n "
+        message_to_escape += f"Fair Value:   {fair_value:16.8f} \n "
+    message_to_escape += f"52w Estimate: {one_year_estimate:16.8f} \n "
+    message_to_escape += f"Upside:       {upside*100.0:16.8f} % \n "
+    message_to_escape += f"Upper Fit 2:  {growths[4][-1]:16.8f} \n "
+    message_to_escape += f"Upper Fit:    {growths[3][-1]:16.8f} \n "
+    message_to_escape += f"Fit:          {growths[2][-1]:16.8f} \n "
+    message_to_escape += f"Lower Fit:    {growths[1][-1]:16.8f} \n "
+    message_to_escape += f"Lower Fit 2:  {growths[0][-1]:16.8f} ``` "
 
-    return save_message(message, ticker)
+    return save_message(start_message=start_message, message_to_escape=message_to_escape, ticker=ticker)
 
 
-def save_message(message, ticker):
-    # message = escape_characters_for_markdown(message)
-    # message = telegram.helpers.escape_markdown(message)
+def save_message(start_message, message_to_escape, ticker):
+    message_to_escape = escape_characters_for_markdown(message_to_escape)
     message_path = f"{output_directory}{ticker}_message.txt"
     with open(message_path, "w", encoding="utf-8") as file:
-        file.write(message)
+        file.write(start_message + message_to_escape)
     return message_path
 
 
-def start_message(name):
+def generate_start_message(name):
     message = f" **{name}** \n ".replace('.', '\.').replace('=', '\=')
     return message
 
@@ -422,8 +423,8 @@ def get_subscriptions():
 
 
 if __name__ == "__main__":
-    text = "EUZ.DE (P/E: 12.34)"
-    print(escape_characters_for_markdown(text))
+    text_main = "EUZ.DE (P/E: 12.34)"
+    print(escape_characters_for_markdown(text_main))
 
     # print(round_down(0.0))
     # print(round_down(12345))
