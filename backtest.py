@@ -28,7 +28,7 @@ async def main(ticker, end):
 
     await send_plot_with_message(
         plot_path=plot_path,
-        message_path=message_path,
+        message=message_path,
         chat_id=get_subscribers()[0],
         context=get_application(),
     )

@@ -33,7 +33,7 @@ def get_peg_ratio(df, labels, one_year, pe_ratio):
     return min(peg_ratios)
 
 
-def get_plot_and_message_paths_for(ticker, period='10y', pe_ratios=None):
+def get_plot_path_and_message_for(ticker, period='10y', pe_ratios=None):
     if pe_ratios is None:
         pe_ratios = {}
 
@@ -49,9 +49,9 @@ def get_plot_and_message_paths_for(ticker, period='10y', pe_ratios=None):
 
     dictionary, plot_path = analyze(df=ticker_df, ticker=ticker, future=future, full=True, pe_ratios=pe_ratios)
 
-    message_path = message_utility.write_message_by_dictionary(dictionary=dictionary, ticker=ticker)
+    message = message_utility.get_message_by_dictionary(dictionary=dictionary, ticker=ticker)
 
-    return plot_path, message_path
+    return plot_path, message
 
 
 def chunk_list(lst, chunk_size):

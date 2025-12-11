@@ -143,6 +143,28 @@ def write_message_by_dictionary(dictionary, ticker):
     return save_message(start_message=start_message, message_to_escape=message_to_escape, ticker=ticker)
 
 
+def get_message_by_dictionary(dictionary, ticker):
+    name = yfinance_service.get_name(ticker, mono=True)
+    start_message = generate_start_message(name=name)
+    message_to_escape = ""
+    if dictionary[DictionaryKeys.too_short]:
+        message_to_escape += "   Too short \n "
+    if dictionary[DictionaryKeys.peg_ratio_too_high]:
+        message_to_escape += "   PEG Ratio too high \n "
+    if dictionary[DictionaryKeys.price_target_too_low]:
+        message_to_escape += "   Price target too low \n "
+    if dictionary[DictionaryKeys.growth_too_low]:
+        message_to_escape += "   Growth to volatility too low \n "
+    if dictionary[DictionaryKeys.too_expensive]:
+        message_to_escape += "   Not cheap \n "
+    if dictionary[DictionaryKeys.no_technicals]:
+        message_to_escape += "   No momentum\n "
+    # if dictionary[DictionaryKeys.not_52w_low]:
+    #     message += "   Not 52w low \n "
+    # return save_message(start_message=start_message, message_to_escape=message_to_escape, ticker=ticker)
+    return escape_characters_for_markdown(start_message + message_to_escape)
+
+
 def write_message_by_df(
         ticker,
         name,
