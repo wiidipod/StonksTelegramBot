@@ -354,7 +354,7 @@ def save_message(start_message, message_to_escape, ticker):
 
 
 def generate_start_message(name):
-    message = f" **{name}** \n ".replace('.', '\.').replace('=', '\=')
+    message = f" **{name}** \n "  # .replace('.', '\.').replace('=', '\=')
     return message
 
 
