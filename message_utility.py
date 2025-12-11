@@ -1,6 +1,5 @@
 import math
 
-import telegram_service
 import yfinance_service
 from constants import output_directory
 from ticker_service import sort_tickers
