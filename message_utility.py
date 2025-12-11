@@ -19,10 +19,10 @@ characters_to_escape = ['-', '.', '(', ')', '!', '+']
 
 
 def escape_characters_for_markdown(text):
-    # for char in characters_to_escape:
-    #     text = text.replace(char, f'\\{char}')
-    # return text
-    return telegram_service.escape_markdown(text)
+    for char in characters_to_escape:
+        text = text.replace(char, f'\\{char}')
+    return text
+    # return telegram_service.escape_markdown(text)
 
 
 def write_hype_message(
