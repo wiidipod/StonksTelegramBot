@@ -268,86 +268,96 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Send plots to Telegram subscribers.')
-    parser.add_argument('--all', action='store_true', help='Send plots to all subscribers')
-    args = parser.parse_args()
+    try:
+        parser = argparse.ArgumentParser(description='Send plots to Telegram subscribers.')
+        parser.add_argument('--all', action='store_true', help='Send plots to all subscribers')
+        args = parser.parse_args()
 
-    tickers = ticker_service.get_all_tickers()
-    # tickers = ticker_service.get_s_p_500_tickers()
-    # tickers = ticker_service.get_dow_jones_tickers()
-    # tickers = ['AAPL']
+        tickers = ticker_service.get_all_tickers()
+        # tickers = ticker_service.get_s_p_500_tickers()
+        # tickers = ticker_service.get_dow_jones_tickers()
+        # tickers = ['AAPL']
 
-    too_short = 0
-    peg_ratio_too_high = 0
-    price_target_too_low = 0
-    growth_too_low = 0
-    too_expensive = 0
-    no_momentum = 0
-    pe_ratio_too_high = 0
-    undervalued = 0
+        too_short = 0
+        peg_ratio_too_high = 0
+        price_target_too_low = 0
+        growth_too_low = 0
+        too_expensive = 0
+        no_momentum = 0
+        pe_ratio_too_high = 0
+        undervalued = 0
 
-    plot_paths = []
+        plot_paths = []
 
-    main_pe_ratios = pe_utility.update_pe_ratios()
+        main_pe_ratios = pe_utility.update_pe_ratios()
 
-    chunk_size_main = 100
-    for i, ticker_chunk in enumerate(chunk_list(tickers, chunk_size_main)):
-        print(f'Processing chunk {i + 1} of {len(tickers) // chunk_size_main + 1}')
+        chunk_size_main = 100
+        for i, ticker_chunk in enumerate(chunk_list(tickers, chunk_size_main)):
+            print(f'Processing chunk {i + 1} of {len(tickers) // chunk_size_main + 1}')
 
-        if i > 0:
-            time.sleep(chunk_size_main)
+            if i > 0:
+                time.sleep(chunk_size_main)
 
-        df_main = yf.download(
-            ticker_chunk,
-            period='10y',
-            interval='1d',
-            group_by='ticker',
-        )
+            df_main = yf.download(
+                ticker_chunk,
+                period='10y',
+                interval='1d',
+                group_by='ticker',
+            )
 
-        for ticker_main in tqdm(ticker_chunk):
-            ticker_df_main = yfinance_service.extract_ticker_df(df=df_main, ticker=ticker_main)
+            for ticker_main in tqdm(ticker_chunk):
+                try:
+                    ticker_df_main = yfinance_service.extract_ticker_df(df=df_main, ticker=ticker_main)
 
-            future_main = len(ticker_df_main) // 10
+                    future_main = len(ticker_df_main) // 10
 
-            try:
-                dictionary_main, plot_path_main = analyze(df=ticker_df_main, ticker=ticker_main, future=future_main, pe_ratios=main_pe_ratios)
-            except Exception as e:
-                print(f'Error processing {ticker_main}: {e}')
-                continue
+                    dictionary_main, plot_path_main = analyze(df=ticker_df_main, ticker=ticker_main, future=future_main, pe_ratios=main_pe_ratios)
+                except Exception as e:
+                    print(f'Error processing {ticker_main}: {e}')
+                    continue
 
-            if dictionary_main[DictionaryKeys.too_short]:
-                too_short += 1
-            if dictionary_main[DictionaryKeys.peg_ratio_too_high]:
-                peg_ratio_too_high += 1
-            if dictionary_main[DictionaryKeys.price_target_too_low]:
-                price_target_too_low += 1
-            if dictionary_main[DictionaryKeys.growth_too_low]:
-                growth_too_low += 1
-            if dictionary_main[DictionaryKeys.too_expensive]:
-                too_expensive += 1
-            if dictionary_main[DictionaryKeys.no_technicals]:
-                no_momentum += 1
-            if dictionary_main[DictionaryKeys.pe_ratio_too_high]:
-                pe_ratio_too_high += 1
+                if dictionary_main[DictionaryKeys.too_short]:
+                    too_short += 1
+                if dictionary_main[DictionaryKeys.peg_ratio_too_high]:
+                    peg_ratio_too_high += 1
+                if dictionary_main[DictionaryKeys.price_target_too_low]:
+                    price_target_too_low += 1
+                if dictionary_main[DictionaryKeys.growth_too_low]:
+                    growth_too_low += 1
+                if dictionary_main[DictionaryKeys.too_expensive]:
+                    too_expensive += 1
+                if dictionary_main[DictionaryKeys.no_technicals]:
+                    no_momentum += 1
+                if dictionary_main[DictionaryKeys.pe_ratio_too_high]:
+                    pe_ratio_too_high += 1
 
-            if plot_path_main is None:
-                continue
+                if plot_path_main is None:
+                    continue
 
-            plot_paths.append(plot_path_main)
-            undervalued += 1
+                plot_paths.append(plot_path_main)
+                undervalued += 1
 
-    print(f'Too short: {too_short}')
-    print(f'PEG ratio too high: {peg_ratio_too_high}')
-    print(f'Price target too low: {price_target_too_low}')
-    print(f'Growth too low: {growth_too_low}')
-    print(f'Too expensive: {too_expensive}')
-    print(f'No technicals: {no_momentum}')
-    print(f'PE ratio too high: {pe_ratio_too_high}')
-    print(f'Total tickers: {len(tickers)}')
-    print(f'Undervalued: {undervalued}')
+        print(f'Too short: {too_short}')
+        print(f'PEG ratio too high: {peg_ratio_too_high}')
+        print(f'Price target too low: {price_target_too_low}')
+        print(f'Growth too low: {growth_too_low}')
+        print(f'Too expensive: {too_expensive}')
+        print(f'No technicals: {no_momentum}')
+        print(f'PE ratio too high: {pe_ratio_too_high}')
+        print(f'Total tickers: {len(tickers)}')
+        print(f'Undervalued: {undervalued}')
 
-    application = telegram_service.get_application()
-    if args.all:
-        asyncio.run(telegram_service.send_plots_to_all(plot_paths, application))
-    else:
-        asyncio.run(telegram_service.send_plots_to_first(plot_paths, application))
+        application = telegram_service.get_application()
+        if args.all:
+            asyncio.run(telegram_service.send_plots_to_all(plot_paths, application))
+        else:
+            asyncio.run(telegram_service.send_plots_to_first(plot_paths, application))
+    except Exception as e:
+        import traceback
+        error_message = f"Error in fundamentals_update:\n{str(e)}\n\nTraceback:\n{traceback.format_exc()}"
+        print(error_message)
+        try:
+            application = telegram_service.get_application()
+            asyncio.run(telegram_service.send_message_to_first(error_message, application))
+        except Exception as notification_error:
+            print(f"Failed to send error notification: {notification_error}")

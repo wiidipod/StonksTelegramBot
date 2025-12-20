@@ -357,7 +357,7 @@ async def send_plots_to_first(plot_paths, context: ContextTypes.DEFAULT_TYPE):
 
 async def send_message_to_first(message, context: ContextTypes.DEFAULT_TYPE):
     chat_id = get_subscribers()[0]
-    await send_message_path_to_chat_id(message, chat_id, context)
+    await send_message_to_chat_id(chat_id, message, context)
 
 
 async def set_commands(context: ContextTypes.DEFAULT_TYPE):
