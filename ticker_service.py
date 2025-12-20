@@ -538,8 +538,8 @@ def get_all_tickers():
     # tickers.extend(get_kospi_tickers())  # South Korea
     # tickers.extend(get_cryptocurrency_tickers())  # Cryptocurrencies
     # tickers.extend(get_precious_metals_tickers())  # Precious Metals
-    # return sort_tickers(list(set(tickers)))
-    return tickers
+    return sort_tickers(list(set(tickers)))
+    # return tickers
 
 
 if __name__ == '__main__':
