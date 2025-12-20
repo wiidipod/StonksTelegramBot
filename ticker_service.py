@@ -99,8 +99,7 @@ def get_euro_stoxx_50_tickers():
 
 def get_dax_tickers():
     source = 'https://en.wikipedia.org/wiki/DAX'
-    column = 3
-    tickers = get_tickers(source, column=column)
+    tickers = get_tickers(source)
     tickers.append('^GDAXI')
     return tickers
 
@@ -539,10 +538,14 @@ def get_all_tickers():
     # tickers.extend(get_kospi_tickers())  # South Korea
     # tickers.extend(get_cryptocurrency_tickers())  # Cryptocurrencies
     # tickers.extend(get_precious_metals_tickers())  # Precious Metals
-    return sort_tickers(list(set(tickers)))
+    # return sort_tickers(list(set(tickers)))
+    return tickers
 
 
 if __name__ == '__main__':
-    main_tickers = get_all_tickers()
-    print(len(main_tickers))
+    # main_tickers = get_all_tickers()
+    main_tickers = get_dax_tickers()
+    # print(len(main_tickers))
     # print(get_dax_tickers())
+    for ticker in main_tickers:
+        print(ticker)
