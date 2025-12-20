@@ -33,7 +33,7 @@ def get_peg_ratio(df, labels, one_year, pe_ratio):
     return min(peg_ratios)
 
 
-def get_plot_and_message_paths_for(ticker, period='10y', pe_ratios=None):
+def get_plot_path_and_message_for(ticker, period='10y', pe_ratios=None):
     if pe_ratios is None:
         pe_ratios = {}
 
@@ -49,9 +49,9 @@ def get_plot_and_message_paths_for(ticker, period='10y', pe_ratios=None):
 
     dictionary, plot_path = analyze(df=ticker_df, ticker=ticker, future=future, full=True, pe_ratios=pe_ratios)
 
-    message_path = message_utility.write_message_by_dictionary(dictionary=dictionary, ticker=ticker)
+    message = message_utility.get_message_by_dictionary(dictionary=dictionary, ticker=ticker)
 
-    return plot_path, message_path
+    return plot_path, message
 
 
 def chunk_list(lst, chunk_size):
@@ -92,7 +92,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     df = ta_utility.add_macd(df)
     # df = ta_utility.add_sma(df, window=200)
     try:
-        macd = df["MACD Diff"].iat[-1] > df["MACD Diff"].iat[-2]  # or df["MACD Diff"].iat[-1] > 0.0
+        macd = df["MACD Diff"].iat[-1] > df["MACD Diff"].iat[-2] or df["MACD Diff"].iat[-1] > 0.0
     except:
         macd = None
     try:
@@ -190,7 +190,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
 
     if (
         # price not below lower 10y regression
-        df[P.C.value].iat[-1 - future] * 1.1 > df['Growth Lower'].iat[-1 - future]
+        df[P.C.value].iat[-1 - future] > df['Growth Lower'].iat[-1 - future]
         # price not below 10y regression
         # df [P.C.value].iat[-1 - future] > df['Growth'].iat[-1 - future]
         # price not below 5y regression
@@ -217,7 +217,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         price_target_high = max(price_target_high, df['Growth Upper'].iat[-1])
 
     # if 0.9 * price_target_low <= df[P.H.value].iat[-1 - future]:
-    if price_target_low < df[P.C.value].iat[-1 - future]:
+    if price_target_low < 1.1 * df[P.C.value].iat[-1 - future]:
         dictionary[DictionaryKeys.price_target_too_low] = True
 
     if not full and not has_buy_signal(dictionary):

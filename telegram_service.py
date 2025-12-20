@@ -4,7 +4,6 @@ import logging
 import telegram
 from telegram import Update, InputMediaPhoto, BotCommand
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
-from telegram.helpers import escape_markdown
 import yfinance as yf
 
 import fundamentals_update
@@ -14,7 +13,7 @@ import yfinance_service
 from message_utility import get_subscriptions
 from message_utility import subscriptions_file
 from message_utility import get_subscriptions_message
-# from message_utility import escape_characters_for_markdown
+from message_utility import escape_characters_for_markdown
 import pe_utility
 from ticker_service import is_stock
 
@@ -25,6 +24,10 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
+
+
+def escape_markdown(text):
+    return telegram.helpers.escape_markdown(text, version=2)
 
 
 def get_token():
@@ -159,9 +162,9 @@ async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
         pe_ratios = {}
 
     try:
-        plot_path, message_path = fundamentals_update.get_plot_and_message_paths_for(ticker, pe_ratios=pe_ratios)
+        plot_path, message = fundamentals_update.get_plot_path_and_message_for(ticker, pe_ratios=pe_ratios)
 
-        await send_plot_with_message(plot_path=plot_path, message_path=message_path, chat_id=update.effective_chat.id, context=context)
+        await send_plot_with_message(plot_path=plot_path, message=message, chat_id=update.effective_chat.id, context=context)
     except Exception as e:
         try:
             await update.message.reply_text(f"An error occurred: {str(e)}")
@@ -275,18 +278,21 @@ async def send_plots_to_chat_id(plot_paths, chat_id, context: ContextTypes.DEFAU
             continue
 
 
-async def send_plot_with_message(plot_path, message_path, chat_id, context: ContextTypes.DEFAULT_TYPE):
+async def send_plot_with_message(plot_path, message, chat_id, context: ContextTypes.DEFAULT_TYPE):
     try:
-        with open(plot_path, 'rb') as photo_file, open(message_path, 'r', encoding='utf-8') as message_file:
-            caption = escape_markdown(message_file.read())
+        with open(plot_path, 'rb') as photo_file:  # , open(message, 'r', encoding='utf-8') as message_file:
+            # caption = escape_markdown(message_file.read(), version=2)
+            # caption = escape_characters_for_markdown(message_file.read())
+            # caption = message_file.read()
             await context.bot.send_photo(
                 chat_id=chat_id,
                 photo=photo_file,
-                caption=caption,
+                caption=message,
                 parse_mode='MarkdownV2',
             )
     except Exception as e:
         logging.error(f"Failed to send plot with message to {chat_id}: {e}")
+        logging.error(f"Plot path: {plot_path}, Message path: {message}")
 
 
 async def send_plots_to_all(plot_paths, context: ContextTypes.DEFAULT_TYPE):
@@ -320,8 +326,8 @@ async def send_subscriptions_to_first_chat_id(context: ContextTypes.DEFAULT_TYPE
 
 async def send_message_to_chat_id(chat_id, message, context: ContextTypes.DEFAULT_TYPE):
     try:
-        # message = escape_characters_for_markdown(message)
-        message = escape_markdown(message)
+        message = escape_characters_for_markdown(message)
+        # message = escape_markdown(message, version=2)
         await context.bot.send_message(chat_id=chat_id, text=message, parse_mode='MarkdownV2')
     except Exception as e:
         logging.error(f"Failed to send message to {chat_id}: {e}")
@@ -402,7 +408,10 @@ def get_handling_application():
 
 
 if __name__ == "__main__":
-    main_application = get_application()
+    # main_application = get_application()
     # asyncio.run(set_commands(main_application))
 
-    asyncio.run(send_subscriptions_to_first_chat_id(context=main_application))
+    # asyncio.run(send_subscriptions_to_first_chat_id(context=main_application))
+
+    text = "EUZ.DE (P/E: 12.34)"
+    print(escape_markdown(text, version=2))

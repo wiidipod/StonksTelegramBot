@@ -11,13 +11,13 @@ from ticker_service import sort_tickers
 async def send_all(tickers, application):
     pe_ratios = pe_utility.get_pe_ratios()
     for ticker in tickers:
-        plot_path, message_path = fundamentals_update.get_plot_and_message_paths_for(ticker, pe_ratios=pe_ratios)
+        plot_path, message = fundamentals_update.get_plot_path_and_message_for(ticker, pe_ratios=pe_ratios)
         for chat_id in tickers[ticker]:
             try:
                 await telegram_service.send_plot_with_message(
                     chat_id=chat_id,
                     plot_path=plot_path,
-                    message_path=message_path,
+                    message=message,
                     context=application,
                 )
             except Exception as e:
