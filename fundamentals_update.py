@@ -18,6 +18,7 @@ from ta_utility import has_technicals
 import pe_utility
 import pandas as pd
 from bisect import bisect_left
+import retry_utility
 
 
 def get_peg_ratio(df, labels, one_year, pe_ratio):
@@ -37,12 +38,15 @@ def get_plot_path_and_message_for(ticker, period='10y', pe_ratios=None):
     if pe_ratios is None:
         pe_ratios = {}
 
-    df = yf.download(
-        [ticker],
-        period=period,
-        interval='1d',
-        group_by='ticker',
-    )
+    def _download_data():
+        return yf.download(
+            [ticker],
+            period=period,
+            interval='1d',
+            group_by='ticker',
+        )
+
+    df = retry_utility.retry_data_fetch(_download_data)
     ticker_df = yfinance_service.extract_ticker_df(df=df, ticker=ticker)
 
     future = len(ticker_df) // 10

@@ -3,6 +3,7 @@ from enum import Enum
 import pandas as pd
 import yfinance as yf
 import math
+import retry_utility
 
 
 class P(Enum):
@@ -13,12 +14,18 @@ class P(Enum):
 
 
 def get_price(ticker, period='1d', interval='1m'):
-    data = yf.Ticker(ticker).history(period=period, interval=interval)
+    def _fetch_history():
+        return yf.Ticker(ticker).history(period=period, interval=interval)
+
+    data = retry_utility.retry_data_fetch(_fetch_history)
     return data["Close"].iloc[-1]
 
 
 def get_high_low(ticker, period='1d', interval='1m'):
-    data = yf.Ticker(ticker).history(period=period, interval=interval)
+    def _fetch_history():
+        return yf.Ticker(ticker).history(period=period, interval=interval)
+
+    data = retry_utility.retry_data_fetch(_fetch_history)
     return data["High"].iloc[-1], data["Low"].iloc[-1]
 
 
@@ -79,7 +86,10 @@ def get_closes(tickers, period='10y', interval='1d'):
 
 
 def get_close_as_series(ticker, period='10y', interval='1d'):
-    data = yf.Ticker(ticker).history(period=period, interval=interval)
+    def _fetch_history():
+        return yf.Ticker(ticker).history(period=period, interval=interval)
+
+    data = retry_utility.retry_data_fetch(_fetch_history)
     data = data.reset_index()
     data['Date'] = pd.to_datetime(data['Date'].dt.date)
     data = data.rename(columns={'Date': 'ds', 'Close': 'y'})
@@ -90,14 +100,20 @@ def get_close_as_series(ticker, period='10y', interval='1d'):
 
 def get_industry(ticker):
     try:
-        info = yf.Ticker(ticker).info
+        def _fetch_info():
+            return yf.Ticker(ticker).info
+
+        info = retry_utility.retry_data_fetch(_fetch_info)
         return info["industry"]
     except:
         return ""
 
 
 def get_name(ticker, mono=False, industry_pe_ratio=None):
-    info = yf.Ticker(ticker).info
+    def _fetch_info():
+        return yf.Ticker(ticker).info
+
+    info = retry_utility.retry_data_fetch(_fetch_info)
 
     name = info["shortName"] or info["longName"] or ticker
 
@@ -124,7 +140,11 @@ def get_name(ticker, mono=False, industry_pe_ratio=None):
 
 def get_pe_ratio(ticker):
     try:
-        pe_ratio = yf.Ticker(ticker).info.get("trailingPE")
+        def _fetch_info():
+            return yf.Ticker(ticker).info
+
+        info = retry_utility.retry_data_fetch(_fetch_info)
+        pe_ratio = info.get("trailingPE")
         if pe_ratio is None or pe_ratio <= 0.0 or math.isnan(pe_ratio):
             return None
         return pe_ratio
@@ -134,7 +154,11 @@ def get_pe_ratio(ticker):
 
 def get_peg_ratio(ticker):
     try:
-        peg_ratio = yf.Ticker(ticker).info.get("trailingPegRatio")
+        def _fetch_info():
+            return yf.Ticker(ticker).info
+
+        info = retry_utility.retry_data_fetch(_fetch_info)
+        peg_ratio = info.get("trailingPegRatio")
         if peg_ratio is None or peg_ratio <= 0.0 or math.isnan(peg_ratio):
             return None
         return peg_ratio
@@ -148,7 +172,10 @@ def is_valid_price(price):
 
 def get_price_target(ticker, low=True):
     try:
-        price_targets = yf.Ticker(ticker).analyst_price_targets
+        def _fetch_price_targets():
+            return yf.Ticker(ticker).analyst_price_targets
+
+        price_targets = retry_utility.retry_data_fetch(_fetch_price_targets)
         mean_price_target = price_targets['mean']
         median_price_target = price_targets['median']
         if is_valid_price(mean_price_target) and is_valid_price(median_price_target):
@@ -167,7 +194,11 @@ def get_price_target(ticker, low=True):
 
 def get_ev_to_ebitda(ticker):
     try:
-        ev_to_ebitda = yf.Ticker(ticker).info.get("enterpriseToEbitda")
+        def _fetch_info():
+            return yf.Ticker(ticker).info
+
+        info = retry_utility.retry_data_fetch(_fetch_info)
+        ev_to_ebitda = info.get("enterpriseToEbitda")
         if ev_to_ebitda is None or ev_to_ebitda <= 0.0 or math.isnan(ev_to_ebitda):
             return None
         return ev_to_ebitda
@@ -178,11 +209,17 @@ def get_ev_to_ebitda(ticker):
 def get_fair_value(ticker, growth_10y=None, growth_1y=None, backtest=False):
     try:
         if backtest:
-            earnings_history = yf.Ticker(ticker).earnings_history
+            def _fetch_earnings_history():
+                return yf.Ticker(ticker).earnings_history
+
+            earnings_history = retry_utility.retry_data_fetch(_fetch_earnings_history)
             current_year = earnings_history['epsActual'].iloc[0]
             next_year = earnings_history['epsActual'].iloc[-1]
         else:
-            eps_trend = yf.Ticker(ticker).eps_trend
+            def _fetch_eps_trend():
+                return yf.Ticker(ticker).eps_trend
+
+            eps_trend = retry_utility.retry_data_fetch(_fetch_eps_trend)
             current_year = eps_trend['current']['0y']
             next_year = eps_trend['current']['+1y']
 
@@ -200,7 +237,12 @@ def get_fair_value(ticker, growth_10y=None, growth_1y=None, backtest=False):
         else:
             growth_value = ((growth_1y[-1] / growth_1y[0]) - 1.0) * 100.0
         growth_value = min(growth_value, growth_value_estimate)
-        eps = yf.Ticker(ticker).info.get("trailingEps")
+
+        def _fetch_info():
+            return yf.Ticker(ticker).info
+
+        info = retry_utility.retry_data_fetch(_fetch_info)
+        eps = info.get("trailingEps")
         if eps is None or eps <= 0.0 or math.isnan(eps) or growth_value <= 0.0:
             return None
         return eps * growth_value
@@ -242,7 +284,10 @@ def get_price_in_currency(ticker, to_convert=None, target_currency='EUR'):
 
 def get_currency(ticker):
     try:
-        info = yf.Ticker(ticker).info
+        def _fetch_info():
+            return yf.Ticker(ticker).info
+
+        info = retry_utility.retry_data_fetch(_fetch_info)
         return info["currency"]
     except:
         return ""
@@ -259,4 +304,6 @@ def extract_ticker_df(df, ticker):
 
 
 if __name__ == '__main__':
-    print(yf.Ticker('MELI').info.get('country'))
+    ticker = 'AAPL'
+    price = get_price(ticker, period='5d', interval='1m')
+    print(f'Price of {ticker}: {price}')
