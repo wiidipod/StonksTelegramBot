@@ -328,6 +328,15 @@ exchange_codes = {
 }
 
 
+replacemenet_tickers = {
+    "2299955D.TO": "CSU.TO",
+    "BFB": "BF-B",
+    "BRKB": "BRK-B",
+    "HEIA": "HEIA.AS",
+    "FI": "FISV",
+}
+
+
 def get_msci_world_tickers():
     import csv
     import os
@@ -337,6 +346,7 @@ def get_msci_world_tickers():
 
     # Get the directory of this script
     script_dir = os.path.dirname(os.path.abspath(__file__))
+    # https://www.ishares.com/de/privatanleger/de/produkte/251882/ishares-msci-world-ucits-etf-acc-fund/1478358465952.ajax?fileType=csv&fileName=EUNL_holdings&dataType=fund
     csv_path = os.path.join(script_dir, 'EUNL_holdings.csv')
 
     with open(csv_path, 'r', encoding='utf-8') as f:
@@ -363,6 +373,9 @@ def get_msci_world_tickers():
             # Strip trailing dots (common in UK stocks in data sources)
             ticker = ticker.rstrip('.')
 
+            # Replace dots with dashes if needed
+            ticker = ticker.replace(".", "-")
+
             # Pad Hong Kong tickers with leading zeros to 4 digits
             if exchange == "Hong Kong Exchanges And Clearing Ltd":
                 # Check if ticker is all digits
@@ -379,6 +392,9 @@ def get_msci_world_tickers():
                     missing_exchanges[exchange] = []
                 missing_exchanges[exchange].append(ticker)
                 # Still add the ticker without suffix
+
+            if ticker in replacemenet_tickers:
+                ticker = replacemenet_tickers[ticker]
 
             tickers.append(ticker)
 
