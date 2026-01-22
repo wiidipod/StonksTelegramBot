@@ -299,6 +299,100 @@ def get_etf_tickers(index_ticker):
         ]
 
 
+exchange_codes = {
+    "NASDAQ": "",
+    "New York Stock Exchange Inc.": "",
+    "Toronto Stock Exchange": ".TO",
+    "London Stock Exchange": ".L",
+    "Euronext Amsterdam": ".AS",
+    "Xetra": ".DE",
+    "SIX Swiss Exchange": ".SW",
+    "Tokyo Stock Exchange": ".T",
+    "Hong Kong Exchanges And Clearing Ltd": ".HK",
+    "Asx - All Markets": ".AX",
+    "Nyse Euronext - Euronext Paris": ".PA",
+    "Bolsa De Madrid": ".MC",
+    "Borsa Italiana": ".MI",
+    "Omx Nordic Exchange Copenhagen A/S": ".CO",
+    "Singapore Exchange": ".SI",
+    "Nasdaq Omx Nordic": ".ST",
+    "Nasdaq Omx Helsinki Ltd.": ".HE",
+    "Oslo Bors Asa": ".OL",
+    "Nyse Euronext - Euronext Brussels": ".BR",
+    "Irish Stock Exchange - All Market": ".IR",
+    "Wiener Boerse Ag": ".VI",
+    "Tel Aviv Stock Exchange": ".TA",
+    "New Zealand Exchange Ltd": ".NZ",
+    "Nyse Euronext - Euronext Lisbon": ".LS",
+    "Cboe BZX": "",
+}
+
+
+def get_msci_world_tickers():
+    import csv
+    import os
+
+    tickers = []
+    missing_exchanges = {}  # Changed to dict to track tickers per exchange
+
+    # Get the directory of this script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    csv_path = os.path.join(script_dir, 'EUNL_holdings.csv')
+
+    with open(csv_path, 'r', encoding='utf-8') as f:
+        reader = csv.reader(f)
+        for i, row in enumerate(reader):
+            # Skip the first 3 rows (headers)
+            if i < 3:
+                continue
+
+            # Make sure we have enough columns
+            if len(row) < 11:
+                continue
+
+            ticker = row[0].strip()
+            exchange = row[10].strip()
+
+            # Skip cash and derivatives
+            if not ticker or exchange == '-':
+                continue
+
+            # Replace spaces with dashes in ticker
+            ticker = ticker.replace(' ', '-')
+
+            # Strip trailing dots (common in UK stocks in data sources)
+            ticker = ticker.rstrip('.')
+
+            # Pad Hong Kong tickers with leading zeros to 4 digits
+            if exchange == "Hong Kong Exchanges And Clearing Ltd":
+                # Check if ticker is all digits
+                if ticker.isdigit():
+                    ticker = ticker.zfill(4)
+
+            # Get the country code based on exchange
+            if exchange in exchange_codes:
+                country_code = exchange_codes[exchange]
+                ticker = ticker + country_code
+            else:
+                # Track missing exchanges and their tickers
+                if exchange not in missing_exchanges:
+                    missing_exchanges[exchange] = []
+                missing_exchanges[exchange].append(ticker)
+                # Still add the ticker without suffix
+
+            tickers.append(ticker)
+
+    # Print any missing exchanges with their tickers
+    if missing_exchanges:
+        print("Missing exchanges in exchange_codes:")
+        for exchange in sorted(missing_exchanges.keys()):
+            tickers_list = ', '.join(missing_exchanges[exchange])
+            print(f"  - {exchange}")
+            print(f"    Tickers: {tickers_list}")
+
+    return tickers
+
+
 def is_index(ticker):
     return ticker[0] == '^'
 
@@ -327,112 +421,79 @@ def sort_tickers(tickers):
     crypto_tickers = sorted([t for t in tickers if is_crypto(t)])
     return stock_tickers + index_tickers + future_tickers + currency_tickers + crypto_tickers
 
-
-def get_hype_tickers():
-    return [
-        'RHM.DE',  # Rheinmetall AG
-        'R3NK.DE',  # RENK Group AG
-        'HAG.DE',  # Hensoldt AG
-        'GC=F',  # Gold Futures
-        'GME',  # GameStop Corp.
-        'TSLA',  # Tesla, Inc.
-        'NVDA',  # NVIDIA Corporation
-        'AAPL',  # Apple Inc.
-        'BTC-EUR',  # Bitcoin EUR Price
-        'PLTR',  # Palantir Technologies Inc.
-        'MSTR',  # Strategy Incorporated
-        'HIMS',  # Hims & Hers Health, Inc.
-        'DEZ.DE',  # DEUTZ Aktiengesellschaft
-        'NVO',  # Novo Nordisk A/S
-        '1211.HK',  # BYD COMPANY
-        'DRO.AX',  # DroneShield Limited
-        'PLTR',  # Palantir Technologies Inc.
-        'ENR.DE',  # Siemens Energy AG
-        '1810.HK',  # XIAOMI-W
-        'QBTS',  # D-Wave Quantum Inc.
-        'CLTE.NE',  # Clara Technologies Corp.
-        'FLT.V',  # Volatus Aerospace Inc.
-        'ASML',  # ASML Holding N.V.
-        'OPEN',  # Opendoor Technologies Inc.
-        '3350.T',  # Metaplanet Inc.
-        'SAP.DE',  # SAP SE
-        'PUM.DE',  # Puma SE
-        'INTC',  # Intel Corporation
-        'VOW3.DE',  # Volkswagen AG
-        'MBG.DE',  # Mercedes-Benz Group AG
-        'PYPL',  # PayPal Holdings, Inc.
-        'HDD.F',  # Heidelberger Druckmaschinen Aktiengesellschaft
-        'ADS.DE',  # Adidas AG
-        'AMZN',  # Amazon.com, Inc.
-        'FTNT',  # Fortinet, Inc.
-        'CBK.DE',  # Commerzbank AG
-        'NOK',  # Nokia Corporation
-        'MRVL',  # Marvell Technology, Inc.
-    ]
-
     
 def get_all_tickers():
     tickers = []
 
     try:
-        dax_tickers = get_dax_tickers()
-        if len(dax_tickers) < 40:
-            print('DAX tickers missing!')
+        msci_world_tickers = get_msci_world_tickers()
+        if len(msci_world_tickers) < 1000:
+            print('MSCI World tickers missing!')
         else:
-            print(f'DAX tickers: {len(dax_tickers)}')
-        tickers.extend(dax_tickers)  # Germany 40
+            print(f'MSCI World tickers: {len(msci_world_tickers)}')
+        tickers.extend(msci_world_tickers)  # MSCI World
     except Exception as e:
-        print(f'Error fetching DAX tickers: {e}')
+        print(f'Error fetching MSCI World tickers: {e}')
 
-    try:
-        nasdaq_100_tickers = get_nasdaq_100_tickers()
-        if len(nasdaq_100_tickers) < 100:
-            print('NASDAQ 100 tickers missing!')
-        else:
-            print(f'NASDAQ 100 tickers: {len(nasdaq_100_tickers)}')
-        tickers.extend(nasdaq_100_tickers)  # United States 100
-    except Exception as e:
-        print(f'Error fetching NASDAQ 100 tickers: {e}')
-
-    try:
-        s_p_500_tickers = get_s_p_500_tickers()
-        if len(s_p_500_tickers) < 500:
-            print('S&P 500 tickers missing!')
-        else:
-            print(f'S&P 500 tickers: {len(s_p_500_tickers)}')
-        tickers.extend(s_p_500_tickers)  # United States 500
-    except Exception as e:
-        print(f'Error fetching S&P 500 tickers: {e}')
-
-    try:
-        dow_jones_tickers = get_dow_jones_tickers()
-        if len(dow_jones_tickers) < 30:
-            print('Dow Jones tickers missing!')
-        else:
-            print(f'Dow Jones tickers: {len(dow_jones_tickers)}')
-        tickers.extend(dow_jones_tickers)  # United States 30
-    except Exception as e:
-        print(f'Error fetching Dow Jones tickers: {e}')
-
-    try:
-        mdax_tickers = get_mdax_tickers()
-        if len(mdax_tickers) < 50:
-            print('MDAX tickers missing!')
-        else:
-            print(f'MDAX tickers: {len(mdax_tickers)}')
-        tickers.extend(mdax_tickers)  # Germany 50
-    except Exception as e:
-        print(f'Error fetching MDAX tickers: {e}')
-
-    try:
-        euro_stoxx_50_tickers = get_euro_stoxx_50_tickers()
-        if len(euro_stoxx_50_tickers) < 50:
-            print('EURO STOXX 50 tickers missing!')
-        else:
-            print(f'EURO STOXX 50 tickers: {len(euro_stoxx_50_tickers)}')
-        tickers.extend(euro_stoxx_50_tickers)  # Europe 50
-    except Exception as e:
-        print(f'Error fetching EURO STOXX 50 tickers: {e}')
+    # try:
+    #     dax_tickers = get_dax_tickers()
+    #     if len(dax_tickers) < 40:
+    #         print('DAX tickers missing!')
+    #     else:
+    #         print(f'DAX tickers: {len(dax_tickers)}')
+    #     tickers.extend(dax_tickers)  # Germany 40
+    # except Exception as e:
+    #     print(f'Error fetching DAX tickers: {e}')
+    #
+    # try:
+    #     nasdaq_100_tickers = get_nasdaq_100_tickers()
+    #     if len(nasdaq_100_tickers) < 100:
+    #         print('NASDAQ 100 tickers missing!')
+    #     else:
+    #         print(f'NASDAQ 100 tickers: {len(nasdaq_100_tickers)}')
+    #     tickers.extend(nasdaq_100_tickers)  # United States 100
+    # except Exception as e:
+    #     print(f'Error fetching NASDAQ 100 tickers: {e}')
+    #
+    # try:
+    #     s_p_500_tickers = get_s_p_500_tickers()
+    #     if len(s_p_500_tickers) < 500:
+    #         print('S&P 500 tickers missing!')
+    #     else:
+    #         print(f'S&P 500 tickers: {len(s_p_500_tickers)}')
+    #     tickers.extend(s_p_500_tickers)  # United States 500
+    # except Exception as e:
+    #     print(f'Error fetching S&P 500 tickers: {e}')
+    #
+    # try:
+    #     dow_jones_tickers = get_dow_jones_tickers()
+    #     if len(dow_jones_tickers) < 30:
+    #         print('Dow Jones tickers missing!')
+    #     else:
+    #         print(f'Dow Jones tickers: {len(dow_jones_tickers)}')
+    #     tickers.extend(dow_jones_tickers)  # United States 30
+    # except Exception as e:
+    #     print(f'Error fetching Dow Jones tickers: {e}')
+    #
+    # try:
+    #     mdax_tickers = get_mdax_tickers()
+    #     if len(mdax_tickers) < 50:
+    #         print('MDAX tickers missing!')
+    #     else:
+    #         print(f'MDAX tickers: {len(mdax_tickers)}')
+    #     tickers.extend(mdax_tickers)  # Germany 50
+    # except Exception as e:
+    #     print(f'Error fetching MDAX tickers: {e}')
+    #
+    # try:
+    #     euro_stoxx_50_tickers = get_euro_stoxx_50_tickers()
+    #     if len(euro_stoxx_50_tickers) < 50:
+    #         print('EURO STOXX 50 tickers missing!')
+    #     else:
+    #         print(f'EURO STOXX 50 tickers: {len(euro_stoxx_50_tickers)}')
+    #     tickers.extend(euro_stoxx_50_tickers)  # Europe 50
+    # except Exception as e:
+    #     print(f'Error fetching EURO STOXX 50 tickers: {e}')
 
     # try:
     #     nikkei_225_tickers = get_nikkei_225_tickers()
@@ -444,15 +505,15 @@ def get_all_tickers():
     # except Exception as e:
     #     print(f'Error fetching Nikkei 225 tickers: {e}')
 
-    try:
-        tecdax_tickers = get_tecdax_tickers()
-        if len(tecdax_tickers) < 30:
-            print('TecDAX tickers missing!')
-        else:
-            print(f'TecDAX tickers: {len(tecdax_tickers)}')
-        tickers.extend(tecdax_tickers)  # Germany 30
-    except Exception as e:
-        print(f'Error fetching TecDAX tickers: {e}')
+    # try:
+    #     tecdax_tickers = get_tecdax_tickers()
+    #     if len(tecdax_tickers) < 30:
+    #         print('TecDAX tickers missing!')
+    #     else:
+    #         print(f'TecDAX tickers: {len(tecdax_tickers)}')
+    #     tickers.extend(tecdax_tickers)  # Germany 30
+    # except Exception as e:
+    #     print(f'Error fetching TecDAX tickers: {e}')
 
     # try:
     #     cac_40_tickers = get_cac_40_tickers()
@@ -544,8 +605,8 @@ def get_all_tickers():
 
 if __name__ == '__main__':
     # main_tickers = get_all_tickers()
-    main_tickers = get_dax_tickers()
-    # print(len(main_tickers))
+    main_tickers = get_msci_world_tickers()
+    print(len(main_tickers))
     # print(get_dax_tickers())
-    for ticker in main_tickers:
-        print(ticker)
+    # for ticker in main_tickers:
+    #     print(ticker)
