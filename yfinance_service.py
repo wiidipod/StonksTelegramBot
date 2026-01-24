@@ -3,7 +3,7 @@ from enum import Enum
 import pandas as pd
 import yfinance as yf
 import math
-import retry_utility
+# import retry_utility
 
 
 class P(Enum):
@@ -17,7 +17,8 @@ def get_price(ticker, period='1d', interval='1m'):
     def _fetch_history():
         return yf.Ticker(ticker).history(period=period, interval=interval)
 
-    data = retry_utility.retry_data_fetch(_fetch_history)
+    # data = retry_utility.retry_data_fetch(_fetch_history)
+    data = _fetch_history()
     return data["Close"].iloc[-1]
 
 
@@ -25,7 +26,8 @@ def get_high_low(ticker, period='1d', interval='1m'):
     def _fetch_history():
         return yf.Ticker(ticker).history(period=period, interval=interval)
 
-    data = retry_utility.retry_data_fetch(_fetch_history)
+    # data = retry_utility.retry_data_fetch(_fetch_history)
+    data = _fetch_history()
     return data["High"].iloc[-1], data["Low"].iloc[-1]
 
 
@@ -89,7 +91,8 @@ def get_close_as_series(ticker, period='10y', interval='1d'):
     def _fetch_history():
         return yf.Ticker(ticker).history(period=period, interval=interval)
 
-    data = retry_utility.retry_data_fetch(_fetch_history)
+    # data = retry_utility.retry_data_fetch(_fetch_history)
+    data = _fetch_history()
     data = data.reset_index()
     data['Date'] = pd.to_datetime(data['Date'].dt.date)
     data = data.rename(columns={'Date': 'ds', 'Close': 'y'})
@@ -103,7 +106,8 @@ def get_industry(ticker):
         def _fetch_info():
             return yf.Ticker(ticker).info
 
-        info = retry_utility.retry_data_fetch(_fetch_info)
+        # info = retry_utility.retry_data_fetch(_fetch_info)
+        info = _fetch_info()
         return info["industry"]
     except:
         return ""
@@ -113,7 +117,8 @@ def get_name(ticker, mono=False, industry_pe_ratio=None):
     def _fetch_info():
         return yf.Ticker(ticker).info
 
-    info = retry_utility.retry_data_fetch(_fetch_info)
+    # info = retry_utility.retry_data_fetch(_fetch_info)
+    info = _fetch_info()
 
     name = info["shortName"] or info["longName"] or ticker
 
@@ -143,7 +148,8 @@ def get_pe_ratio(ticker):
         def _fetch_info():
             return yf.Ticker(ticker).info
 
-        info = retry_utility.retry_data_fetch(_fetch_info)
+        # info = retry_utility.retry_data_fetch(_fetch_info)
+        info = _fetch_info()
         pe_ratio = info.get("trailingPE")
         if pe_ratio is None or pe_ratio <= 0.0 or math.isnan(pe_ratio):
             return None
@@ -157,7 +163,8 @@ def get_peg_ratio(ticker):
         def _fetch_info():
             return yf.Ticker(ticker).info
 
-        info = retry_utility.retry_data_fetch(_fetch_info)
+        # info = retry_utility.retry_data_fetch(_fetch_info)
+        info = _fetch_info()
         peg_ratio = info.get("trailingPegRatio")
         if peg_ratio is None or peg_ratio <= 0.0 or math.isnan(peg_ratio):
             return None
@@ -175,7 +182,8 @@ def get_price_target(ticker, low=True):
         def _fetch_price_targets():
             return yf.Ticker(ticker).analyst_price_targets
 
-        price_targets = retry_utility.retry_data_fetch(_fetch_price_targets)
+        # price_targets = retry_utility.retry_data_fetch(_fetch_price_targets)
+        price_targets = _fetch_price_targets()
         mean_price_target = price_targets['mean']
         median_price_target = price_targets['median']
         if is_valid_price(mean_price_target) and is_valid_price(median_price_target):
@@ -197,7 +205,8 @@ def get_ev_to_ebitda(ticker):
         def _fetch_info():
             return yf.Ticker(ticker).info
 
-        info = retry_utility.retry_data_fetch(_fetch_info)
+        # info = retry_utility.retry_data_fetch(_fetch_info)
+        info = _fetch_info()
         ev_to_ebitda = info.get("enterpriseToEbitda")
         if ev_to_ebitda is None or ev_to_ebitda <= 0.0 or math.isnan(ev_to_ebitda):
             return None
@@ -212,14 +221,16 @@ def get_fair_value(ticker, growth_10y=None, growth_1y=None, backtest=False):
             def _fetch_earnings_history():
                 return yf.Ticker(ticker).earnings_history
 
-            earnings_history = retry_utility.retry_data_fetch(_fetch_earnings_history)
+            # earnings_history = retry_utility.retry_data_fetch(_fetch_earnings_history)
+            earnings_history = _fetch_earnings_history()
             current_year = earnings_history['epsActual'].iloc[0]
             next_year = earnings_history['epsActual'].iloc[-1]
         else:
             def _fetch_eps_trend():
                 return yf.Ticker(ticker).eps_trend
 
-            eps_trend = retry_utility.retry_data_fetch(_fetch_eps_trend)
+            # eps_trend = retry_utility.retry_data_fetch(_fetch_eps_trend)
+            eps_trend = _fetch_eps_trend()
             current_year = eps_trend['current']['0y']
             next_year = eps_trend['current']['+1y']
 
@@ -241,7 +252,8 @@ def get_fair_value(ticker, growth_10y=None, growth_1y=None, backtest=False):
         def _fetch_info():
             return yf.Ticker(ticker).info
 
-        info = retry_utility.retry_data_fetch(_fetch_info)
+        # info = retry_utility.retry_data_fetch(_fetch_info)
+        info = _fetch_info()
         eps = info.get("trailingEps")
         if eps is None or eps <= 0.0 or math.isnan(eps) or growth_value <= 0.0:
             return None
@@ -287,7 +299,8 @@ def get_currency(ticker):
         def _fetch_info():
             return yf.Ticker(ticker).info
 
-        info = retry_utility.retry_data_fetch(_fetch_info)
+        # info = retry_utility.retry_data_fetch(_fetch_info)
+        info = _fetch_info()
         return info["currency"]
     except:
         return ""

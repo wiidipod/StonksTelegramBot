@@ -47,7 +47,7 @@ class RetryConfig:
         'nameresolutionerror',
     ]
 
-    DEFAULT_MAX_RETRIES = 5
+    DEFAULT_MAX_RETRIES = 0
     DEFAULT_BASE_DELAY = 120  # 2 minutes
     DEFAULT_MAX_DELAY = 600   # 10 minutes
 
@@ -246,7 +246,7 @@ async def retry_telegram_operation(func: Callable, *args, **kwargs) -> Any:
     if inspect.iscoroutinefunction(func):
         return await retry_with_backoff_async(
             func, *args,
-            max_retries=3,
+            max_retries=0,
             base_delay=30,  # 30 seconds for Telegram
             max_delay=180,  # 3 minutes max
             **kwargs
@@ -254,7 +254,7 @@ async def retry_telegram_operation(func: Callable, *args, **kwargs) -> Any:
     else:
         return retry_with_backoff(
             func, *args,
-            max_retries=3,
+            max_retries=0,
             base_delay=30,  # 30 seconds for Telegram
             max_delay=180,  # 3 minutes max
             **kwargs
@@ -276,7 +276,7 @@ def retry_data_fetch(func: Callable, *args, **kwargs) -> Any:
     """
     return retry_with_backoff(
         func, *args,
-        max_retries=5,
+        max_retries=0,
         base_delay=120,  # 2 minutes
         max_delay=600,   # 10 minutes max
         **kwargs
