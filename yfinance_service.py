@@ -190,7 +190,7 @@ def get_price_target(ticker, low=True):
             if low:
                 return min(mean_price_target, median_price_target)
             else:
-                return min(mean_price_target, median_price_target)
+                return max(mean_price_target, median_price_target)
         if is_valid_price(mean_price_target):
             return mean_price_target
         if is_valid_price(median_price_target):
