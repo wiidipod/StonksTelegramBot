@@ -237,6 +237,9 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         if price_target_low is not None:
             # relative_offset = ((df[P.C.value].iat[-1 - future] / price_target_low) - 1.0) * 100.0
             # subtitle += f'PT: {round_down(price_target_low)} ({round_down(relative_offset)}%) / {round_up(price_target_high)} - '-
+            value_low = price_target_low / df['Growth'].iat[-1] * df['Growth'].iat[-1 - future]
+            value_high = price_target_high / df['Growth'].iat[-1] * df['Growth'].iat[-1 - future]
+            subtitle += f'V: {round_down(value_low)} / {round_up(value_high)} - '
             subtitle += f'PT: {round_down(price_target_low)} / {round_up(price_target_high)} - '
         if peg_ratio is not None:
             subtitle += f'PEG: {round_up(peg_ratio)} - '
