@@ -73,6 +73,7 @@ def has_buy_signal(dictionary):
             and dictionary[DictionaryKeys.too_expensive] is False
             and dictionary[DictionaryKeys.no_technicals] is False
             and dictionary[DictionaryKeys.pe_ratio_too_high] is False
+            and dictionary[DictionaryKeys.value_too_low] is False
     )
 
 
@@ -88,6 +89,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         DictionaryKeys.too_expensive: False,
         DictionaryKeys.no_technicals: False,
         DictionaryKeys.pe_ratio_too_high: False,
+        DictionaryKeys.value_too_low: False,
     }
 
     if len(df) <= 2500:
@@ -119,6 +121,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     if is_stock(ticker):
         pe_ratio = yfinance_service.get_pe_ratio(ticker)
         peg_ratio = yfinance_service.get_peg_ratio(ticker)
+        ev_to_ebitda = yfinance_service.get_ev_to_ebitda(ticker)
         industry = yfinance_service.get_industry(ticker)
         industry_pe_ratio = pe_ratios.get(industry) or pe_ratios.get('S&P 500') or 19.38
         price_target_low = yfinance_service.get_price_target(ticker, low=True)
@@ -130,6 +133,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         price_target_low = None
         price_target_high = None
         pe_ratio = None
+        ev_to_ebitda = None
         industry_pe_ratio = None
 
     window = len(df) - 1
@@ -147,6 +151,10 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
 
     if is_stock(ticker):
         if pe_ratio is not None:
+            if ev_to_ebitda is None:
+                dictionary[DictionaryKeys.ev_to_ebidta_too_high] = True
+            elif ev_to_ebitda > pe_ratio:
+                dictionary[DictionaryKeys.ev_to_ebidta_too_high] = True
             if peg_ratio is None:
                 peg_ratio = get_peg_ratio(df, labels=["Growth"], one_year=future, pe_ratio=pe_ratio)
             else:
@@ -159,8 +167,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         elif peg_ratio > 1.0:
             dictionary[DictionaryKeys.peg_ratio_too_high] = True
 
-
-        # if peg_ratio is None and (pe_ratio is None or industry_pe_ratio is None):
+    # if peg_ratio is None and (pe_ratio is None or industry_pe_ratio is None):
         #     dictionary[DictionaryKeys.peg_ratio_too_high] = True
         #     dictionary[DictionaryKeys.pe_ratio_too_high] = True
         # elif peg_ratio is not None and pe_ratio is not None and industry_pe_ratio is not None:
@@ -225,11 +232,15 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     if price_target_low < 1.1 * df[P.C.value].iat[-1 - future]:
         dictionary[DictionaryKeys.price_target_too_low] = True
 
+    value_low = price_target_low / df['Growth'].iat[-1] * df['Growth'].iat[-1 - future]
+    value_high = price_target_high / df['Growth'].iat[-1] * df['Growth'].iat[-1 - future]
+    if value_low < df[P.C.value].iat[-1 - future]:
+        dictionary[DictionaryKeys.value_too_low] = True
+
     if not full and not has_buy_signal(dictionary):
         return dictionary, None
 
     name = yfinance_service.get_name(ticker=ticker, industry_pe_ratio=industry_pe_ratio)
-    ev_to_ebitda = yfinance_service.get_ev_to_ebitda(ticker)
     subtitle = None
 
     if price_target_low is not None or peg_ratio is not None or pe_ratio is not None or ev_to_ebitda is not None:
@@ -237,8 +248,6 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         if price_target_low is not None:
             # relative_offset = ((df[P.C.value].iat[-1 - future] / price_target_low) - 1.0) * 100.0
             # subtitle += f'PT: {round_down(price_target_low)} ({round_down(relative_offset)}%) / {round_up(price_target_high)} - '-
-            value_low = price_target_low / df['Growth'].iat[-1] * df['Growth'].iat[-1 - future]
-            value_high = price_target_high / df['Growth'].iat[-1] * df['Growth'].iat[-1 - future]
             subtitle += f'V: {round_down(value_low)} / {round_up(value_high)} - '
             subtitle += f'PT: {round_down(price_target_low)} / {round_up(price_target_high)} - '
         if peg_ratio is not None:
@@ -293,6 +302,8 @@ if __name__ == '__main__':
         too_expensive = 0
         no_momentum = 0
         pe_ratio_too_high = 0
+        value_too_low = 0
+        ev_to_ebitda_too_high = 0
         undervalued = 0
 
         plot_paths = []
@@ -338,6 +349,10 @@ if __name__ == '__main__':
                     no_momentum += 1
                 if dictionary_main[DictionaryKeys.pe_ratio_too_high]:
                     pe_ratio_too_high += 1
+                if dictionary_main[DictionaryKeys.value_too_low]:
+                    value_too_low += 1
+                if dictionary_main[DictionaryKeys.ev_to_ebidta_too_high]:
+                    ev_to_ebitda_too_high += 1
 
                 if plot_path_main is None:
                     continue
@@ -352,6 +367,8 @@ if __name__ == '__main__':
         print(f'Too expensive: {too_expensive}')
         print(f'No technicals: {no_momentum}')
         print(f'PE ratio too high: {pe_ratio_too_high}')
+        print(f'Value too low: {value_too_low}')
+        print(f'EV to EBITDA too high: {ev_to_ebitda_too_high}')
         print(f'Total tickers: {len(tickers)}')
         print(f'Undervalued: {undervalued}')
 

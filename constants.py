@@ -13,3 +13,5 @@ class DictionaryKeys(Enum):
     not_enough_undervaluation = 'not_enough_undervaluation'
     no_technicals = 'no_momentum'
     pe_ratio_too_high = 'pe_ratio_too_high'
+    value_too_low = 'value_too_low'
+    ev_to_ebidta_too_high = 'ev_to_ebitda_too_high'
