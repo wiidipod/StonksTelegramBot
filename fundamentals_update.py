@@ -74,6 +74,7 @@ def has_buy_signal(dictionary):
             and dictionary[DictionaryKeys.no_technicals] is False
             and dictionary[DictionaryKeys.pe_ratio_too_high] is False
             and dictionary[DictionaryKeys.value_too_low] is False
+            and dictionary[DictionaryKeys.ev_to_ebidta_too_high] is False
     )
 
 
@@ -90,6 +91,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         DictionaryKeys.no_technicals: False,
         DictionaryKeys.pe_ratio_too_high: False,
         DictionaryKeys.value_too_low: False,
+        DictionaryKeys.ev_to_ebidta_too_high: False,
     }
 
     if len(df) <= 2500:
