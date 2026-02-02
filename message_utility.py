@@ -14,7 +14,7 @@ bullish_emoji = "📈"
 rocket_emoji = "🚀"
 skull_emoji = "💀"
 
-characters_to_escape = ['-', '.', '(', ')', '!', '+']
+characters_to_escape = ['-', '.', '(', ')', '!', '+', '>', '<']
 
 
 def escape_characters_for_markdown(text):
