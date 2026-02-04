@@ -11,7 +11,7 @@ import yfinance_service
 from constants import DictionaryKeys
 import time
 import argparse
-from message_utility import round_down, round_up
+from message_utility import round_down, round_up, human_format
 import message_utility
 from ticker_service import is_stock, is_crypto
 from ta_utility import has_technicals
@@ -246,8 +246,12 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     name = yfinance_service.get_name(ticker=ticker, industry_pe_ratio=industry_pe_ratio)
     subtitle = None
 
-    if price_target_low is not None or peg_ratio is not None or pe_ratio is not None or ev_to_ebitda is not None:
+    market_cap = yfinance_service.get_market_cap(ticker)
+
+    if market_cap is not None or price_target_low is not None or peg_ratio is not None or pe_ratio is not None or ev_to_ebitda is not None:
         subtitle = ''
+        if market_cap is not None:
+            subtitle += f'MC: {human_format(market_cap)} - '
         if price_target_low is not None:
             # relative_offset = ((df[P.C.value].iat[-1 - future] / price_target_low) - 1.0) * 100.0
             # subtitle += f'PT: {round_down(price_target_low)} ({round_down(relative_offset)}%) / {round_up(price_target_high)} - '-

@@ -447,17 +447,26 @@ def get_subscriptions():
     return subscriptions
 
 
-if __name__ == "__main__":
-    text_main = "EUZ.DE (P/E: 12.34)"
-    print(escape_characters_for_markdown(text_main))
+def human_format(num):
+    num = float('{:.3g}'.format(num))
+    magnitude = 0
+    while abs(num) >= 1000:
+        magnitude += 1
+        num /= 1000.0
+    return '{}{}'.format('{:f}'.format(num).rstrip('0').rstrip('.'), ['', 'K', 'M', 'B', 'T'][magnitude])
 
-    # print(round_down(0.0))
-    # print(round_down(12345))
-    # print(round_down(543))
-    # print(round_down(0.0098765))
-    # print(round_down(-10.12345))
-    # print(round_down(1.23))
-    # print(round_down(0.01012345))
+
+if __name__ == "__main__":
+    # text_main = "EUZ.DE (P/E: 12.34)"
+    # print(escape_characters_for_markdown(text_main))
+
+    print(human_format(0.0))
+    print(human_format(12345))
+    print(human_format(543))
+    print(human_format(0.0098765))
+    print(human_format(-10.12345))
+    print(human_format(1.23))
+    print(human_format(0.01012345))
     #
     # print(round_up(0.0))
     # print(round_up(12345))

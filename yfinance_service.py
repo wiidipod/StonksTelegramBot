@@ -316,6 +316,21 @@ def extract_ticker_df(df, ticker):
     ]
 
 
+def get_market_cap(ticker):
+    try:
+        def _fetch_info():
+            return yf.Ticker(ticker).info
+
+        # info = retry_utility.retry_data_fetch(_fetch_info)
+        info = _fetch_info()
+        market_cap = info.get("marketCap")
+        if market_cap is None or market_cap <= 0.0 or math.isnan(market_cap):
+            return None
+        return market_cap
+    except:
+        return None
+
+
 if __name__ == '__main__':
     ticker = 'AAPL'
     price = get_price(ticker, period='5d', interval='1m')
