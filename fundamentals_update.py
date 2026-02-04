@@ -194,9 +194,9 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
 
     if (
         # 10y regression not beating volatility in 5y
-        # df['Growth Upper'].iat[-1 - window - future] > df['Growth Lower'].iat[-1 - future]
+        df['Growth Upper'].iat[-1 - window - future] > df['Growth Lower'].iat[-1 - future]
         # 10y regression not growing
-        df['Growth Lower'].iat[-1 - future] > df['Growth Lower'].iat[-1]
+        or df['Growth Lower'].iat[-1 - future] > df['Growth Lower'].iat[-1]
         # 5y regression not growing
         # or df[f'{add_string_5y}Growth'].iat[-1 - future] > df[f'{add_string_5y}Growth'].iat[-1]
         # 5y regression not beating volatility in 5y
