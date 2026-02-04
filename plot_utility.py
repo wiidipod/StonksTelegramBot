@@ -9,7 +9,7 @@ import yfinance as yf
 import regression_utility
 from yfinance_service import P
 import yfinance_service
-from message_utility import round_down, round_up, human_format
+from message_utility import round_down, round_up, human_format, human_format_from_string
 from constants import output_directory
 
 
@@ -386,17 +386,17 @@ def plot_bands_by_labels(df, ticker, title, labels, subtitle=None, fname=None, y
 
     for label in labels:
         if not close_only:
-            subplot.fill_between(df.index, df[f'{label} (High)'], df[f'{label} (Low)'], label=f'{label} ({human_format(round_up(df[f"{label} (High)"].iat[today]))} / {human_format(round_down(df[f"{label} (Low)"].iat[today]))})')
+            subplot.fill_between(df.index, df[f'{label} (High)'], df[f'{label} (Low)'], label=f'{label} ({human_format_from_string(round_up(df[f"{label} (High)"].iat[today]))} / {human_format_from_string(round_down(df[f"{label} (Low)"].iat[today]))})')
         else:
-            subplot.plot(df.index, df[label], label=f'{label} ({human_format(round_down(df[label].iat[today]))})')
+            subplot.plot(df.index, df[label], label=f'{label} ({human_format_from_string(round_down(df[label].iat[today]))})')
 
     if not close_only:
-        subplot.fill_between(df.index, df[P.H.value], df[P.L.value], label=f'Price ({human_format(round_up(df[P.H.value].iat[today]))} / {human_format(round_down(df[P.L.value].iat[today]))})')
+        subplot.fill_between(df.index, df[P.H.value], df[P.L.value], label=f'Price ({human_format_from_string(round_up(df[P.H.value].iat[today]))} / {human_format_from_string(round_down(df[P.L.value].iat[today]))})')
     else:
         subplot.plot(df.index, df[P.C.value], label=f'Price ({human_format(df[P.C.value].iat[today])})')
 
     if sma_label:
-        subplot.plot(df.index, df[sma_label], label=f'{sma_label} ({human_format(round_down(df[sma_label].iat[today]))})')
+        subplot.plot(df.index, df[sma_label], label=f'{sma_label} ({human_format_from_string(round_down(df[sma_label].iat[today]))})')
 
     subplot.legend()
     fig.tight_layout()
