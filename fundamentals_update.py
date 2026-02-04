@@ -119,6 +119,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
             dictionary[DictionaryKeys.no_technicals] = True
     else:
         dictionary[DictionaryKeys.no_technicals] = True
+    dictionary[DictionaryKeys.no_technicals] = False
 
     if is_stock(ticker):
         pe_ratio = yfinance_service.get_pe_ratio(ticker)
