@@ -163,7 +163,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
             if peg_ratio is None:
                 peg_ratio = get_peg_ratio(df, labels=["Growth"], one_year=future, pe_ratio=pe_ratio)
             else:
-                peg_ratio = min(peg_ratio, get_peg_ratio(df, labels=["Growth"], one_year=future, pe_ratio=pe_ratio))
+                peg_ratio = max(peg_ratio, get_peg_ratio(df, labels=["Growth"], one_year=future, pe_ratio=pe_ratio))
         else:
             dictionary[DictionaryKeys.pe_ratio_too_high] = True
 
