@@ -441,15 +441,15 @@ def sort_tickers(tickers):
 def get_all_tickers():
     tickers = []
 
-    try:
-        msci_world_tickers = get_msci_world_tickers()
-        if len(msci_world_tickers) < 1000:
-            print('MSCI World tickers missing!')
-        else:
-            print(f'MSCI World tickers: {len(msci_world_tickers)}')
-        tickers.extend(msci_world_tickers)  # MSCI World
-    except Exception as e:
-        print(f'Error fetching MSCI World tickers: {e}')
+    # try:
+    #     msci_world_tickers = get_msci_world_tickers()
+    #     if len(msci_world_tickers) < 1000:
+    #         print('MSCI World tickers missing!')
+    #     else:
+    #         print(f'MSCI World tickers: {len(msci_world_tickers)}')
+    #     tickers.extend(msci_world_tickers)  # MSCI World
+    # except Exception as e:
+    #     print(f'Error fetching MSCI World tickers: {e}')
 
     # try:
     #     dax_tickers = get_dax_tickers()
@@ -471,15 +471,15 @@ def get_all_tickers():
     # except Exception as e:
     #     print(f'Error fetching NASDAQ 100 tickers: {e}')
     #
-    # try:
-    #     s_p_500_tickers = get_s_p_500_tickers()
-    #     if len(s_p_500_tickers) < 500:
-    #         print('S&P 500 tickers missing!')
-    #     else:
-    #         print(f'S&P 500 tickers: {len(s_p_500_tickers)}')
-    #     tickers.extend(s_p_500_tickers)  # United States 500
-    # except Exception as e:
-    #     print(f'Error fetching S&P 500 tickers: {e}')
+    try:
+        s_p_500_tickers = get_s_p_500_tickers()
+        if len(s_p_500_tickers) < 500:
+            print('S&P 500 tickers missing!')
+        else:
+            print(f'S&P 500 tickers: {len(s_p_500_tickers)}')
+        tickers.extend(s_p_500_tickers)  # United States 500
+    except Exception as e:
+        print(f'Error fetching S&P 500 tickers: {e}')
     #
     # try:
     #     dow_jones_tickers = get_dow_jones_tickers()
