@@ -577,7 +577,10 @@ def get_all_tickers():
     #     tickers.extend(cryptocurrency_tickers)
     # except Exception as e:
     #     print(f'Error fetching cryptocurrency tickers: {e}')
-    tickers.extend(["BTC-EUR", "ETH-EUR", "XRP-EUR", "SOL-EUR", "ADA-EUR", "DOGE-EUR"])
+    tickers.extend([
+        "BTC-EUR", "ETH-EUR", "XRP-EUR", "SOL-EUR", "ADA-EUR", "DOGE-EUR",
+        "BTC-USD", "ETH-USD", "XRP-USD", "SOL-USD", "ADA-USD", "DOGE-USD",
+    ])
 
     # try:
     #     precious_metals_tickers = get_precious_metals_tickers()
