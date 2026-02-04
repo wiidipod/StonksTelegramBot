@@ -167,7 +167,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
 
         if peg_ratio is None:
             dictionary[DictionaryKeys.peg_ratio_too_high] = True
-        elif peg_ratio > 1.0:
+        elif peg_ratio > 2.0:
             dictionary[DictionaryKeys.peg_ratio_too_high] = True
 
     # if peg_ratio is None and (pe_ratio is None or industry_pe_ratio is None):
@@ -237,7 +237,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
 
     value_low = price_target_low / df['Growth'].iat[-1] * df['Growth'].iat[-1 - future]
     value_high = price_target_high / df['Growth'].iat[-1] * df['Growth'].iat[-1 - future]
-    if value_low < df[P.C.value].iat[-1 - future]:
+    if value_low < 1.1 * df[P.C.value].iat[-1 - future]:
         dictionary[DictionaryKeys.value_too_low] = True
 
     if not full and not has_buy_signal(dictionary):
