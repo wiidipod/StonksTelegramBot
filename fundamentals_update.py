@@ -154,6 +154,8 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
 
     if is_stock(ticker):
         if pe_ratio is not None:
+            if pe_ratio > industry_pe_ratio:
+                dictionary[DictionaryKeys.pe_ratio_too_high] = True
             if ev_to_ebitda is None:
                 dictionary[DictionaryKeys.ev_to_ebidta_too_high] = True
             elif ev_to_ebitda > pe_ratio:
@@ -161,13 +163,13 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
             if peg_ratio is None:
                 peg_ratio = get_peg_ratio(df, labels=["Growth"], one_year=future, pe_ratio=pe_ratio)
             else:
-                peg_ratio = max(peg_ratio, get_peg_ratio(df, labels=["Growth"], one_year=future, pe_ratio=pe_ratio))
+                peg_ratio = min(peg_ratio, get_peg_ratio(df, labels=["Growth"], one_year=future, pe_ratio=pe_ratio))
         else:
             dictionary[DictionaryKeys.pe_ratio_too_high] = True
 
         if peg_ratio is None:
             dictionary[DictionaryKeys.peg_ratio_too_high] = True
-        elif peg_ratio > 2.0:
+        elif peg_ratio > 1.0:
             dictionary[DictionaryKeys.peg_ratio_too_high] = True
 
     # if peg_ratio is None and (pe_ratio is None or industry_pe_ratio is None):

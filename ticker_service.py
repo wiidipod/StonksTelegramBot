@@ -579,7 +579,7 @@ def get_all_tickers():
     #     print(f'Error fetching cryptocurrency tickers: {e}')
     tickers.extend([
         "BTC-EUR", "ETH-EUR", "XRP-EUR", "SOL-EUR", "ADA-EUR", "DOGE-EUR",
-        "BTC-USD", "ETH-USD", "XRP-USD", "SOL-USD", "ADA-USD", "DOGE-USD",
+        # "BTC-USD", "ETH-USD", "XRP-USD", "SOL-USD", "ADA-USD", "DOGE-USD",
     ])
 
     # try:
@@ -624,7 +624,7 @@ def get_all_tickers():
 
 if __name__ == '__main__':
     # main_tickers = get_all_tickers()
-    main_tickers = get_msci_world_tickers()
+    main_tickers = get_s_p_500_tickers()
     print(len(main_tickers))
     # print(get_dax_tickers())
     # for ticker in main_tickers:
