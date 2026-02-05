@@ -277,7 +277,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         if ev_to_ebitda is not None:
             subtitle += f'EV/EBITDA: {round_up(ev_to_ebitda)}'
             if ev_to_ebitda_to_growth is not None:
-                subtitle += f'({round_up(ev_to_ebitda_to_growth)})'
+                subtitle += f' ({round_up(ev_to_ebitda_to_growth)})'
             subtitle += ' - '
         # if macd is not None:
         #     subtitle += f'MACD Diff: {round_down(macd)} - '
