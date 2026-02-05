@@ -441,15 +441,15 @@ def sort_tickers(tickers):
 def get_all_tickers():
     tickers = []
 
-    # try:
-    #     msci_world_tickers = get_msci_world_tickers()
-    #     if len(msci_world_tickers) < 1000:
-    #         print('MSCI World tickers missing!')
-    #     else:
-    #         print(f'MSCI World tickers: {len(msci_world_tickers)}')
-    #     tickers.extend(msci_world_tickers)  # MSCI World
-    # except Exception as e:
-    #     print(f'Error fetching MSCI World tickers: {e}')
+    try:
+        msci_world_tickers = get_msci_world_tickers()
+        if len(msci_world_tickers) < 1000:
+            print('MSCI World tickers missing!')
+        else:
+            print(f'MSCI World tickers: {len(msci_world_tickers)}')
+        tickers.extend(msci_world_tickers)  # MSCI World
+    except Exception as e:
+        print(f'Error fetching MSCI World tickers: {e}')
 
     # try:
     #     dax_tickers = get_dax_tickers()
