@@ -172,7 +172,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
             ev_to_ebitda_to_growth = None
         else:
             growth = None if pe_ratio is None else pe_ratio / peg_ratio
-            ev_to_ebitda_to_growth = None if growth is None or growth is 0.0 else ev_to_ebitda / growth
+            ev_to_ebitda_to_growth = None if growth is None or growth is 0.0 or ev_to_ebitda is None else ev_to_ebitda / growth
             if peg_ratio > 2.0:
                 dictionary[DictionaryKeys.peg_ratio_too_high] = True
 
