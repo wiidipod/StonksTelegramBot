@@ -141,7 +141,7 @@ def write_message_by_dictionary(dictionary, ticker):
         message_to_escape += "   P/E Ratio too high\n "
     if dictionary[DictionaryKeys.value_too_low]:
         message_to_escape += "   Value too low\n "
-    if dictionary[DictionaryKeys.ev_to_ebidta_too_high]:
+    if dictionary[DictionaryKeys.ev_to_ebitda_too_high]:
         message_to_escape += "   EV/EBITDA too high\n "
     return save_message(start_message=start_message, message_to_escape=message_to_escape, ticker=ticker)
 

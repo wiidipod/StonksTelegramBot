@@ -74,7 +74,7 @@ def has_buy_signal(dictionary):
             and dictionary[DictionaryKeys.no_technicals] is False
             and dictionary[DictionaryKeys.pe_ratio_too_high] is False
             and dictionary[DictionaryKeys.value_too_low] is False
-            and dictionary[DictionaryKeys.ev_to_ebidta_too_high] is False
+            and dictionary[DictionaryKeys.ev_to_ebitda_too_high] is False
     )
 
 
@@ -91,7 +91,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         DictionaryKeys.no_technicals: False,
         DictionaryKeys.pe_ratio_too_high: False,
         DictionaryKeys.value_too_low: False,
-        DictionaryKeys.ev_to_ebidta_too_high: False,
+        DictionaryKeys.ev_to_ebitda_too_high: False,
     }
 
     if len(df) <= 2500:
@@ -157,9 +157,9 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
             if pe_ratio > industry_pe_ratio:
                 dictionary[DictionaryKeys.pe_ratio_too_high] = True
             if ev_to_ebitda is None:
-                dictionary[DictionaryKeys.ev_to_ebidta_too_high] = True
+                dictionary[DictionaryKeys.ev_to_ebitda_too_high] = True
             elif ev_to_ebitda > pe_ratio:
-                dictionary[DictionaryKeys.ev_to_ebidta_too_high] = True
+                dictionary[DictionaryKeys.ev_to_ebitda_too_high] = True
             if peg_ratio is None:
                 peg_ratio = get_peg_ratio(df, labels=["Growth"], one_year=future, pe_ratio=pe_ratio)
             else:
@@ -169,8 +169,17 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
 
         if peg_ratio is None:
             dictionary[DictionaryKeys.peg_ratio_too_high] = True
-        elif peg_ratio > 2.0:
-            dictionary[DictionaryKeys.peg_ratio_too_high] = True
+            ev_to_ebitda_to_growth = None
+        else:
+            growth = pe_ratio / peg_ratio
+            ev_to_ebitda_to_growth = ev_to_ebitda / growth if growth != 0.0 else None
+            if peg_ratio > 2.0:
+                dictionary[DictionaryKeys.peg_ratio_too_high] = True
+
+        if ev_to_ebitda_to_growth is None:
+            dictionary[DictionaryKeys.ev_to_ebitda_too_high] = True
+        elif ev_to_ebitda_to_growth > 1.0:
+            dictionary[DictionaryKeys.ev_to_ebitda_too_high] = True
 
     # if peg_ratio is None and (pe_ratio is None or industry_pe_ratio is None):
         #     dictionary[DictionaryKeys.peg_ratio_too_high] = True
@@ -360,7 +369,7 @@ if __name__ == '__main__':
                     pe_ratio_too_high += 1
                 if dictionary_main[DictionaryKeys.value_too_low]:
                     value_too_low += 1
-                if dictionary_main[DictionaryKeys.ev_to_ebidta_too_high]:
+                if dictionary_main[DictionaryKeys.ev_to_ebitda_too_high]:
                     ev_to_ebitda_too_high += 1
 
                 if plot_path_main is None:
