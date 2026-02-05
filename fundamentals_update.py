@@ -180,6 +180,8 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
             dictionary[DictionaryKeys.ev_to_ebitda_too_high] = True
         elif ev_to_ebitda_to_growth > 1.0:
             dictionary[DictionaryKeys.ev_to_ebitda_too_high] = True
+    else:
+        ev_to_ebitda_to_growth = None
 
     # if peg_ratio is None and (pe_ratio is None or industry_pe_ratio is None):
         #     dictionary[DictionaryKeys.peg_ratio_too_high] = True
@@ -273,7 +275,10 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         if pe_ratio is not None:
             subtitle += f'P/E: {round_up(pe_ratio)} - '
         if ev_to_ebitda is not None:
-            subtitle += f'EV/EBITDA: {round_up(ev_to_ebitda)} - '
+            subtitle += f'EV/EBITDA: {round_up(ev_to_ebitda)}'
+            if ev_to_ebitda_to_growth is not None:
+                subtitle += f'({round_up(ev_to_ebitda_to_growth)})'
+            subtitle += ' - '
         # if macd is not None:
         #     subtitle += f'MACD Diff: {round_down(macd)} - '
         # if rsi is not None:
