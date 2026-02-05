@@ -169,7 +169,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
 
         if peg_ratio is None:
             dictionary[DictionaryKeys.peg_ratio_too_high] = True
-        elif peg_ratio > 1.0:
+        elif peg_ratio > 2.0:
             dictionary[DictionaryKeys.peg_ratio_too_high] = True
 
     # if peg_ratio is None and (pe_ratio is None or industry_pe_ratio is None):
