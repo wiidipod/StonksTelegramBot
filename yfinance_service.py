@@ -123,7 +123,7 @@ def get_name(ticker, mono=False, industry_pe_ratio=None, with_link=False):
     name = info["shortName"] or info["longName"] or ticker
 
     if with_link:
-        name = f'[{name}](https://valuecheck\\.io/analyze/{ticker})'
+        name = f'[{name}](https://valuecheck.io/analyze/{ticker})'
 
     if mono:
         info = {}
