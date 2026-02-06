@@ -113,7 +113,7 @@ def get_industry(ticker):
         return ""
 
 
-def get_name(ticker, mono=False, industry_pe_ratio=None, with_link=False):
+def get_name(ticker, mono=False, industry_pe_ratio=None):
     def _fetch_info():
         return yf.Ticker(ticker).info
 
@@ -122,10 +122,8 @@ def get_name(ticker, mono=False, industry_pe_ratio=None, with_link=False):
 
     name = info["shortName"] or info["longName"] or ticker
 
-    if with_link:
-        name = f'[{name}](https://valuecheck.io/analyze/{ticker})'
-
     if mono:
+        name = f'[{name}](https://valuecheck.io/analyze/{ticker})'
         info = {}
 
     try:
