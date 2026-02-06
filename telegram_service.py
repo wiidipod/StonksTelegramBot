@@ -412,7 +412,8 @@ if __name__ == "__main__":
 
     name = yfinance_service.get_name('ADBE', mono=True, with_link=True)
     print(name)
-    name = escape_characters_for_markdown(name)
+    # name = escape_characters_for_markdown(name)
+    name = name.replace('\\', '\\\\').replace(')', '\\)')
     print(name)
     asyncio.run(
         send_message_to_first(
