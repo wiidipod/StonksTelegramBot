@@ -3,6 +3,10 @@ from enum import Enum
 import pandas as pd
 import yfinance as yf
 import math
+
+from ticker_service import is_stock
+
+
 # import retry_utility
 
 
@@ -123,7 +127,10 @@ def get_name(ticker, mono=False, industry_pe_ratio=None):
     name = info["shortName"] or info["longName"] or ticker
 
     if mono:
-        name = f'[{name}](https://valuecheck.io/analyze/{ticker})'
+        if is_stock(ticker):
+            name = f'[{name}](https://valuecheck.io/analyze/{ticker})'
+        else:
+            name = f'[{name}](https://finance.yahoo.com/quote/{ticker})'
         info = {}
 
     try:
