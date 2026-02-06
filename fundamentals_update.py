@@ -314,8 +314,8 @@ if __name__ == '__main__':
         parser.add_argument('--all', action='store_true', help='Send plots to all subscribers')
         args = parser.parse_args()
 
-        # tickers = ticker_service.get_all_tickers()
-        tickers = ticker_service.get_s_p_500_tickers()
+        tickers = ticker_service.get_all_tickers()
+        # tickers = ticker_service.get_s_p_500_tickers()
         # tickers = ticker_service.get_dow_jones_tickers()
         # tickers = ticker_service.get_nasdaq_100_tickers()
         # tickers = ['AAPL']
