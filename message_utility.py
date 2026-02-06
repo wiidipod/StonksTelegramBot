@@ -26,7 +26,7 @@ characters_to_escape = ['-', '.', '(', ')', '!', '+', '>', '<']
 
 def escape_characters_for_markdown(text):
     # Characters that need escaping in MarkdownV2
-    special_chars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
+    # special_chars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
 
     result = []
     i = 0
@@ -55,7 +55,7 @@ def escape_characters_for_markdown(text):
             result.append(')')
         else:
             # Normal character escaping
-            if text[i] in special_chars:
+            if text[i] in characters_to_escape:
                 result.append('\\')
             result.append(text[i])
             i += 1
