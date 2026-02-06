@@ -408,10 +408,17 @@ def get_handling_application():
 
 
 if __name__ == "__main__":
-    # main_application = get_application()
+    main_application = get_application()
+
+    name = yfinance_service.get_name('ADBE', mono=True, with_link=True)
+    print(name)
+    send_message_to_first(
+        message=name,
+        context=main_application
+    )
     # asyncio.run(set_commands(main_application))
 
     # asyncio.run(send_subscriptions_to_first_chat_id(context=main_application))
 
-    text = "EUZ.DE (P/E: 12.34)"
-    print(escape_markdown(text, version=2))
+    # text = "EUZ.DE (P/E: 12.34)"
+    # print(escape_markdown(text, version=2))
