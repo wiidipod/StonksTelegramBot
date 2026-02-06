@@ -412,9 +412,11 @@ if __name__ == "__main__":
 
     name = yfinance_service.get_name('ADBE', mono=True, with_link=True)
     print(name)
-    send_message_to_first(
-        message=name,
-        context=main_application
+    asyncio.run(
+        send_message_to_first(
+            message=name,
+            context=main_application,
+        )
     )
     # asyncio.run(set_commands(main_application))
 
