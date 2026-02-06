@@ -5,7 +5,7 @@ from constants import output_directory
 from ticker_service import sort_tickers
 from yfinance_service import P
 from constants import DictionaryKeys
-
+import telegramify_markdown
 
 subscriptions_file = '/home/moritz/PycharmProjects/StonksTelegramBot/subscriptions.txt'
 
@@ -25,42 +25,48 @@ characters_to_escape = ['-', '.', '(', ')', '!', '+', '>', '<']
 
 
 def escape_characters_for_markdown(text):
-    # Characters that need escaping in MarkdownV2
-    # special_chars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
+    return telegramify_markdown.markdownify(
+        text,
+        max_line_length=None,  # If you want to change the max line length for links, images, set it to the desired value.
+        normalize_whitespace=False
+    )
 
-    result = []
-    i = 0
-
-    while i < len(text):
-        # Check if we're at the start of a markdown link [text](URL)
-        if text[i] == ']' and i + 1 < len(text) and text[i + 1] == '(':
-            # Add the ]( without escaping
-            result.append('](')
-            i += 2
-
-            # Find the closing parenthesis of the URL
-            url_start = i
-            paren_count = 1
-            while i < len(text) and paren_count > 0:
-                if text[i] == '(':
-                    paren_count += 1
-                elif text[i] == ')':
-                    paren_count -= 1
-                i += 1
-
-            # Extract URL and only escape \ and )
-            url = text[url_start:i-1]
-            escaped_url = url.replace('\\', '\\\\').replace(')', '\\)')
-            result.append(escaped_url)
-            result.append(')')
-        else:
-            # Normal character escaping
-            if text[i] in characters_to_escape:
-                result.append('\\')
-            result.append(text[i])
-            i += 1
-
-    return ''.join(result)
+    # # Characters that need escaping in MarkdownV2
+    # # special_chars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
+    #
+    # result = []
+    # i = 0
+    #
+    # while i < len(text):
+    #     # Check if we're at the start of a markdown link [text](URL)
+    #     if text[i] == ']' and i + 1 < len(text) and text[i + 1] == '(':
+    #         # Add the ]( without escaping
+    #         result.append('](')
+    #         i += 2
+    #
+    #         # Find the closing parenthesis of the URL
+    #         url_start = i
+    #         paren_count = 1
+    #         while i < len(text) and paren_count > 0:
+    #             if text[i] == '(':
+    #                 paren_count += 1
+    #             elif text[i] == ')':
+    #                 paren_count -= 1
+    #             i += 1
+    #
+    #         # Extract URL and only escape \ and )
+    #         url = text[url_start:i-1]
+    #         escaped_url = url.replace('\\', '\\\\').replace(')', '\\)')
+    #         result.append(escaped_url)
+    #         result.append(')')
+    #     else:
+    #         # Normal character escaping
+    #         if text[i] in characters_to_escape:
+    #             result.append('\\')
+    #         result.append(text[i])
+    #         i += 1
+    #
+    # return ''.join(result)
 
 
 
@@ -231,7 +237,7 @@ def write_message_by_df(
         message_to_escape += "``` \n "
     else:
         message_to_escape += f"Fair Value:          {fair_value:16.8f} {currency} ``` \n "
-    message_to_escape += f"PEG Ratio: {peg_ratio:5.2f} \n ".replace('.', '\.')
+    message_to_escape += f"PEG Ratio: {peg_ratio:5.2f} \n ".replace('.', r'\.')
     message_to_escape += f"\n {df.index[-1].date()} ``` "
     message_to_escape += get_growth_message(currency, df, -1)
     message_to_escape += " ``` "
