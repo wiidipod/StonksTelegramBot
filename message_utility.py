@@ -17,11 +17,51 @@ skull_emoji = "💀"
 characters_to_escape = ['-', '.', '(', ')', '!', '+', '>', '<']
 
 
+# def escape_characters_for_markdown(text):
+#     for char in characters_to_escape:
+#         text = text.replace(char, f'\\{char}')
+#     return text
+#     # return telegram_service.escape_markdown(text)
+
+
 def escape_characters_for_markdown(text):
-    for char in characters_to_escape:
-        text = text.replace(char, f'\\{char}')
-    return text
-    # return telegram_service.escape_markdown(text)
+    # Characters that need escaping in MarkdownV2
+    special_chars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
+
+    result = []
+    i = 0
+
+    while i < len(text):
+        # Check if we're at the start of a markdown link [text](URL)
+        if text[i] == ']' and i + 1 < len(text) and text[i + 1] == '(':
+            # Add the ]( without escaping
+            result.append('](')
+            i += 2
+
+            # Find the closing parenthesis of the URL
+            url_start = i
+            paren_count = 1
+            while i < len(text) and paren_count > 0:
+                if text[i] == '(':
+                    paren_count += 1
+                elif text[i] == ')':
+                    paren_count -= 1
+                i += 1
+
+            # Extract URL and only escape \ and )
+            url = text[url_start:i-1]
+            escaped_url = url.replace('\\', '\\\\').replace(')', '\\)')
+            result.append(escaped_url)
+            result.append(')')
+        else:
+            # Normal character escaping
+            if text[i] in special_chars:
+                result.append('\\')
+            result.append(text[i])
+            i += 1
+
+    return ''.join(result)
+
 
 
 def write_hype_message(
