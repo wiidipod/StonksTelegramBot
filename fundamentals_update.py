@@ -330,6 +330,7 @@ if __name__ == '__main__':
         ev_to_ebitda_too_high = 0
         undervalued = 0
 
+        messages = []
         plot_paths = []
 
         main_pe_ratios = pe_utility.update_pe_ratios()
@@ -381,6 +382,9 @@ if __name__ == '__main__':
                 if plot_path_main is None:
                     continue
 
+                message = message_utility.get_message_by_dictionary(dictionary=dictionary_main, ticker=ticker_main)
+                messages.append(message)
+
                 plot_paths.append(plot_path_main)
                 undervalued += 1
 
@@ -398,9 +402,9 @@ if __name__ == '__main__':
 
         application = telegram_service.get_application()
         if args.all:
-            asyncio.run(telegram_service.send_plots_to_all(plot_paths, application))
+            asyncio.run(telegram_service.send_plots_to_all(plot_paths, application, messages=messages))
         else:
-            asyncio.run(telegram_service.send_plots_to_first(plot_paths, application))
+            asyncio.run(telegram_service.send_plots_to_first(plot_paths, application, messages=messages))
     except Exception as e:
         import traceback
         error_message = f"Error in fundamentals_update:\n{str(e)}\n\nTraceback:\n{traceback.format_exc()}"

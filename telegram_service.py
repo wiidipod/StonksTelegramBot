@@ -295,18 +295,31 @@ async def send_plot_with_message(plot_path, message, chat_id, context: ContextTy
         logging.error(f"Plot path: {plot_path}, Message path: {message}")
 
 
-async def send_plots_to_all(plot_paths, context: ContextTypes.DEFAULT_TYPE):
+async def send_plots_to_all(plot_paths, context: ContextTypes.DEFAULT_TYPE, messages=None):
     subscribers = get_subscribers()
     media_groups = [plot_paths[i:i + 10] for i in range(0, len(plot_paths), 10)]
 
     for chat_id in subscribers:
-        for group in media_groups:
-            media = [InputMediaPhoto(open(image_path, 'rb')) for image_path in group]
-            try:
-                await context.bot.send_media_group(chat_id=chat_id, media=media)
-            except Exception as e:
-                logging.error(f"Failed to send media group to {chat_id}: {e}")
-                continue
+        if messages is None:
+            for group in media_groups:
+                media = [InputMediaPhoto(open(image_path, 'rb')) for image_path in group]
+                try:
+                    await context.bot.send_media_group(chat_id=chat_id, media=media)
+                except Exception as e:
+                    logging.error(f"Failed to send media group to {chat_id}: {e}")
+                    continue
+        else:
+            for plot_path, message in zip(plot_paths, messages):
+                try:
+                    await send_plot_with_message(
+                        plot_path=plot_path,
+                        message=message,
+                        chat_id=chat_id,
+                        context=context,
+                    )
+                except Exception as e:
+                    logging.error(f"Failed to send plot with message to {chat_id}: {e}")
+                    continue
 
 
 async def send_message_path_to_chat_id(message_path, chat_id, context: ContextTypes.DEFAULT_TYPE):
@@ -350,9 +363,18 @@ async def send_all(plot_paths, message_paths, context: ContextTypes.DEFAULT_TYPE
     await send_messages_to_all(message_paths, context)
 
 
-async def send_plots_to_first(plot_paths, context: ContextTypes.DEFAULT_TYPE):
+async def send_plots_to_first(plot_paths, context: ContextTypes.DEFAULT_TYPE, messages=None):
     chat_id = get_subscribers()[0]
-    await send_plots_to_chat_id(plot_paths, chat_id, context)
+    if messages is None:
+        await send_plots_to_chat_id(plot_paths, chat_id, context)
+    else:
+        for plot_path, message in zip(plot_paths, messages):
+            await send_plot_with_message(
+                plot_path=plot_path,
+                message=message,
+                chat_id=chat_id,
+                context=context
+            )
 
 
 async def send_message_to_first(message, context: ContextTypes.DEFAULT_TYPE):
