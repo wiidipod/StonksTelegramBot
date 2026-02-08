@@ -155,7 +155,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
 
     if is_stock(ticker):
         if pe_ratio is not None:
-            if pe_ratio > industry_pe_ratio:
+            if pe_ratio > 2.0 * industry_pe_ratio:
                 dictionary[DictionaryKeys.pe_ratio_too_high] = True
             if ev_to_ebitda is None:
                 dictionary[DictionaryKeys.ev_to_ebitda_too_high] = True

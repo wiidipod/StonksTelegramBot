@@ -624,8 +624,18 @@ def get_all_tickers():
 
 if __name__ == '__main__':
     # main_tickers = get_all_tickers()
-    main_tickers = get_s_p_500_tickers()
+    main_sp500_tickers = get_s_p_500_tickers()
+    print('TMUS' in main_sp500_tickers)
+    print(len(main_sp500_tickers))
+
+    main_msci_world_tickers = get_msci_world_tickers()
+    print('TMUS' in main_msci_world_tickers)
+    print(len(main_msci_world_tickers))
+
+    main_tickers = get_all_tickers()
+    print('TMUS' in main_tickers)
     print(len(main_tickers))
+
     # print(get_dax_tickers())
     # for ticker in main_tickers:
     #     print(ticker)
