@@ -118,13 +118,16 @@ def get_industry(ticker):
 
 
 def get_name(ticker, mono=False, industry_pe_ratio=None):
-    def _fetch_info():
-        return yf.Ticker(ticker).info
+    try:
+        def _fetch_info():
+            return yf.Ticker(ticker).info
 
-    # info = retry_utility.retry_data_fetch(_fetch_info)
-    info = _fetch_info()
-
-    name = info["shortName"] or info["longName"] or ticker
+        # info = retry_utility.retry_data_fetch(_fetch_info)
+        info = _fetch_info()
+        name = info.get("shortName") or info.get("longName") or ticker
+    except:
+        info = {}
+        name = ticker
 
     if mono:
         if is_stock(ticker):
