@@ -42,7 +42,7 @@ def get_tickers(
         if len(cells) <= column:
             continue
         ticker = cells[column].text.strip()
-        ticker = ticker.split(',')[0].split('[')[0].split(':')[-1].strip()
+        ticker = ticker.split(',')[0].split('[')[0].split(':')[-1].split(' ')[0].strip()
 
         if not ticker:
             continue
@@ -51,7 +51,7 @@ def get_tickers(
             ticker = ticker.replace('.', '-')
 
         if is_crypto:
-            tickers.append(ticker + '-EUR')
+            # tickers.append(ticker + '-EUR')
             ticker = ticker + '-USD'
 
         if is_future:
@@ -230,8 +230,9 @@ def get_energy_tickers():
     table_index = 3
     column = 3
     tickers = get_tickers(source, attribute=attribute, name=name, table_index=table_index, column=column, is_future=True)
-    tickers = [ticker.split(' ') for ticker in tickers]
-    return [ticker for ticker in tickers if '(' not in ticker]
+    return tickers
+    # tickers = [ticker.split(' ') for ticker in tickers]
+    # return [ticker for ticker in tickers if '(' not in ticker]
 
 
 def get_atx_tickers():
@@ -451,26 +452,26 @@ def get_all_tickers():
     except Exception as e:
         print(f'Error fetching MSCI World tickers: {e}')
 
-    # try:
-    #     dax_tickers = get_dax_tickers()
-    #     if len(dax_tickers) < 40:
-    #         print('DAX tickers missing!')
-    #     else:
-    #         print(f'DAX tickers: {len(dax_tickers)}')
-    #     tickers.extend(dax_tickers)  # Germany 40
-    # except Exception as e:
-    #     print(f'Error fetching DAX tickers: {e}')
-    #
-    # try:
-    #     nasdaq_100_tickers = get_nasdaq_100_tickers()
-    #     if len(nasdaq_100_tickers) < 100:
-    #         print('NASDAQ 100 tickers missing!')
-    #     else:
-    #         print(f'NASDAQ 100 tickers: {len(nasdaq_100_tickers)}')
-    #     tickers.extend(nasdaq_100_tickers)  # United States 100
-    # except Exception as e:
-    #     print(f'Error fetching NASDAQ 100 tickers: {e}')
-    #
+    try:
+        dax_tickers = get_dax_tickers()
+        if len(dax_tickers) < 40:
+            print('DAX tickers missing!')
+        else:
+            print(f'DAX tickers: {len(dax_tickers)}')
+        tickers.extend(dax_tickers)  # Germany 40
+    except Exception as e:
+        print(f'Error fetching DAX tickers: {e}')
+
+    try:
+        nasdaq_100_tickers = get_nasdaq_100_tickers()
+        if len(nasdaq_100_tickers) < 100:
+            print('NASDAQ 100 tickers missing!')
+        else:
+            print(f'NASDAQ 100 tickers: {len(nasdaq_100_tickers)}')
+        tickers.extend(nasdaq_100_tickers)  # United States 100
+    except Exception as e:
+        print(f'Error fetching NASDAQ 100 tickers: {e}')
+
     try:
         s_p_500_tickers = get_s_p_500_tickers()
         if len(s_p_500_tickers) < 500:
@@ -480,128 +481,128 @@ def get_all_tickers():
         tickers.extend(s_p_500_tickers)  # United States 500
     except Exception as e:
         print(f'Error fetching S&P 500 tickers: {e}')
-    #
-    # try:
-    #     dow_jones_tickers = get_dow_jones_tickers()
-    #     if len(dow_jones_tickers) < 30:
-    #         print('Dow Jones tickers missing!')
-    #     else:
-    #         print(f'Dow Jones tickers: {len(dow_jones_tickers)}')
-    #     tickers.extend(dow_jones_tickers)  # United States 30
-    # except Exception as e:
-    #     print(f'Error fetching Dow Jones tickers: {e}')
-    #
-    # try:
-    #     mdax_tickers = get_mdax_tickers()
-    #     if len(mdax_tickers) < 50:
-    #         print('MDAX tickers missing!')
-    #     else:
-    #         print(f'MDAX tickers: {len(mdax_tickers)}')
-    #     tickers.extend(mdax_tickers)  # Germany 50
-    # except Exception as e:
-    #     print(f'Error fetching MDAX tickers: {e}')
-    #
-    # try:
-    #     euro_stoxx_50_tickers = get_euro_stoxx_50_tickers()
-    #     if len(euro_stoxx_50_tickers) < 50:
-    #         print('EURO STOXX 50 tickers missing!')
-    #     else:
-    #         print(f'EURO STOXX 50 tickers: {len(euro_stoxx_50_tickers)}')
-    #     tickers.extend(euro_stoxx_50_tickers)  # Europe 50
-    # except Exception as e:
-    #     print(f'Error fetching EURO STOXX 50 tickers: {e}')
 
-    # try:
-    #     nikkei_225_tickers = get_nikkei_225_tickers()
-    #     if len(nikkei_225_tickers) < 225:
-    #         print('Nikkei 225 tickers missing!')
-    #     else:
-    #         print(f'Nikkei 225 tickers: {len(nikkei_225_tickers)}')
-    #     tickers.extend(nikkei_225_tickers)  # Japan 225
-    # except Exception as e:
-    #     print(f'Error fetching Nikkei 225 tickers: {e}')
+    try:
+        dow_jones_tickers = get_dow_jones_tickers()
+        if len(dow_jones_tickers) < 30:
+            print('Dow Jones tickers missing!')
+        else:
+            print(f'Dow Jones tickers: {len(dow_jones_tickers)}')
+        tickers.extend(dow_jones_tickers)  # United States 30
+    except Exception as e:
+        print(f'Error fetching Dow Jones tickers: {e}')
 
-    # try:
-    #     tecdax_tickers = get_tecdax_tickers()
-    #     if len(tecdax_tickers) < 30:
-    #         print('TecDAX tickers missing!')
-    #     else:
-    #         print(f'TecDAX tickers: {len(tecdax_tickers)}')
-    #     tickers.extend(tecdax_tickers)  # Germany 30
-    # except Exception as e:
-    #     print(f'Error fetching TecDAX tickers: {e}')
+    try:
+        mdax_tickers = get_mdax_tickers()
+        if len(mdax_tickers) < 50:
+            print('MDAX tickers missing!')
+        else:
+            print(f'MDAX tickers: {len(mdax_tickers)}')
+        tickers.extend(mdax_tickers)  # Germany 50
+    except Exception as e:
+        print(f'Error fetching MDAX tickers: {e}')
 
-    # try:
-    #     cac_40_tickers = get_cac_40_tickers()
-    #     if len(cac_40_tickers) < 40:
-    #         print('CAC 40 tickers missing!')
-    #     else:
-    #         print(f'CAC 40 tickers: {len(cac_40_tickers)}')
-    #     tickers.extend(cac_40_tickers)  # France 40
-    # except Exception as e:
-    #     print(f'Error fetching CAC 40 tickers: {e}')
+    try:
+        euro_stoxx_50_tickers = get_euro_stoxx_50_tickers()
+        if len(euro_stoxx_50_tickers) < 50:
+            print('EURO STOXX 50 tickers missing!')
+        else:
+            print(f'EURO STOXX 50 tickers: {len(euro_stoxx_50_tickers)}')
+        tickers.extend(euro_stoxx_50_tickers)  # Europe 50
+    except Exception as e:
+        print(f'Error fetching EURO STOXX 50 tickers: {e}')
 
-    # try:
-    #     ftse_100_tickers = get_ftse_100_tickers()
-    #     if len(ftse_100_tickers) < 100:
-    #         print('FTSE 100 tickers missing!')
-    #     else:
-    #         print(f'FTSE 100 tickers: {len(ftse_100_tickers)}')
-    #     tickers.extend(ftse_100_tickers)  # United Kingdom 100
-    # except Exception as e:
-    #     print(f'Error fetching FTSE 100 tickers: {e}')
+    try:
+        nikkei_225_tickers = get_nikkei_225_tickers()
+        if len(nikkei_225_tickers) < 225:
+            print('Nikkei 225 tickers missing!')
+        else:
+            print(f'Nikkei 225 tickers: {len(nikkei_225_tickers)}')
+        tickers.extend(nikkei_225_tickers)  # Japan 225
+    except Exception as e:
+        print(f'Error fetching Nikkei 225 tickers: {e}')
 
-    # try:
-    #     smi_tickers = get_smi_tickers()
-    #     if len(smi_tickers) < 20:
-    #         print('SMI tickers missing!')
-    #     else:
-    #         print(f'SMI tickers: {len(smi_tickers)}')
-    #     tickers.extend(smi_tickers)  # Switzerland 20
-    # except Exception as e:
-    #     print(f'Error fetching SMI tickers: {e}')
+    try:
+        tecdax_tickers = get_tecdax_tickers()
+        if len(tecdax_tickers) < 30:
+            print('TecDAX tickers missing!')
+        else:
+            print(f'TecDAX tickers: {len(tecdax_tickers)}')
+        tickers.extend(tecdax_tickers)  # Germany 30
+    except Exception as e:
+        print(f'Error fetching TecDAX tickers: {e}')
 
-    # try:
-    #     atx_tickers = get_atx_tickers()
-    #     if len(atx_tickers) < 20:
-    #         print('ATX tickers missing!')
-    #     else:
-    #         print(f'ATX tickers: {len(atx_tickers)}')
-    #     tickers.extend(atx_tickers)  # Austria 20
-    # except Exception as e:
-    #     print(f'Error fetching ATX tickers: {e}')
+    try:
+        cac_40_tickers = get_cac_40_tickers()
+        if len(cac_40_tickers) < 40:
+            print('CAC 40 tickers missing!')
+        else:
+            print(f'CAC 40 tickers: {len(cac_40_tickers)}')
+        tickers.extend(cac_40_tickers)  # France 40
+    except Exception as e:
+        print(f'Error fetching CAC 40 tickers: {e}')
 
-    # try:
-    #     cryptocurrency_tickers = get_cryptocurrency_tickers()
-    #     print(f'Cryptocurrency tickers: {len(cryptocurrency_tickers)}')
-    #     tickers.extend(cryptocurrency_tickers)
-    # except Exception as e:
-    #     print(f'Error fetching cryptocurrency tickers: {e}')
+    try:
+        ftse_100_tickers = get_ftse_100_tickers()
+        if len(ftse_100_tickers) < 100:
+            print('FTSE 100 tickers missing!')
+        else:
+            print(f'FTSE 100 tickers: {len(ftse_100_tickers)}')
+        tickers.extend(ftse_100_tickers)  # United Kingdom 100
+    except Exception as e:
+        print(f'Error fetching FTSE 100 tickers: {e}')
+
+    try:
+        smi_tickers = get_smi_tickers()
+        if len(smi_tickers) < 20:
+            print('SMI tickers missing!')
+        else:
+            print(f'SMI tickers: {len(smi_tickers)}')
+        tickers.extend(smi_tickers)  # Switzerland 20
+    except Exception as e:
+        print(f'Error fetching SMI tickers: {e}')
+
+    try:
+        atx_tickers = get_atx_tickers()
+        if len(atx_tickers) < 20:
+            print('ATX tickers missing!')
+        else:
+            print(f'ATX tickers: {len(atx_tickers)}')
+        tickers.extend(atx_tickers)  # Austria 20
+    except Exception as e:
+        print(f'Error fetching ATX tickers: {e}')
+
+    try:
+        cryptocurrency_tickers = get_cryptocurrency_tickers()
+        print(f'Cryptocurrency tickers: {len(cryptocurrency_tickers)}')
+        tickers.extend(cryptocurrency_tickers)
+    except Exception as e:
+        print(f'Error fetching cryptocurrency tickers: {e}')
     tickers.extend([
-        "BTC-EUR", "ETH-EUR", "XRP-EUR", "SOL-EUR", "ADA-EUR", "DOGE-EUR",
-        # "BTC-USD", "ETH-USD", "XRP-USD", "SOL-USD", "ADA-USD", "DOGE-USD",
+        # "BTC-EUR", "ETH-EUR", "XRP-EUR", "SOL-EUR", "ADA-EUR", "DOGE-EUR",
+        "BTC-USD", "ETH-USD", "XRP-USD", "SOL-USD", "ADA-USD", "DOGE-USD",
     ])
 
-    # try:
-    #     precious_metals_tickers = get_precious_metals_tickers()
-    #     if len(precious_metals_tickers) != 4:
-    #         print('Precious metals tickers missing!')
-    #     else:
-    #         print(f'Precious metals tickers: {len(precious_metals_tickers)}')
-    #     tickers.extend(precious_metals_tickers) # Precious Metals
-    # except Exception as e:
-    #     print(f'Error fetching precious metals tickers: {e}')
+    try:
+        precious_metals_tickers = get_precious_metals_tickers()
+        if len(precious_metals_tickers) != 4:
+            print('Precious metals tickers missing!')
+        else:
+            print(f'Precious metals tickers: {len(precious_metals_tickers)}')
+        tickers.extend(precious_metals_tickers) # Precious Metals
+    except Exception as e:
+        print(f'Error fetching precious metals tickers: {e}')
     tickers.extend(['GC=F', 'SI=F'])  # Precious Metals
 
-    # try:
-    #     energy_tickers = get_energy_tickers()
-    #     if len(energy_tickers) != 10:
-    #         print('Energy tickers missing!')
-    #     else:
-    #         print(f'Energy tickers: {len(energy_tickers)}')
-    #     tickers.extend(energy_tickers) # Energy
-    # except Exception as e:
-    #     print(f'Error fetching energy tickers: {e}')
+    try:
+        energy_tickers = get_energy_tickers()
+        if len(energy_tickers) != 10:
+            print('Energy tickers missing!')
+        else:
+            print(f'Energy tickers: {len(energy_tickers)}')
+        tickers.extend(energy_tickers) # Energy
+    except Exception as e:
+        print(f'Error fetching energy tickers: {e}')
     tickers.extend(['BZ=F', 'CL=F'])  # Energy
 
     tickers.extend(get_currency_tickers())  # Currencies
@@ -623,19 +624,9 @@ def get_all_tickers():
 
 
 if __name__ == '__main__':
-    # main_tickers = get_all_tickers()
-    main_sp500_tickers = get_s_p_500_tickers()
-    print('TMUS' in main_sp500_tickers)
-    print(len(main_sp500_tickers))
-
-    main_msci_world_tickers = get_msci_world_tickers()
-    print('TMUS' in main_msci_world_tickers)
-    print(len(main_msci_world_tickers))
+    # print(get_energy_tickers())
+    # print(get_precious_metals_tickers())
+    # print(get_cryptocurrency_tickers())
 
     main_tickers = get_all_tickers()
-    print('TMUS' in main_tickers)
-    print(len(main_tickers))
-
-    # print(get_dax_tickers())
-    # for ticker in main_tickers:
-    #     print(ticker)
+    # print(len(main_tickers))
