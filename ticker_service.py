@@ -410,6 +410,52 @@ def get_msci_world_tickers():
     return tickers
 
 
+def get_index_tickers():
+    return [
+        '^GSPC',      # S&P 500
+        '^DJI',       # Dow Jones Industrial Average
+        '^IXIC',      # NASDAQ Composite
+        '^NYA',       # NYSE Composite Index
+        '^XAX',       # NYSE American Composite Index
+        '^BUK100P',   # Cboe UK 100
+        '^RUT',       # Russell 2000 Index
+        '^VIX',       # CBOE Volatility Index
+        '^FTSE',      # FTSE 100
+        '^GDAXI',     # DAX P
+        '^FCHI',      # CAC 40
+        '^STOXX50E',  # EURO STOXX 50 I
+        '^N100',      # Euronext 100 Index
+        '^BFX',       # BEL 20
+        '^HSI',       # HANG SENG INDEX
+        '^STI',       # STI Index
+        '^AXJO',      # S&P/ASX 200
+        '^AORD',      # ALL ORDINARIES
+        '^BSESN',     # S&P BSE SENSEX
+        '^JKSE',      # IDX COMPOSITE
+        '^KLSE',      # FTSE Bursa Malaysia KLCI
+        '^NZ50',      # S&P/NZX 50 INDEX GROSS
+        '^KS11',      # KOSPI Composite Index
+        '^TWII',      # TWSE Capitalization Weighted Stock Index
+        '^GSPTSE',    # S&P/TSX Composite index
+        '^BVSP',      # IBOVESPA
+        '^MXX',       # IPC MEXICO
+        '^IPSA',      # S&P IPSA
+        '^MERV',      # MERVAL
+        '^TA125.TA',  # TA-125
+        '^CASE30',    # EGX 30 Price Return Index
+        '^JN0U.JO',   # Top 40 USD Net TRI Index
+        '000001.SS',  # SSE Composite Index
+        '^N225',      # Nikkei 225
+        'MOEX.ME',    # Moscow Exchange MICEX-RTS
+        'DX-Y.NYB',   # US Dollar Index
+        '^125904-USD-STRD',  # MSCI EUROPE
+        '^XDB',       # British Pound Currency Index
+        '^XDE',       # Euro Currency Index
+        '^XDN',       # Japanese Yen Currency Index
+        '^XDA',       # Australian Dollar Currency Index
+    ]
+
+
 def is_index(ticker):
     return ticker[0] == '^'
 
@@ -607,6 +653,8 @@ def get_all_tickers():
 
     tickers.extend(get_currency_tickers())  # Currencies
 
+    tickers.extend(get_index_tickers())  # Additional Indexes
+
     # try:
     #     hype_tickers = get_hype_tickers()
     #     print(f'Hype tickers: {len(hype_tickers)}')
@@ -629,4 +677,4 @@ if __name__ == '__main__':
     # print(get_cryptocurrency_tickers())
 
     main_tickers = get_all_tickers()
-    # print(len(main_tickers))
+    print(len(main_tickers))
