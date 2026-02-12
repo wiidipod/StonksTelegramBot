@@ -101,7 +101,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     df = ta_utility.add_macd(df)
     # df = ta_utility.add_sma(df, window=200)
     try:
-        macd = df["MACD Diff"].iat[-1] > df["MACD Diff"].iat[-2] or df["MACD Diff"].iat[-1] > 0.0
+        macd = df["MACD Diff"].iat[-1] > df["MACD Diff"].iat[-2] and df["MACD Diff"].iat[-1] > 0.0
         # macd = df["MACD Diff"].iat[-1] > 0.0
     except:
         macd = None
