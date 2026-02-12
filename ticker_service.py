@@ -771,7 +771,10 @@ def get_all_tickers():
     # tickers.extend(get_kospi_tickers())  # South Korea
     # tickers.extend(get_cryptocurrency_tickers())  # Cryptocurrencies
     # tickers.extend(get_precious_metals_tickers())  # Precious Metals
-    return sort_tickers(list(set(tickers)))
+
+    tickers = sort_tickers(list(set(tickers)))
+    print(f"Total tickers collected: {len(tickers)}")
+    return tickers
     # return tickers
 
 
