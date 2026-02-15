@@ -246,12 +246,12 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         price_target_high = max(price_target_high, df['Growth Upper'].iat[-1])
 
     # if 0.9 * price_target_low <= df[P.H.value].iat[-1 - future]:
-    if price_target_low < 1.1 * df[P.C.value].iat[-1 - future]:
+    if price_target_low < df[P.C.value].iat[-1 - future]:
         dictionary[DictionaryKeys.price_target_too_low] = True
 
     value_low = price_target_low / df['Growth'].iat[-1] * df['Growth'].iat[-1 - future]
     value_high = price_target_high / df['Growth'].iat[-1] * df['Growth'].iat[-1 - future]
-    if value_low < 1.1 * df[P.C.value].iat[-1 - future]:
+    if value_low < df[P.C.value].iat[-1 - future]:
         dictionary[DictionaryKeys.value_too_low] = True
 
     if not full and not has_buy_signal(dictionary):
