@@ -243,9 +243,9 @@ def get_atx_tickers():
     table = tables[1]
     tickers = []
 
-    for row in table.findAll('tr')[1:]:
-        cell = row.findAll('td')[0]
-        isin = cell.findAll('span', {'class': 'isin'})[0].text.strip()
+    for row in table.find_all('tr')[1:]:
+        cell = row.find_all('td')[0]
+        isin = cell.find_all('span', {'class': 'isin'})[0].text.strip()
 
         if not isin:
             continue
@@ -267,7 +267,40 @@ def get_atx_tickers():
 
 
 def get_currency_tickers():
-    return ["EUR=X"]
+    return [
+        "EUR=X",
+
+        # Major Currency Pairs
+        'EURUSD=X',  # EUR/USD
+        'JPY=X',     # USD/JPY
+        'GBPUSD=X',  # GBP/USD
+        'AUDUSD=X',  # AUD/USD
+        'NZDUSD=X',  # NZD/USD
+
+        # Cross Currency Pairs
+        'EURJPY=X',  # EUR/JPY
+        'GBPJPY=X',  # GBP/JPY
+        'EURGBP=X',  # EUR/GBP
+        'EURCAD=X',  # EUR/CAD
+        'EURSEK=X',  # EUR/SEK
+        'EURCHF=X',  # EUR/CHF
+        'EURHUF=X',  # EUR/HUF
+
+        # Asian Currencies
+        'CNY=X',     # USD/CNY
+        'HKD=X',     # USD/HKD
+        'SGD=X',     # USD/SGD
+        'INR=X',     # USD/INR
+        'PHP=X',     # USD/PHP
+        'IDR=X',     # USD/IDR
+        'THB=X',     # USD/THB
+        'MYR=X',     # USD/MYR
+
+        # Emerging Markets
+        'MXN=X',     # USD/MXN
+        'ZAR=X',     # USD/ZAR
+        'RUB=X',     # USD/RUB
+    ]
 
 
 def get_etf_tickers(index_ticker):
@@ -456,8 +489,75 @@ def get_index_tickers():
     ]
 
 
+def get_future_tickers():
+    return [
+        # Equity Index Futures
+        'ES=F',   # E-Mini S&P 500
+        'YM=F',   # Mini Dow Jones Industrial
+        'NQ=F',   # Nasdaq 100
+        'RTY=F',  # E-mini Russell 2000
+
+        # Treasury Futures
+        'ZB=F',   # U.S. Treasury Bond
+        'ZN=F',   # 10-Year T-Note
+        'ZF=F',   # 5-Year T-Note
+        'ZT=F',   # 2-Year T-Note
+        '2YY=F',  # 2-Year Yield Futures
+
+        # Metals Futures
+        'GC=F',   # Gold
+        'MGC=F',  # Micro Gold
+        'SI=F',   # Silver
+        'SIL=F',  # Micro Silver
+        'PL=F',   # Platinum
+        'HG=F',   # Copper
+        'PA=F',   # Palladium
+
+        # Energy Futures
+        'CL=F',   # Crude Oil
+        'HO=F',   # Heating Oil
+        'NG=F',   # Natural Gas
+        'RB=F',   # RBOB Gasoline
+        'BZ=F',   # Brent Crude Oil
+        'B0=F',   # Mont Belvieu LDH Propane
+
+        # Agricultural Futures - Grains
+        'ZC=F',   # Corn
+        'ZO=F',   # Oat
+        'KE=F',   # KC HRW Wheat
+        'ZR=F',   # Rough Rice
+        'ZM=F',   # Soybean Meal
+        'ZL=F',   # Soybean Oil
+        'ZS=F',   # Soybean
+
+        # Agricultural Futures - Livestock
+        'GF=F',   # Feeder Cattle
+        'HE=F',   # Lean Hog
+        'LE=F',   # Live Cattle
+
+        # Agricultural Futures - Softs
+        'CC=F',   # Cocoa
+        'KC=F',   # Coffee
+        'CT=F',   # Cotton
+        'LBS=F',  # Random Length Lumber
+        'OJ=F',   # Orange Juice
+        'SB=F',   # Sugar #11
+    ]
+
+
+def get_bond_tickers():
+    return [
+        '^IRX',   # 13 Week Treasury Bill
+        '^FVX',   # Treasury Yield 5 Years
+        '^TNX',   # CBOE Interest Rate 10 Year T No
+        '^TYX',   # Treasury Yield 30 Years
+        '2YY=F',  # 2-Year Yield Futures
+        'ZN=F',   # 10-Year T-Note Futures
+    ]
+
+
 def is_index(ticker):
-    return ticker[0] == '^'
+    return ticker[0] == '^' or ticker in get_index_tickers()
 
 
 def is_crypto(ticker):
@@ -465,11 +565,11 @@ def is_crypto(ticker):
 
 
 def is_future(ticker):
-    return ticker[-2:] == '=F'
+    return ticker[-2:] == '=F' or ticker in get_future_tickers()
 
 
 def is_currency(ticker):
-    return ticker[-2:] == '=X'
+    return ticker[-2:] == '=X' or ticker in get_currency_tickers()
 
 
 def is_stock(ticker):
@@ -655,6 +755,10 @@ def get_all_tickers():
 
     tickers.extend(get_index_tickers())  # Additional Indexes
 
+    tickers.extend(get_future_tickers())  # Futures
+
+    tickers.extend(get_bond_tickers())  # Bonds
+
     # try:
     #     hype_tickers = get_hype_tickers()
     #     print(f'Hype tickers: {len(hype_tickers)}')
@@ -667,7 +771,10 @@ def get_all_tickers():
     # tickers.extend(get_kospi_tickers())  # South Korea
     # tickers.extend(get_cryptocurrency_tickers())  # Cryptocurrencies
     # tickers.extend(get_precious_metals_tickers())  # Precious Metals
-    return sort_tickers(list(set(tickers)))
+
+    tickers = sort_tickers(list(set(tickers)))
+    print(f"Total tickers collected: {len(tickers)}")
+    return tickers
     # return tickers
 
 
