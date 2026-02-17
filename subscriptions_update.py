@@ -11,7 +11,18 @@ from ticker_service import sort_tickers
 async def send_all(tickers, application):
     pe_ratios = pe_utility.get_pe_ratios()
     for ticker in tickers:
-        plot_path, message = fundamentals_update.get_plot_path_and_message_for(ticker, pe_ratios=pe_ratios)
+        try:
+            plot_path, message = fundamentals_update.get_plot_path_and_message_for(ticker, pe_ratios=pe_ratios)
+        except Exception as e:
+            error_msg = f'Error generating plot for {ticker}: {e}'
+            logging.error(error_msg)
+            # Send error notification to first subscriber via Telegram
+            try:
+                await telegram_service.send_message_to_first(error_msg, context=application)
+            except Exception as telegram_error:
+                logging.error(f'Failed to send error message via Telegram: {telegram_error}')
+            continue  # Skip this ticker and move to the next one
+
         for chat_id in tickers[ticker]:
             try:
                 await telegram_service.send_plot_with_message(

@@ -44,11 +44,16 @@ def get_plot_path_and_message_for(ticker, period='10y', pe_ratios=None):
             period=period,
             interval='1d',
             group_by='ticker',
+            auto_adjust=True,
         )
 
     # df = retry_utility.retry_data_fetch(_download_data)
     df = _download_data()
     ticker_df = yfinance_service.extract_ticker_df(df=df, ticker=ticker)
+
+    # Check if the DataFrame is empty after extraction
+    if ticker_df.empty:
+        raise ValueError(f"No data available for ticker {ticker}")
 
     future = len(ticker_df) // 10
 

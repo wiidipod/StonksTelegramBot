@@ -38,6 +38,10 @@ def get_date(date, offset):
 
 
 def add_close_window_growths(df, window=1250, future=0, add_full_length_growth=False, add_string='', is_crypto=False):
+    # Check if DataFrame is empty or too small
+    if df.empty or len(df) <= window:
+        raise ValueError(f"DataFrame is too small (length: {len(df)}) for window size {window}")
+
     growth = pd.Series(index=df.index)
     growth_lower = pd.Series(index=df.index)
     growth_upper = pd.Series(index=df.index)
