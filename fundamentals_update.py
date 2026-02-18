@@ -11,7 +11,7 @@ import yfinance_service
 from constants import DictionaryKeys
 import time
 import argparse
-from message_utility import round_down, round_up, human_format
+from message_utility import round_down, round_up, human_format, human_format_from_string
 import message_utility
 from ticker_service import is_stock, is_crypto
 from ta_utility import has_technicals
@@ -160,8 +160,8 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
 
     if is_stock(ticker):
         if pe_ratio is not None:
-            if pe_ratio > 2.0 * industry_pe_ratio:
-                dictionary[DictionaryKeys.pe_ratio_too_high] = True
+            # if pe_ratio > 2.0 * industry_pe_ratio:
+            #     dictionary[DictionaryKeys.pe_ratio_too_high] = True
             if ev_to_ebitda is None:
                 dictionary[DictionaryKeys.ev_to_ebitda_too_high] = True
             # elif ev_to_ebitda > pe_ratio:
@@ -179,8 +179,8 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         else:
             growth = None if pe_ratio is None else pe_ratio / peg_ratio
             ev_to_ebitda_to_growth = None if growth is None or growth == 0.0 or ev_to_ebitda is None else ev_to_ebitda / growth
-            if peg_ratio > 2.0:
-                dictionary[DictionaryKeys.peg_ratio_too_high] = True
+            # if peg_ratio > 2.0:
+            #     dictionary[DictionaryKeys.peg_ratio_too_high] = True
 
         if ev_to_ebitda_to_growth is None:
             dictionary[DictionaryKeys.ev_to_ebitda_too_high] = True
@@ -274,8 +274,8 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         if price_target_low is not None:
             # relative_offset = ((df[P.C.value].iat[-1 - future] / price_target_low) - 1.0) * 100.0
             # subtitle += f'PT: {round_down(price_target_low)} ({round_down(relative_offset)}%) / {round_up(price_target_high)} - '-
-            subtitle += f'V: {round_down(value_low)} / {round_up(value_high)} - '
-            subtitle += f'PT: {round_down(price_target_low)} / {round_up(price_target_high)} - '
+            subtitle += f'V: {human_format_from_string(round_down(value_low))} / {human_format_from_string(round_up(value_high))} - '
+            subtitle += f'PT: {human_format_from_string(round_down(price_target_low))} / {human_format_from_string(round_up(price_target_high))} - '
         if peg_ratio is not None:
             subtitle += f'PEG: {round_up(peg_ratio)} - '
         if pe_ratio is not None:
