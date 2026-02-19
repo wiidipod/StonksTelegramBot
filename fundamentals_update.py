@@ -125,15 +125,15 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     if macd_positive is not None and macd_growing is not None and macd is not None and rsi is not None:
         # if (not macd and rsi > 30.0) or rsi > 70.0:
         if rsi > 70.0:
-                dictionary[DictionaryKeys.no_technicals] = True
-        if is_stock(ticker):
-            if not macd_positive and not macd_growing:
-                dictionary[DictionaryKeys.no_technicals] = True
-        else:
-            if not macd:
-                dictionary[DictionaryKeys.no_technicals] = True
-        # if (not macd_positive or not macd_growing ) and rsi > 30.0:
-        #     dictionary[DictionaryKeys.no_technicals] = True
+            dictionary[DictionaryKeys.no_technicals] = True
+        # if is_stock(ticker):
+        #     if not macd_positive and not macd_growing:
+        #         dictionary[DictionaryKeys.no_technicals] = True
+        # else:
+        #     if not macd:
+        #         dictionary[DictionaryKeys.no_technicals] = True
+        if not macd and rsi > 30.0:
+            dictionary[DictionaryKeys.no_technicals] = True
     else:
         dictionary[DictionaryKeys.no_technicals] = True
     # dictionary[DictionaryKeys.no_technicals] = False
@@ -221,7 +221,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     days_to_outperform_volatility = bisect_left(df['Growth Lower'].to_numpy(), df['Growth Upper'].iat[0])
 
     if (
-        # 10y regression not beating volatility in 5y
+        # 10y regression not beating volatility in 10y
         df['Growth Upper'].iat[-1 - window - future] > df['Growth Lower'].iat[-1 - future]
         # 10y regression not growing
         or df['Growth Lower'].iat[-1 - future] > df['Growth Lower'].iat[-1]
