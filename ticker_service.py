@@ -486,6 +486,8 @@ def get_index_tickers():
         '^XDE',       # Euro Currency Index
         '^XDN',       # Japanese Yen Currency Index
         '^XDA',       # Australian Dollar Currency Index
+        '^SDAXI',     # SDAX P
+        '^SSHI',      # SPI TR
     ]
 
 
@@ -766,11 +768,35 @@ def get_all_tickers():
     # except Exception as e:
     #     print(f'Error fetching hype tickers: {e}')
 
-    # tickers.extend(get_asx_50_tickers())  # Australia
-    # tickers.extend(get_hang_seng_tickers())  # Hong Kong
-    # tickers.extend(get_kospi_tickers())  # South Korea
-    # tickers.extend(get_cryptocurrency_tickers())  # Cryptocurrencies
-    # tickers.extend(get_precious_metals_tickers())  # Precious Metals
+    try:
+        asx_50_tickers = get_asx_50_tickers()  # Australia
+        if len(asx_50_tickers) < 50:
+            print('ASX 50 tickers missing!')
+        else:
+            print(f'ASX 50 tickers: {len(asx_50_tickers)}')
+        tickers.extend(asx_50_tickers)
+    except Exception as e:
+        print(f'Error fetching ASX 50 tickers: {e}')
+
+    try:
+        hang_seng_tickers = get_hang_seng_tickers()  # Hong Kong
+        if len(hang_seng_tickers) < 50:
+            print('Hang Seng tickers missing!')
+        else:
+            print(f'Hang Seng tickers: {len(hang_seng_tickers)}')
+        tickers.extend(hang_seng_tickers)
+    except Exception as e:
+        print(f'Error fetching Hang Seng tickers: {e}')
+
+    try:
+        nikkei_225_tickers = get_nikkei_225_tickers()  # Japan
+        if len(nikkei_225_tickers) < 225:
+            print('Nikkei 225 tickers missing!')
+        else:
+            print(f'Nikkei 225 tickers: {len(nikkei_225_tickers)}')
+        tickers.extend(nikkei_225_tickers)
+    except Exception as e:
+        print(f'Error fetching Nikkei 225 tickers: {e}')
 
     tickers = sort_tickers(list(set(tickers)))
     print(f"Total tickers collected: {len(tickers)}")

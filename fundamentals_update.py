@@ -108,10 +108,11 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     try:
         macd_positive = df["MACD Diff"].iat[-1] > 0.0  # and df["MACD Diff"].iat[-1] > df["MACD Diff"].iat[-2]
         macd_growing = df["MACD Diff"].iat[-1] > df["MACD Diff"].iat[-2]
-        # macd = df["MACD Diff"].iat[-1] > 0.0
+        macd = df["MACD Diff"].iat[-1] >= 0.0 >= df["MACD Diff"].iat[-2]
     except:
         macd_positive = None
         macd_growing = None
+        macd = None
     try:
         rsi = df["RSI"].iat[-1]
     except:
@@ -121,16 +122,18 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     #         dictionary[DictionaryKeys.no_technicals] = True
     # else:
     #     dictionary[DictionaryKeys.no_technicals] = True
-    if macd_positive is not None and macd_growing is not None and rsi is not None:
+    if macd_positive is not None and macd_growing is not None and macd is not None and rsi is not None:
         # if (not macd and rsi > 30.0) or rsi > 70.0:
-        # if is_stock(ticker):
-        #     if not macd_positive and not macd_growing and rsi > 70.0:
-        #         dictionary[DictionaryKeys.no_technicals] = True
-        # else:
-        #     if not macd_positive or not macd_growing or rsi > 70.0:
-        #         dictionary[DictionaryKeys.no_technicals] = True
-        if (not macd_positive or not macd_growing or rsi > 70.0) and rsi > 30.0:
-            dictionary[DictionaryKeys.no_technicals] = True
+        if rsi > 70.0:
+                dictionary[DictionaryKeys.no_technicals] = True
+        if is_stock(ticker):
+            if not macd_positive and not macd_growing:
+                dictionary[DictionaryKeys.no_technicals] = True
+        else:
+            if not macd:
+                dictionary[DictionaryKeys.no_technicals] = True
+        # if (not macd_positive or not macd_growing ) and rsi > 30.0:
+        #     dictionary[DictionaryKeys.no_technicals] = True
     else:
         dictionary[DictionaryKeys.no_technicals] = True
     # dictionary[DictionaryKeys.no_technicals] = False
@@ -215,7 +218,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         #     if peg_ratio > 2.0:
         #         dictionary[DictionaryKeys.peg_ratio_too_high] = True
 
-    # days_to_outperform_volatility = bisect_left(df['Growth Lower'].to_numpy(), df['Growth Upper'].iat[0])
+    days_to_outperform_volatility = bisect_left(df['Growth Lower'].to_numpy(), df['Growth Upper'].iat[0])
 
     if (
         # 10y regression not beating volatility in 5y
@@ -240,7 +243,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         # price not below lower 5y regression
         # or df[P.C.value].iat[-1 - future] > df[f'{add_string_5y}Growth Lower'].iat[-1 - future]
         # price not low for volatility and growth
-        # or min(df[P.C.value].iloc[-1-future-26:-future]) > min(df[P.C.value].iloc[-1-future-days_to_outperform_volatility:-1-future-26])
+        or min(df[P.C.value].iloc[-1-future-26:-future]) > min(df[P.C.value].iloc[-1-future-days_to_outperform_volatility:-1-future-26])
     ):
         dictionary[DictionaryKeys.too_expensive] = True
 
