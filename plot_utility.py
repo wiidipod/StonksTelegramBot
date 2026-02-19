@@ -475,12 +475,12 @@ if __name__ == '__main__':
     )
     ticker_df = yfinance_service.extract_ticker_df(df=df, ticker=main_ticker)
 
-    df = ta_utility.add_rsi(df)
-    df = ta_utility.add_macd(df)
+    ticker_df = ta_utility.add_rsi(ticker_df)
+    ticker_df = ta_utility.add_macd(ticker_df)
 
-    future = len(df) // 10
+    future = len(ticker_df) // 10
 
-    window = len(df) // 2
+    window = len(ticker_df) // 2
     ticker_df = regression_utility.add_close_window_growths(
         ticker_df,
         window=window,
