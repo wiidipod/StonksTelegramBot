@@ -326,6 +326,50 @@ def plot_rsi(rsi, rsi_sma, rsi_subplot):
     rsi_subplot.legend(loc='upper left')
 
 
+def plot_rsi_by_df(df_slice, rsi_subplot):
+    """Plot RSI using a dataframe slice with date index for proper x-axis labels."""
+    # Drop rows with NaN RSI values to skip weekends/holidays
+    length = len(df_slice)
+    x = np.arange(length)
+    rsi_subplot.set_ylabel('RSI')
+
+    # Get current (last) RSI value
+    current_rsi = df_slice['RSI'].iloc[-1]
+    rsi_subplot.plot(x, df_slice['RSI'].values, label='RSI')
+
+    # Add text annotation for current RSI value
+    rsi_subplot.text(length - 1, current_rsi, f' {human_format(current_rsi)}',
+                     verticalalignment='center', fontsize=9, color='C0')
+
+    if 'RSI SMA' in df_slice.columns:
+        current_rsi_sma = df_slice['RSI SMA'].iloc[-1]
+        rsi_subplot.plot(x, df_slice['RSI SMA'].values, label='SMA')
+        # Add text annotation for current RSI SMA value
+        rsi_subplot.text(length - 1, current_rsi_sma, f' {human_format(current_rsi_sma)}',
+                         verticalalignment='center', fontsize=9, color='C1')
+
+    gray = 'tab:gray'
+    rsi_subplot.plot(x, [70] * length, color='tab:red', linestyle='dashed', label='Overbought')
+    rsi_subplot.plot(x, [50] * length, color=gray, linestyle='dashed')
+    rsi_subplot.plot(x, [30] * length, color='tab:green', linestyle='dashed', label='Oversold')
+
+    # Add text annotations for overbought and oversold levels on the left side
+    rsi_subplot.text(0, 70, '70 ', horizontalalignment='right', verticalalignment='center',
+                     fontsize=9, color='tab:red')
+    rsi_subplot.text(0, 30, '30 ', horizontalalignment='right', verticalalignment='center',
+                     fontsize=9, color='tab:green')
+
+    rect = Rectangle((0, 30), length - 1, 40, color=gray, alpha=0.3)
+    rsi_subplot.add_patch(rect)
+    # rsi_subplot.set_xlim(-1, length)
+    rsi_subplot.grid(True)
+    # rsi_subplot.legend(loc='upper left')
+    rsi_subplot.set_ylim(0, 100)
+    rsi_subplot.set_xticks(x[::max(1, length // 5)])  # Show ~6 date labels
+    rsi_subplot.set_xticklabels([df_slice.index[i].strftime('%Y-%m-%d') for i in range(0, length, max(1, length // 5))])
+    # rsi_subplot.tick_params(labelbottom=False)
+
+
 def plot_macd(macd, macd_diff, macd_signal, macd_subplot):
     macd_subplot.set_ylabel('MACD')
     macd_subplot.plot(macd, label='MACD')
@@ -334,6 +378,44 @@ def plot_macd(macd, macd_diff, macd_signal, macd_subplot):
     macd_subplot.bar(np.arange(len(macd)), macd_diff[1:], color=colors)
     macd_subplot.grid(True)
     macd_subplot.legend(loc='upper left')
+
+
+def plot_macd_by_df(df_slice, macd_subplot):
+    """Plot MACD using a dataframe slice with date index for proper x-axis labels."""
+    # Drop rows with NaN MACD values to skip weekends/holidays
+    length = len(df_slice)
+    x = np.arange(length)
+    macd_subplot.set_ylabel('MACD')
+
+    # Get current (last) MACD values
+    current_macd = df_slice['MACD'].iloc[-1]
+    current_signal = df_slice['MACD Signal'].iloc[-1]
+
+    macd_subplot.plot(x, df_slice['MACD'].values, label='MACD')
+    macd_subplot.plot(x, df_slice['MACD Signal'].values, label='Signal')
+
+    # Add text annotations for current MACD and Signal values
+    # Position them above/below to avoid overlap based on which is greater
+    if current_macd < current_signal:
+        macd_valign = 'top'
+        signal_valign = 'bottom'
+    else:
+        macd_valign = 'bottom'
+        signal_valign = 'top'
+
+    macd_subplot.text(length - 1, current_macd, f' {human_format(current_macd)}',
+                      verticalalignment=macd_valign, fontsize=9, color='C0')
+    macd_subplot.text(length - 1, current_signal, f' {human_format(current_signal)}',
+                      verticalalignment=signal_valign, fontsize=9, color='C1')
+
+    colors = get_colors(df_slice['MACD Diff'].values)
+    macd_subplot.bar(x[1:], df_slice['MACD Diff'].values[1:], color=colors)
+    # macd_subplot.set_xlim(-1, length)
+    macd_subplot.grid(True)
+    # macd_subplot.legend(loc='upper left')
+    # Set custom x-tick labels to show dates
+    macd_subplot.set_xticks(x[::max(1, length // 5)])  # Show ~6 date labels
+    macd_subplot.set_xticklabels([df_slice.index[i].strftime('%Y-%m-%d') for i in range(0, length, max(1, length // 5))])
 
 
 def get_colors(macd_diff):
@@ -446,18 +528,14 @@ def plot_bands_by_labels_with_ta(df, ticker, title, labels, subtitle=None, fname
     # RSI subplot - last 26 values up to today
     rsi_subplot = fig.add_subplot(gs[1])
     if 'RSI' in df.columns:
-        rsi_data = df['RSI'].iloc[today-25:today+1].values
-        rsi_sma_data = df['RSI SMA'].iloc[today-25:today+1].values if 'RSI SMA' in df.columns else None
-        plot_rsi(rsi_data, rsi_sma_data, rsi_subplot)
+        df_slice = df.iloc[today-14:today+1]
+        plot_rsi_by_df(df_slice, rsi_subplot)
 
     # MACD subplot - last 26 values up to today
     macd_subplot = fig.add_subplot(gs[2])
     if 'MACD' in df.columns and 'MACD Signal' in df.columns and 'MACD Diff' in df.columns:
-        macd_data = df['MACD'].iloc[today-25:today+1].values
-        macd_signal_data = df['MACD Signal'].iloc[today-25:today+1].values
-        # MACD Diff needs one extra value at the beginning for the plot_macd function
-        macd_diff_data = df['MACD Diff'].iloc[today-26:today+1].values
-        plot_macd(macd_data, macd_diff_data, macd_signal_data, macd_subplot)
+        df_slice = df.iloc[today-25:today+1]  # Same slice as RSI
+        plot_macd_by_df(df_slice, macd_subplot)
 
     fig.tight_layout()
     fig.savefig(fname)
@@ -465,7 +543,7 @@ def plot_bands_by_labels_with_ta(df, ticker, title, labels, subtitle=None, fname
 
 
 if __name__ == '__main__':
-    main_ticker = 'NVDA'
+    main_ticker = 'MSFT'
 
     df = yf.download(
         [main_ticker],
@@ -480,7 +558,7 @@ if __name__ == '__main__':
 
     future = len(ticker_df) // 10
 
-    window = len(ticker_df) // 2
+    window = len(ticker_df) - 1
     ticker_df = regression_utility.add_close_window_growths(
         ticker_df,
         window=window,
