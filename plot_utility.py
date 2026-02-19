@@ -11,6 +11,7 @@ from yfinance_service import P
 import yfinance_service
 from message_utility import round_down, round_up, human_format, human_format_from_string
 from constants import output_directory
+import ta_utility
 
 
 def plot_with_constants_by_df(
@@ -313,7 +314,8 @@ def plot_rsi(rsi, rsi_sma, rsi_subplot):
     length = len(rsi)
     rsi_subplot.set_ylabel('RSI')
     rsi_subplot.plot(rsi, label='RSI')
-    rsi_subplot.plot(rsi_sma, label='SMA')
+    if rsi_sma is not None:
+        rsi_subplot.plot(rsi_sma, label='SMA')
     gray = 'tab:gray'
     rsi_subplot.plot([70] * length, color='tab:red', linestyle='dashed', label='Overbought')
     rsi_subplot.plot([50] * length, color=gray, linestyle='dashed')
@@ -404,6 +406,64 @@ def plot_bands_by_labels(df, ticker, title, labels, subtitle=None, fname=None, y
     return fname
 
 
+def plot_bands_by_labels_with_ta(df, ticker, title, labels, subtitle=None, fname=None, yscale='linear', today=-1, close_only=False, sma_label=None):
+    if fname is None:
+        fname = f'{output_directory}{ticker}_two_bands_plot.png'
+
+    fig = plt.figure(figsize=(9.0, 9.0), dpi=300)
+    fig.suptitle(title)
+
+    # Create gridspec with 3 rows: price (larger), RSI, MACD
+    gs = gridspec.GridSpec(3, 1, height_ratios=[3, 1, 1])
+
+    # Price subplot
+    subplot = fig.add_subplot(gs[0])
+
+    if subtitle:
+        subplot.set_title(subtitle)
+
+    subplot.set_yscale(yscale)
+    subplot.set_ylabel(yfinance_service.get_currency(ticker))
+    subplot.set_xlabel('Date')
+    subplot.grid(True)
+
+    for label in labels:
+        if not close_only:
+            subplot.fill_between(df.index, df[f'{label} (High)'], df[f'{label} (Low)'], label=f'{label} ({human_format_from_string(round_up(df[f"{label} (High)"].iat[today]))} / {human_format_from_string(round_down(df[f"{label} (Low)"].iat[today]))})')
+        else:
+            subplot.plot(df.index, df[label], label=f'{label} ({human_format_from_string(round_down(df[label].iat[today]))})')
+
+    if not close_only:
+        subplot.fill_between(df.index, df[P.H.value], df[P.L.value], label=f'Price ({human_format_from_string(round_up(df[P.H.value].iat[today]))} / {human_format_from_string(round_down(df[P.L.value].iat[today]))})')
+    else:
+        subplot.plot(df.index, df[P.C.value], label=f'Price ({human_format(df[P.C.value].iat[today])})')
+
+    if sma_label:
+        subplot.plot(df.index, df[sma_label], label=f'{sma_label} ({human_format_from_string(round_down(df[sma_label].iat[today]))})')
+
+    subplot.legend()
+
+    # RSI subplot - last 26 values up to today
+    rsi_subplot = fig.add_subplot(gs[1])
+    if 'RSI' in df.columns:
+        rsi_data = df['RSI'].iloc[today-25:today+1].values
+        rsi_sma_data = df['RSI SMA'].iloc[today-25:today+1].values if 'RSI SMA' in df.columns else None
+        plot_rsi(rsi_data, rsi_sma_data, rsi_subplot)
+
+    # MACD subplot - last 26 values up to today
+    macd_subplot = fig.add_subplot(gs[2])
+    if 'MACD' in df.columns and 'MACD Signal' in df.columns and 'MACD Diff' in df.columns:
+        macd_data = df['MACD'].iloc[today-25:today+1].values
+        macd_signal_data = df['MACD Signal'].iloc[today-25:today+1].values
+        # MACD Diff needs one extra value at the beginning for the plot_macd function
+        macd_diff_data = df['MACD Diff'].iloc[today-26:today+1].values
+        plot_macd(macd_data, macd_diff_data, macd_signal_data, macd_subplot)
+
+    fig.tight_layout()
+    fig.savefig(fname)
+    return fname
+
+
 if __name__ == '__main__':
     main_ticker = 'NVDA'
 
@@ -415,6 +475,9 @@ if __name__ == '__main__':
     )
     ticker_df = yfinance_service.extract_ticker_df(df=df, ticker=main_ticker)
 
+    df = ta_utility.add_rsi(df)
+    df = ta_utility.add_macd(df)
+
     future = len(df) // 10
 
     window = len(df) // 2
@@ -424,7 +487,7 @@ if __name__ == '__main__':
         future=future,
     )
 
-    plot_path = plot_bands_by_labels(
+    plot_path = plot_bands_by_labels_with_ta(
         df=ticker_df,
         ticker=main_ticker,
         title=main_ticker,
@@ -433,14 +496,12 @@ if __name__ == '__main__':
             'Growth',
             'Growth Lower',
             'Growth Upper',
-            '5yGrowth',
-            '5yGrowth Lower',
-            '5yGrowth Upper',
         ],
-        yscale='log',
+        yscale='linear',
         today=-1-future,
+        close_only=True,
     )
 
     print(plot_path)
-    print(ticker_df['Growth (High)'].iat[-1])
-    print(ticker_df['Growth (Low)'].iat[-1])
+    # print(ticker_df['Growth (High)'].iat[-1])
+    # print(ticker_df['Growth (Low)'].iat[-1])
