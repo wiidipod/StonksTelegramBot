@@ -302,7 +302,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         #     subtitle += f'RSI: {round_up(rsi)} - '
         subtitle = subtitle[:-3]
 
-    plot_path = plot_utility.plot_bands_by_labels(
+    plot_path = plot_utility.plot_bands_by_labels_with_ta(
         df=df,  # .iloc[window:],
         ticker=ticker,
         title=name,

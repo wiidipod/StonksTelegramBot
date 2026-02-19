@@ -34,7 +34,7 @@ def plot_with_constants_by_df(
     subplot.set_yscale(yscale)
     currency = yfinance_service.get_currency(ticker)
     subplot.set_ylabel(currency)
-    subplot.set_xlabel('Date')
+    # subplot.set_xlabel('Date')
     subplot.grid(True)
     # for label in labels:
     #     subplot.fill_between(df.index, df[f'{label} (High)'], df[f'{label} (Low)'], label=label)
@@ -465,7 +465,7 @@ def plot_bands_by_labels(df, ticker, title, labels, subtitle=None, fname=None, y
 
     subplot.set_yscale(yscale)
     subplot.set_ylabel(yfinance_service.get_currency(ticker))
-    subplot.set_xlabel('Date')
+    # subplot.set_xlabel('Date')
     subplot.grid(True)
 
     for label in labels:
@@ -506,7 +506,7 @@ def plot_bands_by_labels_with_ta(df, ticker, title, labels, subtitle=None, fname
 
     subplot.set_yscale(yscale)
     subplot.set_ylabel(yfinance_service.get_currency(ticker))
-    subplot.set_xlabel('Date')
+    # subplot.set_xlabel('Date')
     subplot.grid(True)
 
     for label in labels:
