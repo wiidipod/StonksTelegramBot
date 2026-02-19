@@ -492,7 +492,7 @@ def plot_bands_by_labels_with_ta(df, ticker, title, labels, subtitle=None, fname
     if fname is None:
         fname = f'{output_directory}{ticker}_two_bands_plot.png'
 
-    fig = plt.figure(figsize=(9.0, 9.0), dpi=300)
+    fig = plt.figure(figsize=(9.0, 15.0), dpi=300)
     fig.suptitle(title)
 
     # Create gridspec with 3 rows: price (larger), RSI, MACD
