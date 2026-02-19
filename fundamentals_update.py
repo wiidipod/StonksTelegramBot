@@ -106,10 +106,12 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     df = ta_utility.add_macd(df)
     # df = ta_utility.add_sma(df, window=200)
     try:
-        macd = df["MACD Diff"].iat[-1] > df["MACD Diff"].iat[-2] and df["MACD Diff"].iat[-1] > 0.0
+        macd_positive = df["MACD Diff"].iat[-1] > 0.0  # and df["MACD Diff"].iat[-1] > df["MACD Diff"].iat[-2]
+        macd_growing = df["MACD Diff"].iat[-1] > df["MACD Diff"].iat[-2]
         # macd = df["MACD Diff"].iat[-1] > 0.0
     except:
-        macd = None
+        macd_positive = None
+        macd_growing = None
     try:
         rsi = df["RSI"].iat[-1]
     except:
@@ -119,9 +121,15 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     #         dictionary[DictionaryKeys.no_technicals] = True
     # else:
     #     dictionary[DictionaryKeys.no_technicals] = True
-    if macd is not None and rsi is not None:
+    if macd_positive is not None and macd_growing is not None and rsi is not None:
         # if (not macd and rsi > 30.0) or rsi > 70.0:
-        if not macd or rsi > 70.0:
+        # if is_stock(ticker):
+        #     if not macd_positive and not macd_growing and rsi > 70.0:
+        #         dictionary[DictionaryKeys.no_technicals] = True
+        # else:
+        #     if not macd_positive or not macd_growing or rsi > 70.0:
+        #         dictionary[DictionaryKeys.no_technicals] = True
+        if (not macd_positive or not macd_growing or rsi > 70.0) and rsi > 30.0:
             dictionary[DictionaryKeys.no_technicals] = True
     else:
         dictionary[DictionaryKeys.no_technicals] = True
