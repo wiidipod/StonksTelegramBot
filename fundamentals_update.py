@@ -136,7 +136,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
             if not macd:
                 dictionary[DictionaryKeys.no_technicals] = True
         else:
-            if not macd_growing and not macd_positive:
+            if not macd_positive:
                 dictionary[DictionaryKeys.no_technicals] = True
     else:
         dictionary[DictionaryKeys.no_technicals] = True
