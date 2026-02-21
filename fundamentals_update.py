@@ -174,6 +174,24 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     )
 
     if is_stock(ticker):
+        if price_target_low is None:
+            # price_target_low = min(df['Growth Lower'].iat[-1], df[f'{add_string_5y}Growth Lower'].iat[-1])
+            price_target_low = df['Growth Lower'].iat[-1]
+        else:
+            # price_target_low = min(price_target_low, df['Growth Lower'].iat[-1], df[f'{add_string_5y}Growth Lower'].iat[-1])
+            price_target_low = min(price_target_low, df['Growth Lower'].iat[-1])
+
+        if price_target_high is None:
+            # price_target_high = max(df['Growth Upper'].iat[-1], df[f'{add_string_5y}Growth Upper'].iat[-1])
+            price_target_high = df['Growth Upper'].iat[-1]
+        else:
+            # price_target_high = max(price_target_high, df['Growth Upper'].iat[-1], df[f'{add_string_5y}Growth Upper'].iat[-1])
+            price_target_high = max(price_target_high, df['Growth Upper'].iat[-1])
+
+        # if 0.9 * price_target_low <= df[P.H.value].iat[-1 - future]:
+        if price_target_low < df[P.C.value].iat[-1 - future]:
+            dictionary[DictionaryKeys.price_target_too_low] = True
+
         if pe_ratio is not None:
             # if pe_ratio > 2.0 * industry_pe_ratio:
             #     dictionary[DictionaryKeys.pe_ratio_too_high] = True
@@ -192,7 +210,9 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
             dictionary[DictionaryKeys.peg_ratio_too_high] = True
             ev_to_ebitda_to_growth = None
         else:
-            growth = None if pe_ratio is None else pe_ratio / peg_ratio
+            growth = (price_target_low / df[P.C.value].iat[-1 - future] - 1.0) * 100.0
+            if pe_ratio is not None:
+                growth = min(pe_ratio / peg_ratio, growth)
             ev_to_ebitda_to_growth = None if growth is None or growth == 0.0 or ev_to_ebitda is None else ev_to_ebitda / growth
             # if peg_ratio > 2.0:
             #     dictionary[DictionaryKeys.peg_ratio_too_high] = True
@@ -252,24 +272,6 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         or min(df[P.C.value].iloc[-1-future-26:-future]) > min(df[P.C.value].iloc[-1-future-days_to_outperform_volatility:-1-future-26])
     ):
         dictionary[DictionaryKeys.too_expensive] = True
-
-    if price_target_low is None:
-        # price_target_low = min(df['Growth Lower'].iat[-1], df[f'{add_string_5y}Growth Lower'].iat[-1])
-        price_target_low = df['Growth Lower'].iat[-1]
-    else:
-        # price_target_low = min(price_target_low, df['Growth Lower'].iat[-1], df[f'{add_string_5y}Growth Lower'].iat[-1])
-        price_target_low = min(price_target_low, df['Growth Lower'].iat[-1])
-
-    if price_target_high is None:
-        # price_target_high = max(df['Growth Upper'].iat[-1], df[f'{add_string_5y}Growth Upper'].iat[-1])
-        price_target_high = df['Growth Upper'].iat[-1]
-    else:
-        # price_target_high = max(price_target_high, df['Growth Upper'].iat[-1], df[f'{add_string_5y}Growth Upper'].iat[-1])
-        price_target_high = max(price_target_high, df['Growth Upper'].iat[-1])
-
-    # if 0.9 * price_target_low <= df[P.H.value].iat[-1 - future]:
-    if price_target_low < df[P.C.value].iat[-1 - future]:
-        dictionary[DictionaryKeys.price_target_too_low] = True
 
     value_low = price_target_low / df['Growth'].iat[-1] * df['Growth'].iat[-1 - future]
     value_high = price_target_high / df['Growth'].iat[-1] * df['Growth'].iat[-1 - future]
