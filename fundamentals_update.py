@@ -218,7 +218,8 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         #     if peg_ratio > 2.0:
         #         dictionary[DictionaryKeys.peg_ratio_too_high] = True
 
-    days_to_outperform_volatility = bisect_left(df['Growth Lower'].to_numpy(), df['Growth Upper'].iat[0])
+    # days_to_outperform_volatility = bisect_left(df['Growth Lower'].to_numpy(), df['Growth Upper'].iat[0])
+    days_to_outperform_volatility = bisect_left(df['Growth'].to_numpy(), df['Growth Upper'].iat[0])
 
     if (
         # 10y regression not beating volatility in 10y
@@ -230,6 +231,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         # 5y regression not beating volatility in 5y
         # or df[f'{add_string_5y}Growth Upper'].iat[-1 - future - window] > df[f'{add_string_5y}Growth Lower'].iat[-1 - future]
         # or days_to_outperform_volatility >= len(df) - future
+        # or min(df[P.C.value].iloc[-1-future-26:-future]) > min(df[P.C.value].iloc[-1-future-days_to_outperform_volatility:-1-future-26])!
     ):
         dictionary[DictionaryKeys.growth_too_low] = True
 
