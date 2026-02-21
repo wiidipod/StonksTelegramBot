@@ -211,7 +211,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
             ev_to_ebitda_to_growth = None
         else:
             growth = (price_target_low / df[P.C.value].iat[-1 - future] - 1.0) * 100.0
-            if pe_ratio is not None:
+            if peg_ratio is not None and pe_ratio is not None:
                 growth = min(pe_ratio / peg_ratio, growth)
             ev_to_ebitda_to_growth = None if growth is None or growth == 0.0 or ev_to_ebitda is None else ev_to_ebitda / growth
             # if peg_ratio > 2.0:
