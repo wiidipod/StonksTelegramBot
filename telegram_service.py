@@ -6,7 +6,7 @@ from telegram import Update, InputMediaPhoto, BotCommand
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
 import yfinance as yf
 
-import fundamentals_update
+from fundamentals_update_new import get_plot_path_and_message_for
 import option_utility
 import ta_utility
 import yfinance_service
@@ -162,7 +162,7 @@ async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
         pe_ratios = {}
 
     try:
-        plot_path, message = fundamentals_update.get_plot_path_and_message_for(ticker, pe_ratios=pe_ratios)
+        plot_path, message = get_plot_path_and_message_for(ticker, pe_ratios=pe_ratios)
 
         await send_plot_with_message(plot_path=plot_path, message=message, chat_id=update.effective_chat.id, context=context)
     except Exception as e:

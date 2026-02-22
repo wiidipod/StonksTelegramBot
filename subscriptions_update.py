@@ -1,5 +1,5 @@
 import telegram_service
-import fundamentals_update
+from fundamentals_update_new import get_plot_path_and_message_for
 import logging
 import asyncio
 import pe_utility
@@ -12,7 +12,7 @@ async def send_all(tickers, application):
     pe_ratios = pe_utility.get_pe_ratios()
     for ticker in tickers:
         try:
-            plot_path, message = fundamentals_update.get_plot_path_and_message_for(ticker, pe_ratios=pe_ratios)
+            plot_path, message = get_plot_path_and_message_for(ticker, pe_ratios=pe_ratios)
         except Exception as e:
             error_msg = f'Error generating plot for {ticker}: {e}'
             logging.error(error_msg)

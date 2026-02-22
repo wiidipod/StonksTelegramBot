@@ -27,6 +27,32 @@ def has_buy_signal(dictionary):
     return not any(dictionary[key] for key in DictionaryKeysNew)
 
 
+def get_plot_path_and_message_for(ticker, period='10y', pe_ratios=None):
+    if pe_ratios is None:
+        pe_ratios = {}
+
+    df = yf.download(
+        [ticker],
+        period=period,
+        interval='1d',
+        group_by='ticker',
+        auto_adjust=True,
+    )
+    ticker_df = extract_ticker_df(df=df, ticker=ticker)
+
+    # Check if the DataFrame is empty after extraction
+    if ticker_df.empty:
+        raise ValueError(f"No data available for ticker {ticker}")
+
+    future = len(ticker_df) // 10
+
+    dictionary, plot_path = analyze(df=ticker_df, ticker=ticker, future=future, full=True, pe_ratios=pe_ratios)
+
+    message = get_message_by_dictionary_new(dictionary=dictionary, ticker=ticker)
+
+    return plot_path, message
+
+
 def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     if pe_ratios is None:
         pe_ratios = {}
