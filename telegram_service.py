@@ -295,6 +295,13 @@ async def send_plot_with_message(plot_path, message, chat_id, context: ContextTy
         logging.error(f"Plot path: {plot_path}, Message path: {message}")
 
 
+async def send_plots(context: ContextTypes.DEFAULT_TYPE, plot_paths, messages, to_all=True):
+    if to_all:
+        await send_plots_to_all(plot_paths, context, messages=messages)
+    else:
+        await send_plots_to_first(plot_paths, context, messages=messages)
+
+
 async def send_plots_to_all(plot_paths, context: ContextTypes.DEFAULT_TYPE, messages=None):
     subscribers = get_subscribers()
     media_groups = [plot_paths[i:i + 10] for i in range(0, len(plot_paths), 10)]

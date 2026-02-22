@@ -142,24 +142,6 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         dictionary[DictionaryKeys.no_technicals] = True
     # dictionary[DictionaryKeys.no_technicals] = False
 
-    if is_stock(ticker):
-        pe_ratio = yfinance_service.get_pe_ratio(ticker)
-        peg_ratio = yfinance_service.get_peg_ratio(ticker)
-        ev_to_ebitda = yfinance_service.get_ev_to_ebitda(ticker)
-        industry = yfinance_service.get_industry(ticker)
-        industry_pe_ratio = pe_ratios.get(industry) or pe_ratios.get('S&P 500') or 19.38
-        price_target_low = yfinance_service.get_price_target(ticker, low=True)
-        price_target_high = yfinance_service.get_price_target(ticker, low=False)
-        if price_target_low is None:
-            dictionary[DictionaryKeys.price_target_too_low] = True
-    else:
-        peg_ratio = None
-        price_target_low = None
-        price_target_high = None
-        pe_ratio = None
-        ev_to_ebitda = None
-        industry_pe_ratio = None
-
     window = len(df) - 1
     # window = len(df) // 2
     # add_string_5y = '5y '
@@ -172,6 +154,24 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         # add_full_length_growth=True,
         # add_string=add_string_5y
     )
+
+    if is_stock(ticker):
+        pe_ratio = yfinance_service.get_pe_ratio(ticker)
+        peg_ratio = yfinance_service.get_peg_ratio(ticker)
+        ev_to_ebitda = yfinance_service.get_ev_to_ebitda(ticker)
+        industry = yfinance_service.get_industry(ticker)
+        industry_pe_ratio = pe_ratios.get(industry) or pe_ratios.get('S&P 500') or 19.38
+        price_target_low = yfinance_service.get_price_target(ticker, low=True)
+        price_target_high = yfinance_service.get_price_target(ticker, low=False)
+        if price_target_low is None:
+            dictionary[DictionaryKeys.price_target_too_low] = True
+    else:
+        peg_ratio = None
+        price_target_low = df['Growth Lower'].iat[-1]
+        price_target_high = df['Growth Upper'].iat[-1]
+        pe_ratio = None
+        ev_to_ebitda = None
+        industry_pe_ratio = None
 
     if is_stock(ticker):
         if price_target_low is None:

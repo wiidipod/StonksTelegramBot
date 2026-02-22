@@ -105,6 +105,13 @@ def get_close_as_series(ticker, period='10y', interval='1d'):
     return data
 
 
+def get_industry_from_info(info):
+    try:
+        return info["industry"]
+    except:
+        return ""
+
+
 def get_industry(ticker):
     try:
         def _fetch_info():
@@ -115,6 +122,38 @@ def get_industry(ticker):
         return info["industry"]
     except:
         return ""
+
+
+def get_name_from_info(info, mono=False, industry_pe_ratio=None):
+    try:
+        name = info.get("shortName") or info.get("longName") or ticker
+    except:
+        info = {}
+        name = ticker
+
+    if mono:
+        if is_stock(ticker):
+            name = f'[{name}](https://valuecheck.io/analyze/{ticker})'
+        else:
+            name = f'[{name}](https://finance.yahoo.com/quote/{ticker})'
+        info = {}
+
+    try:
+        industry = f" - {info['industry']}"
+        if industry_pe_ratio is not None:
+            industry += f" (P/E: {industry_pe_ratio})"
+    except:
+        industry = ""
+
+    try:
+        country = f" - {info['country']}"
+    except:
+        country = ""
+
+    if mono:
+        return f'{name} (`{ticker}`)'
+    else:
+        return f'{name} ({ticker}){industry}{country}'
 
 
 def get_name(ticker, mono=False, industry_pe_ratio=None):
@@ -154,6 +193,16 @@ def get_name(ticker, mono=False, industry_pe_ratio=None):
         return f'{name} ({ticker}){industry}{country}'
 
 
+def get_pe_ratio_from_info(info):
+    try:
+        pe_ratio = info.get("trailingPE")
+        if pe_ratio is None or pe_ratio <= 0.0 or math.isnan(pe_ratio):
+            return None
+        return pe_ratio
+    except:
+        return None
+
+
 def get_pe_ratio(ticker):
     try:
         def _fetch_info():
@@ -165,6 +214,16 @@ def get_pe_ratio(ticker):
         if pe_ratio is None or pe_ratio <= 0.0 or math.isnan(pe_ratio):
             return None
         return pe_ratio
+    except:
+        return None
+
+
+def get_peg_ratio_from_info(info):
+    try:
+        peg_ratio = info.get("trailingPegRatio")
+        if peg_ratio is None or peg_ratio <= 0.0 or math.isnan(peg_ratio):
+            return None
+        return peg_ratio
     except:
         return None
 
@@ -188,6 +247,25 @@ def is_valid_price(price):
     return price is not None and price > 0.0 and not math.isnan(price)
 
 
+def get_price_target_from_info(info, low=True):
+    try:
+        price_targets = info.get("analyst_price_targets")
+        mean_price_target = price_targets['mean']
+        median_price_target = price_targets['median']
+        if is_valid_price(mean_price_target) and is_valid_price(median_price_target):
+            if low:
+                return min(mean_price_target, median_price_target)
+            else:
+                return max(mean_price_target, median_price_target)
+        if is_valid_price(mean_price_target):
+            return mean_price_target
+        if is_valid_price(median_price_target):
+            return median_price_target
+        return None
+    except:
+        return None
+
+
 def get_price_target(ticker, low=True):
     try:
         def _fetch_price_targets():
@@ -207,6 +285,16 @@ def get_price_target(ticker, low=True):
         if is_valid_price(median_price_target):
             return median_price_target
         return None
+    except:
+        return None
+
+
+def get_ev_to_ebitda_from_info(info):
+    try:
+        ev_to_ebitda = info.get("enterpriseToEbitda")
+        if ev_to_ebitda is None or ev_to_ebitda <= 0.0 or math.isnan(ev_to_ebitda):
+            return None
+        return ev_to_ebitda
     except:
         return None
 
@@ -326,6 +414,15 @@ def extract_ticker_df(df, ticker):
         (filtered_df[P.O.value] > 0.0)
     ]
 
+
+def get_market_cap_from_info(info):
+    try:
+        market_cap = info.get("marketCap")
+        if market_cap is None or market_cap <= 0.0 or math.isnan(market_cap):
+            return None
+        return market_cap
+    except:
+        return None
 
 def get_market_cap(ticker):
     try:

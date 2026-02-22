@@ -154,6 +154,16 @@ def write_message_by_dictionary(dictionary, ticker):
     return save_message(start_message=start_message, message_to_escape=message_to_escape, ticker=ticker)
 
 
+def get_message_by_dictionary_new(dictionary, ticker):
+    name = yfinance_service.get_name(ticker, mono=True)
+    start_message = generate_start_message(name=name)
+    message_to_escape = ""
+    for key in DictionaryKeys:
+        if dictionary[key]:
+            message_to_escape += f"   {key.value} \n "
+    return escape_characters_for_markdown(start_message + message_to_escape)
+
+
 def get_message_by_dictionary(dictionary, ticker):
     name = yfinance_service.get_name(ticker, mono=True)
     start_message = generate_start_message(name=name)

@@ -4,6 +4,7 @@ from ta.trend import SMAIndicator
 from ta.volatility import AverageTrueRange
 import pandas as pd
 from yfinance_service import P
+from constants import TechnicalsKeys
 
 
 def get_rsi(close):
@@ -26,15 +27,15 @@ def has_momentum(close):
 
 def add_rsi(df):
     rsi = RSIIndicator(df[P.C.value], fillna=True)
-    df["RSI"] = rsi.rsi()
+    df[TechnicalsKeys.rsi.value] = rsi.rsi()
     return df
 
 
 def add_macd(df):
     macd = MACD(df[P.C.value], fillna=True)
-    df["MACD"] = macd.macd()
-    df["MACD Signal"] = macd.macd_signal()
-    df["MACD Diff"] = macd.macd_diff()
+    df[TechnicalsKeys.macd.value] = macd.macd()
+    df[TechnicalsKeys.macd_signal.value] = macd.macd_signal()
+    df[TechnicalsKeys.macd_diff.value] = macd.macd_diff()
     return df
 
 
