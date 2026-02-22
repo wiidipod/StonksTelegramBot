@@ -42,7 +42,8 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     # no_technicals
     df = add_macd(df)
     try:
-        macd = df[TechnicalsKeys.macd_diff.value].iat[-1] >= 0.0 >= df[TechnicalsKeys.macd_diff.value].iat[-2]
+        # macd = df[TechnicalsKeys.macd_diff.value].iat[-1] >= 0.0 >= df[TechnicalsKeys.macd_diff.value].iat[-2]
+        macd = df[TechnicalsKeys.macd_diff.value].iat[-1] >= 0.0
     except:
         macd = None
     if macd is not None:
@@ -98,7 +99,6 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         pe_ratio = None
         peg_ratio = None
         ev_to_ebitda = None
-        industry = None
         industry_pe_ratio = None
         price_target = df[GrowthKeys.growth_lower.value].iat[-1]
         ev_to_ebitda_to_growth = None
