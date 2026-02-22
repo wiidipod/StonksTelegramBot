@@ -231,7 +231,6 @@ def main():
     args = parser.parse_args()
 
     tickers = get_all_tickers()
-    # tickers = get_s_p_500_tickers()
 
     messages = []
     plot_paths = []
