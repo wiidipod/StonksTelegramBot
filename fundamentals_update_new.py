@@ -6,7 +6,7 @@ import asyncio
 import traceback
 from typing import Dict
 
-from ticker_service import get_all_tickers, is_crypto, is_stock
+from ticker_service import get_all_tickers, is_crypto, is_stock, get_s_p_500_tickers
 from pe_utility import update_pe_ratios
 from yfinance_service import extract_ticker_df, get_pe_ratio_from_info, get_peg_ratio_from_info, \
     get_ev_to_ebitda_from_info, get_industry_from_info, get_price_target_from_info, P, get_name_from_info, \
@@ -231,6 +231,7 @@ def main():
     args = parser.parse_args()
 
     tickers = get_all_tickers()
+    # tickers = get_s_p_500_tickers()
 
     messages = []
     plot_paths = []
