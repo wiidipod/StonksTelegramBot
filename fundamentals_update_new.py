@@ -215,7 +215,7 @@ def process_chunk(tickers, pe_ratios):
 
         indicator_counts[UndervaluedKey.undervalued] += 1
 
-        return messages, plot_paths, indicator_counts
+    return messages, plot_paths, indicator_counts
 
 
 def initialize_indicator_counts() -> Dict[CommonDictionaryKey, int]:
