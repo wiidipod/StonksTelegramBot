@@ -14,7 +14,7 @@ from yfinance_service import extract_ticker_df, get_pe_ratio_from_info, get_peg_
 from constants import DictionaryKeysNew, UndervaluedKey, CommonDictionaryKey, TechnicalsKeys, GrowthKeys
 from message_utility import get_message_by_dictionary_new, round_down, human_format, human_format_from_string, round_up
 from telegram_service import get_application, send_plots, send_message_to_first
-from ta_utility import add_macd
+from ta_utility import add_macd, add_rsi
 from regression_utility import add_close_window_growths
 from plot_utility import plot_bands_by_labels_with_ta
 
@@ -67,10 +67,15 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
 
     # no_technicals
     df = add_macd(df)
+    df = add_rsi(df)
     try:
+        macd_positive = df[TechnicalsKeys.macd_diff.value].iat[-1] > 0.0
+        macd_growing = df[TechnicalsKeys.macd_diff.value].iat[-1] > df[TechnicalsKeys.macd_diff.value].iat[-2]
+        macd = macd_positive or macd_growing
         # macd = df[TechnicalsKeys.macd_diff.value].iat[-1] >= 0.0 >= df[TechnicalsKeys.macd_diff.value].iat[-2]
         # macd = df[TechnicalsKeys.macd_diff.value].iat[-1] >= 0.0
-        macd = True
+        # macd = True
+        # macd = df[TechnicalsKeys.macd_diff.value].iat[-1] >= 0.0 >= df[TechnicalsKeys.macd_diff.value].iat[-2] or
     except:
         macd = None
     if macd is not None:
@@ -134,7 +139,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         peg_ratio = None
         ev_to_ebitda = None
         industry_pe_ratio = None
-        price_target = df[GrowthKeys.growth_lower.value].iat[-1]
+        price_target = df[GrowthKeys.growth_lower.value].iat[today_index]
         ev_to_ebitda_to_growth = None
 
     # too_expensive
