@@ -47,8 +47,6 @@ def get_plot_path_and_message_for(ticker, period='10y', pe_ratios=None):
     future = len(ticker_df) // 10
 
     dictionary, plot_path = analyze(df=ticker_df, ticker=ticker, future=future, full=True, pe_ratios=pe_ratios)
-    for key in DictionaryKeysNew:
-        print(f'{key.value}: {dictionary[key]}')
 
     message = get_message_by_dictionary_new(dictionary=dictionary, ticker=ticker)
 
@@ -108,7 +106,6 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         price_target = get_price_target(ticker, low=True)
         if price_target is None:
             dictionary[DictionaryKeysNew.no_fundamentals] = True
-            print(f'No price target for {ticker}, using growth lower as price target', flush=True)
             price_target = df[GrowthKeys.growth_lower.value].iat[-1]
         else:
             growth = min(growth, get_growth(
@@ -118,24 +115,20 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
             price_target = min(price_target, df[GrowthKeys.growth_lower.value].iat[-1])
         if pe_ratio is None or peg_ratio is None:
             dictionary[DictionaryKeysNew.no_fundamentals] = True
-            print(f'No P/E or PEG ratio for {ticker}, using industry P/E ratio and growth as fallback', flush=True)
         else:
             if peg_ratio != 0:
                 growth = min(pe_ratio / peg_ratio, growth)
         if ev_to_ebitda is None:
             dictionary[DictionaryKeysNew.no_fundamentals] = True
-            print(f'No EV/EBITDA ratio for {ticker}, using industry P/E ratio and growth as fallback', flush=True)
             ev_to_ebitda_to_growth = None
         else:
             if growth != 0:
                 ev_to_ebitda_to_growth = ev_to_ebitda / growth
                 if ev_to_ebitda_to_growth > 1.0:
                     dictionary[DictionaryKeysNew.no_fundamentals] = True
-                    print(f'EV/EBITDA to growth ratio for {ticker} is too high, using industry P/E ratio and growth as fallback', flush=True)
             else:
                 ev_to_ebitda_to_growth = None
                 dictionary[DictionaryKeysNew.no_fundamentals] = True
-                print(f'Growth for {ticker} is zero, cannot calculate EV/EBITDA to growth ratio, using industry P/E ratio and growth as fallback', flush=True)
     else:
         pe_ratio = None
         peg_ratio = None
