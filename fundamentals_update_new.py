@@ -115,13 +115,18 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         if pe_ratio is None or peg_ratio is None:
             dictionary[DictionaryKeysNew.no_fundamentals] = True
         else:
-            growth = min(pe_ratio / peg_ratio, growth)
+            if peg_ratio != 0:
+                growth = min(pe_ratio / peg_ratio, growth)
         if ev_to_ebitda is None:
             dictionary[DictionaryKeysNew.no_fundamentals] = True
             ev_to_ebitda_to_growth = None
         else:
-            ev_to_ebitda_to_growth = ev_to_ebitda / growth
-            if ev_to_ebitda_to_growth > 1.0:
+            if growth != 0:
+                ev_to_ebitda_to_growth = ev_to_ebitda / growth
+                if ev_to_ebitda_to_growth > 1.0:
+                    dictionary[DictionaryKeysNew.no_fundamentals] = True
+            else:
+                ev_to_ebitda_to_growth = None
                 dictionary[DictionaryKeysNew.no_fundamentals] = True
     else:
         pe_ratio = None
@@ -138,7 +143,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     if not full and not has_buy_signal(dictionary):
         return dictionary, None
 
-    name = get_name_from_info(info=info, industry_pe_ratio=industry_pe_ratio)
+    name = get_name_from_info(info=info, ticker=ticker, industry_pe_ratio=industry_pe_ratio)
     subtitle = None
     market_cap = get_market_cap_from_info(info)
 

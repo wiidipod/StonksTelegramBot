@@ -124,7 +124,7 @@ def get_industry(ticker):
         return ""
 
 
-def get_name_from_info(info, mono=False, industry_pe_ratio=None):
+def get_name_from_info(info, ticker='', mono=False, industry_pe_ratio=None):
     try:
         name = info.get("shortName") or info.get("longName") or ticker
     except:
