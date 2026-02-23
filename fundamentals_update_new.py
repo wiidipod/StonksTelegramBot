@@ -9,7 +9,7 @@ from typing import Dict
 from ticker_service import get_all_tickers, is_crypto, is_stock, get_s_p_500_tickers
 from pe_utility import update_pe_ratios
 from yfinance_service import extract_ticker_df, get_pe_ratio_from_info, get_peg_ratio_from_info, \
-    get_ev_to_ebitda_from_info, get_industry_from_info, get_price_target_from_info, P, get_name_from_info, \
+    get_ev_to_ebitda_from_info, get_industry_from_info, get_price_target, P, get_name_from_info, \
     get_market_cap_from_info
 from constants import DictionaryKeysNew, UndervaluedKey, CommonDictionaryKey, TechnicalsKeys, GrowthKeys
 from message_utility import get_message_by_dictionary_new, round_down, human_format, human_format_from_string, round_up
@@ -105,7 +105,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         ev_to_ebitda = get_ev_to_ebitda_from_info(info)
         industry = get_industry_from_info(info)
         industry_pe_ratio = pe_ratios.get(industry) or pe_ratios.get('S&P 500') or 19.38
-        price_target = get_price_target_from_info(info, low=True)
+        price_target = get_price_target(ticker, low=True)
         if price_target is None:
             dictionary[DictionaryKeysNew.no_fundamentals] = True
             print(f'No price target for {ticker}, using growth lower as price target', flush=True)

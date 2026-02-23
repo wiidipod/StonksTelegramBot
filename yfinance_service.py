@@ -247,25 +247,6 @@ def is_valid_price(price):
     return price is not None and price > 0.0 and not math.isnan(price)
 
 
-def get_price_target_from_info(info, low=True):
-    try:
-        price_targets = info.get("analyst_price_targets")
-        mean_price_target = price_targets['mean']
-        median_price_target = price_targets['median']
-        if is_valid_price(mean_price_target) and is_valid_price(median_price_target):
-            if low:
-                return min(mean_price_target, median_price_target)
-            else:
-                return max(mean_price_target, median_price_target)
-        if is_valid_price(mean_price_target):
-            return mean_price_target
-        if is_valid_price(median_price_target):
-            return median_price_target
-        return None
-    except:
-        return None
-
-
 def get_price_target(ticker, low=True):
     try:
         def _fetch_price_targets():
