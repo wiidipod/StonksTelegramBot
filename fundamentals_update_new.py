@@ -47,6 +47,8 @@ def get_plot_path_and_message_for(ticker, period='10y', pe_ratios=None):
     future = len(ticker_df) // 10
 
     dictionary, plot_path = analyze(df=ticker_df, ticker=ticker, future=future, full=True, pe_ratios=pe_ratios)
+    for key in DictionaryKeysNew:
+        print(f'{key.value}: {dictionary[key]}')
 
     message = get_message_by_dictionary_new(dictionary=dictionary, ticker=ticker)
 
