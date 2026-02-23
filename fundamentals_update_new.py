@@ -69,10 +69,10 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     df = add_macd(df)
     df = add_rsi(df)
     try:
-        macd_positive = df[TechnicalsKeys.macd_diff.value].iat[-1] > 0.0
-        macd_growing = df[TechnicalsKeys.macd_diff.value].iat[-1] > df[TechnicalsKeys.macd_diff.value].iat[-2]
-        macd = macd_positive or macd_growing
-        # macd = df[TechnicalsKeys.macd_diff.value].iat[-1] >= 0.0 >= df[TechnicalsKeys.macd_diff.value].iat[-2]
+        # macd_positive = df[TechnicalsKeys.macd_diff.value].iat[-1] > 0.0
+        # macd_growing = df[TechnicalsKeys.macd_diff.value].iat[-1] > df[TechnicalsKeys.macd_diff.value].iat[-2]
+        # macd = macd_positive or macd_growing
+        macd = df[TechnicalsKeys.macd_diff.value].iat[-1] >= 0.0 >= df[TechnicalsKeys.macd_diff.value].iat[-2]
         # macd = df[TechnicalsKeys.macd_diff.value].iat[-1] >= 0.0
         # macd = True
         # macd = df[TechnicalsKeys.macd_diff.value].iat[-1] >= 0.0 >= df[TechnicalsKeys.macd_diff.value].iat[-2] or
