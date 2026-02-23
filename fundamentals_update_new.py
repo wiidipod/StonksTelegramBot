@@ -106,6 +106,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         price_target = get_price_target_from_info(info, low=True)
         if price_target is None:
             dictionary[DictionaryKeysNew.no_fundamentals] = True
+            print(f'No price target for {ticker}, using growth lower as price target')
             price_target = df[GrowthKeys.growth_lower.value].iat[-1]
         else:
             growth = min(growth, get_growth(
@@ -115,20 +116,24 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
             price_target = min(price_target, df[GrowthKeys.growth_lower.value].iat[-1])
         if pe_ratio is None or peg_ratio is None:
             dictionary[DictionaryKeysNew.no_fundamentals] = True
+            print(f'No P/E or PEG ratio for {ticker}, using industry P/E ratio and growth as fallback')
         else:
             if peg_ratio != 0:
                 growth = min(pe_ratio / peg_ratio, growth)
         if ev_to_ebitda is None:
             dictionary[DictionaryKeysNew.no_fundamentals] = True
+            print(f'No EV/EBITDA ratio for {ticker}, using industry P/E ratio and growth as fallback')
             ev_to_ebitda_to_growth = None
         else:
             if growth != 0:
                 ev_to_ebitda_to_growth = ev_to_ebitda / growth
                 if ev_to_ebitda_to_growth > 1.0:
                     dictionary[DictionaryKeysNew.no_fundamentals] = True
+                    print(f'EV/EBITDA to growth ratio for {ticker} is too high, using industry P/E ratio and growth as fallback')
             else:
                 ev_to_ebitda_to_growth = None
                 dictionary[DictionaryKeysNew.no_fundamentals] = True
+                print(f'Growth for {ticker} is zero, cannot calculate EV/EBITDA to growth ratio, using industry P/E ratio and growth as fallback')
     else:
         pe_ratio = None
         peg_ratio = None
