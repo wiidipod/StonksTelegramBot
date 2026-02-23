@@ -91,6 +91,8 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         value_today=df[GrowthKeys.growth.value].iat[today_index],
         value_future=df[GrowthKeys.growth.value].iat[-1],
     )
+    if growth < 0.0:
+        dictionary[DictionaryKeysNew.no_growth] = True
 
     # no_fundamentals
     info = yf.Ticker(ticker).info
