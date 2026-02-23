@@ -69,7 +69,8 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     df = add_macd(df)
     try:
         # macd = df[TechnicalsKeys.macd_diff.value].iat[-1] >= 0.0 >= df[TechnicalsKeys.macd_diff.value].iat[-2]
-        macd = df[TechnicalsKeys.macd_diff.value].iat[-1] >= 0.0
+        # macd = df[TechnicalsKeys.macd_diff.value].iat[-1] >= 0.0
+        macd = False
     except:
         macd = None
     if macd is not None:
