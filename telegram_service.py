@@ -138,7 +138,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    pe_ratios = {}
     ticker = ''
     try:
         if len(context.args) < 1:

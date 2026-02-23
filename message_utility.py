@@ -1,7 +1,7 @@
 import math
 
 import yfinance_service
-from constants import output_directory
+from constants import output_directory, DictionaryKeysNew
 from ticker_service import sort_tickers
 from yfinance_service import P
 from constants import DictionaryKeys
@@ -158,7 +158,7 @@ def get_message_by_dictionary_new(dictionary, ticker):
     name = yfinance_service.get_name(ticker, mono=True)
     start_message = generate_start_message(name=name)
     message_to_escape = ""
-    for key in DictionaryKeys:
+    for key in DictionaryKeysNew:
         if dictionary[key]:
             message_to_escape += f"   {key.value} \n "
     return escape_characters_for_markdown(start_message + message_to_escape)
