@@ -50,51 +50,50 @@ def get_subscribers():
 
 async def handle_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
-    subscriptions = get_subscriptions()
 
     if len(context.args) < 1:
         await update.message.reply_text("Invalid input. Try `/subscribe AAPL`", parse_mode='MarkdownV2')
         return
 
-    ticker = context.args[0]
-    try:
-        name = yfinance_service.get_name(ticker, mono=True)
-    except:
-        name = ticker
-    if f'{chat_id}${ticker}' not in subscriptions:
-        subscriptions.append(f'{chat_id}${ticker}')
-        with open(subscriptions_file, 'w') as file:
-            file.write('\n'.join(subscriptions))
-            message = f"You have been subscribed to {name}!"
-    else:
-        message = f"You are already subscribed to {name}!"
-
-    await send_message_to_chat_id(chat_id, message, context=context)
+    lines = []
+    for ticker in context.args:
+        subscriptions = get_subscriptions()
+        try:
+            name = yfinance_service.get_name(ticker, mono=True)
+        except:
+            name = ticker
+        if f'{chat_id}${ticker}' not in subscriptions:
+            subscriptions.append(f'{chat_id}${ticker}')
+            with open(subscriptions_file, 'w') as file:
+                file.write('\n'.join(subscriptions))
+            lines.append(f"You have been subscribed to {name}!")
+        else:
+            lines.append(f"You are already subscribed to {name}!")
+    await send_message_to_chat_id(chat_id, '\n'.join(lines), context=context)
 
 
 async def handle_unsubscribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
-    subscriptions = get_subscriptions()
 
     if len(context.args) < 1:
         await update.message.reply_text("Invalid input. Try `/unsubscribe AAPL`", parse_mode='MarkdownV2')
         return
 
-    ticker = context.args[0]
-    try:
-        name = yfinance_service.get_name(ticker, mono=True)
-    except:
-        name = ticker
-    if f'{chat_id}${ticker}' in subscriptions:
-        subscriptions.remove(f'{chat_id}${ticker}')
-        with open(subscriptions_file, 'w') as file:
-            file.write('\n'.join(subscriptions))
-            message = f"You have been unsubscribed from {name}!"
-    else:
-
-        message = f"You are not subscribed to {name}!"
-
-    await send_message_to_chat_id(chat_id, message, context=context)
+    lines = []
+    for ticker in context.args:
+        subscriptions = get_subscriptions()
+        try:
+            name = yfinance_service.get_name(ticker, mono=True)
+        except:
+            name = ticker
+        if f'{chat_id}${ticker}' in subscriptions:
+            subscriptions.remove(f'{chat_id}${ticker}')
+            with open(subscriptions_file, 'w') as file:
+                file.write('\n'.join(subscriptions))
+            lines.append(f"You have been unsubscribed from {name}!")
+        else:
+            lines.append(f"You are not subscribed to {name}!")
+    await send_message_to_chat_id(chat_id, '\n'.join(lines), context=context)
 
 
 async def handle_unsubscribe_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -145,37 +144,36 @@ async def handle_ticker_message(update: Update, context: ContextTypes.DEFAULT_TY
 
 
 async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    ticker = ''
     try:
         if len(context.args) < 1:
             await update.message.reply_text("Invalid input. Try `/analyze AAPL`", parse_mode='MarkdownV2')
             return
-
-        ticker = context.args[0]
     except Exception as e:
         try:
             await update.message.reply_text(f"An error occurred: {str(e)}")
         except Exception as send_error:
             logging.error(f"Failed to send error message to chat: {send_error}. Original error: {e}")
+        return
 
-    if is_stock(ticker):
-        try:
-            pe_ratios = pe_utility.get_pe_ratios()
-        except:
+    for ticker in context.args:
+        if is_stock(ticker):
+            try:
+                pe_ratios = pe_utility.get_pe_ratios()
+            except:
+                pe_ratios = {}
+        else:
             pe_ratios = {}
-    else:
-        pe_ratios = {}
 
-    try:
-        from fundamentals_update_new import get_plot_path_and_message_for
-        plot_path, message = get_plot_path_and_message_for(ticker, pe_ratios=pe_ratios)
-
-        await send_plot_with_message(plot_path=plot_path, message=message, chat_id=update.effective_chat.id, context=context)
-    except Exception as e:
         try:
-            await update.message.reply_text(f"An error occurred: {str(e)}")
-        except Exception as send_error:
-            logging.error(f"Failed to send error message to chat: {send_error}. Original error: {e}")
+            from fundamentals_update_new import get_plot_path_and_message_for
+            plot_path, message = get_plot_path_and_message_for(ticker, pe_ratios=pe_ratios)
+
+            await send_plot_with_message(plot_path=plot_path, message=message, chat_id=update.effective_chat.id, context=context)
+        except Exception as e:
+            try:
+                await update.message.reply_text(f"An error occurred: {str(e)}")
+            except Exception as send_error:
+                logging.error(f"Failed to send error message to chat: {send_error}. Original error: {e}")
 
 
 async def handle_stop_loss(update: Update, context: ContextTypes.DEFAULT_TYPE):
