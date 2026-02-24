@@ -3,7 +3,7 @@ import logging
 
 import telegram
 from telegram import Update, InputMediaPhoto, BotCommand
-from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
+from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
 import yfinance as yf
 
 import option_utility
@@ -135,6 +135,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         message = "You are already subscribed!"
 
     await send_message_to_chat_id(chat_id, message, context=context)
+
+
+async def handle_ticker_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    tickers = update.message.text.strip().split()
+    for ticker in tickers:
+        context.args = [ticker]
+        await handle_analyze(update, context)
 
 
 async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -431,6 +438,9 @@ def get_handling_application():
 
     subscriptions_handler = CommandHandler('subscriptions', handle_subscriptions)
     application.add_handler(subscriptions_handler)
+
+    ticker_handler = MessageHandler(filters.TEXT & ~filters.COMMAND, handle_ticker_message)
+    application.add_handler(ticker_handler)
 
     return application
 
