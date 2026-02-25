@@ -354,10 +354,8 @@ def plot_rsi_by_df(df, rsi_subplot):
     rsi_subplot.plot(df.index, [30] * length, color='tab:green', linestyle='dashed', label='Oversold')
 
     # Add text annotations for overbought and oversold levels on the left side
-    rsi_subplot.text(0, 70, '70 ', horizontalalignment='right', verticalalignment='center',
-                     fontsize=9, color='tab:red')
-    rsi_subplot.text(0, 30, '30 ', horizontalalignment='right', verticalalignment='center',
-                     fontsize=9, color='tab:green')
+    rsi_subplot.text(0, 70, '70 ', horizontalalignment='right', verticalalignment='center', fontsize=900, color='tab:red')
+    rsi_subplot.text(0, 30, '30 ', horizontalalignment='right', verticalalignment='center', fontsize=900, color='tab:green')
 
     # rect = Rectangle((0, 30), length - 1, 40, color=gray, alpha=0.3)
     # rsi_subplot.add_patch(rect)
