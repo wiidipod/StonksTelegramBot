@@ -326,32 +326,32 @@ def plot_rsi(rsi, rsi_sma, rsi_subplot):
     rsi_subplot.legend(loc='upper left')
 
 
-def plot_rsi_by_df(df_slice, rsi_subplot):
+def plot_rsi_by_df(df, rsi_subplot):
     """Plot RSI using a dataframe slice with date index for proper x-axis labels."""
     # Drop rows with NaN RSI values to skip weekends/holidays
-    length = len(df_slice)
-    x = np.arange(length)
+    length = len(df)
+    # x = np.arange(length)
     rsi_subplot.set_ylabel('RSI')
 
     # Get current (last) RSI value
-    current_rsi = df_slice['RSI'].iloc[-1]
-    rsi_subplot.plot(x, df_slice['RSI'].values, label='RSI')
+    current_rsi = df['RSI'].iloc[-1]
+    rsi_subplot.plot(df.index, df['RSI'], label='RSI')
 
     # Add text annotation for current RSI value
     rsi_subplot.text(length - 1, current_rsi, f' {human_format(current_rsi)}',
                      verticalalignment='center', fontsize=9, color='C0')
 
-    if 'RSI SMA' in df_slice.columns:
-        current_rsi_sma = df_slice['RSI SMA'].iloc[-1]
-        rsi_subplot.plot(x, df_slice['RSI SMA'].values, label='SMA')
+    if 'RSI SMA' in df.columns:
+        current_rsi_sma = df['RSI SMA'].iloc[-1]
+        rsi_subplot.plot(df.index, df['RSI SMA'], label='SMA')
         # Add text annotation for current RSI SMA value
         rsi_subplot.text(length - 1, current_rsi_sma, f' {human_format(current_rsi_sma)}',
                          verticalalignment='center', fontsize=9, color='C1')
 
     gray = 'tab:gray'
-    rsi_subplot.plot(x, [70] * length, color='tab:red', linestyle='dashed', label='Overbought')
-    rsi_subplot.plot(x, [50] * length, color=gray, linestyle='dashed')
-    rsi_subplot.plot(x, [30] * length, color='tab:green', linestyle='dashed', label='Oversold')
+    rsi_subplot.plot(df.index, [70] * length, color='tab:red', linestyle='dashed', label='Overbought')
+    rsi_subplot.plot(df.index, [50] * length, color=gray, linestyle='dashed')
+    rsi_subplot.plot(df.index, [30] * length, color='tab:green', linestyle='dashed', label='Oversold')
 
     # Add text annotations for overbought and oversold levels on the left side
     rsi_subplot.text(0, 70, '70 ', horizontalalignment='right', verticalalignment='center',
@@ -365,8 +365,8 @@ def plot_rsi_by_df(df_slice, rsi_subplot):
     rsi_subplot.grid(True)
     # rsi_subplot.legend(loc='upper left')
     rsi_subplot.set_ylim(0, 100)
-    rsi_subplot.set_xticks(x[::max(1, length // 5)])  # Show ~6 date labels
-    rsi_subplot.set_xticklabels([df_slice.index[i].strftime('%Y-%m-%d') for i in range(0, length, max(1, length // 5))])
+    # rsi_subplot.set_xticks(x[::max(1, length // 5)])  # Show ~6 date labels
+    # rsi_subplot.set_xticklabels([df.index[i].strftime('%Y-%m-%d') for i in range(0, length, max(1, length // 5))])
     # rsi_subplot.tick_params(labelbottom=False)
 
 
@@ -380,19 +380,19 @@ def plot_macd(macd, macd_diff, macd_signal, macd_subplot):
     macd_subplot.legend(loc='upper left')
 
 
-def plot_macd_by_df(df_slice, macd_subplot):
+def plot_macd_by_df(df, macd_subplot):
     """Plot MACD using a dataframe slice with date index for proper x-axis labels."""
     # Drop rows with NaN MACD values to skip weekends/holidays
-    length = len(df_slice)
-    x = np.arange(length)
+    length = len(df)
+    # x = np.arange(length)
     macd_subplot.set_ylabel('MACD')
 
     # Get current (last) MACD values
-    current_macd = df_slice['MACD'].iloc[-1]
-    current_signal = df_slice['MACD Signal'].iloc[-1]
+    current_macd = df['MACD'].iloc[-1]
+    current_signal = df['MACD Signal'].iloc[-1]
 
-    macd_subplot.plot(x, df_slice['MACD'].values, label='MACD')
-    macd_subplot.plot(x, df_slice['MACD Signal'].values, label='Signal')
+    macd_subplot.plot(df.index, df['MACD'], label='MACD')
+    macd_subplot.plot(df.index, df['MACD Signal'], label='Signal')
 
     # Add text annotations for current MACD and Signal values
     # Position them above/below to avoid overlap based on which is greater
@@ -408,14 +408,14 @@ def plot_macd_by_df(df_slice, macd_subplot):
     macd_subplot.text(length - 1, current_signal, f' {human_format(current_signal)}',
                       verticalalignment=signal_valign, fontsize=9, color='C1')
 
-    colors = get_colors(df_slice['MACD Diff'].values)
-    macd_subplot.bar(x[1:], df_slice['MACD Diff'].values[1:], color=colors)
+    colors = get_colors(df['MACD Diff'].values)
+    macd_subplot.bar(df.index.iloc[1:], df['MACD Diff'].iloc[1:], color=colors)
     # macd_subplot.set_xlim(-1, length)
     macd_subplot.grid(True)
     # macd_subplot.legend(loc='upper left')
     # Set custom x-tick labels to show dates
-    macd_subplot.set_xticks(x[::max(1, length // 5)])  # Show ~6 date labels
-    macd_subplot.set_xticklabels([df_slice.index[i].strftime('%Y-%m-%d') for i in range(0, length, max(1, length // 5))])
+    # macd_subplot.set_xticks(x[::max(1, length // 5)])  # Show ~6 date labels
+    # macd_subplot.set_xticklabels([df.index[i].strftime('%Y-%m-%d') for i in range(0, length, max(1, length // 5))])
 
 
 def get_colors(macd_diff):
@@ -545,13 +545,13 @@ def plot_bands_by_labels_with_ta(df, ticker, title, labels, subtitle=None, fname
 if __name__ == '__main__':
     main_ticker = 'MSFT'
 
-    df = yf.download(
+    df_main = yf.download(
         [main_ticker],
         period='10y',
         interval='1d',
         group_by='ticker',
     )
-    ticker_df = yfinance_service.extract_ticker_df(df=df, ticker=main_ticker)
+    ticker_df = yfinance_service.extract_ticker_df(df=df_main, ticker=main_ticker)
 
     ticker_df = ta_utility.add_rsi(ticker_df)
     ticker_df = ta_utility.add_macd(ticker_df)
