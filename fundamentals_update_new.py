@@ -178,7 +178,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         subtitle = subtitle[:-3]
 
     plot_path = plot_bands_by_labels_with_ta(
-        df=df.iloc[-future - sma_window:],
+        df=df.iloc[-future - sma_window:-future],
         ticker=ticker,
         title=name,
         subtitle=subtitle,
@@ -188,7 +188,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
             GrowthKeys.growth_lower.value,
         ],
         yscale='linear',
-        today=today_index,
+        # today=today_index,
         close_only=True,
         sma_label=f'{TechnicalsKeys.sma.value}{sma_window}'
     )

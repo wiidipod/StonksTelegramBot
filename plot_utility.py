@@ -525,17 +525,17 @@ def plot_bands_by_labels_with_ta(df, ticker, title, labels, subtitle=None, fname
 
     subplot.legend()
 
-    # RSI subplot - last 26 values up to today
+    # RSI subplot
     rsi_subplot = fig.add_subplot(gs[1])
     if 'RSI' in df.columns:
-        df_slice = df.iloc[today-14:today+1]
-        plot_rsi_by_df(df_slice, rsi_subplot)
+        # df_slice = df.iloc[today-14:today+1]
+        plot_rsi_by_df(df, rsi_subplot)
 
-    # MACD subplot - last 26 values up to today
+    # MACD subplot
     macd_subplot = fig.add_subplot(gs[2])
     if 'MACD' in df.columns and 'MACD Signal' in df.columns and 'MACD Diff' in df.columns:
-        df_slice = df.iloc[today-25:today+1]  # Same slice as RSI
-        plot_macd_by_df(df_slice, macd_subplot)
+        # df_slice = df.iloc[today-25:today+1]
+        plot_macd_by_df(df, macd_subplot)
 
     fig.tight_layout()
     fig.savefig(fname)
