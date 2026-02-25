@@ -56,7 +56,7 @@ async def handle_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     lines = []
-    for ticker in context.args:
+    for ticker in [arg.upper() for arg in context.args]:
         subscriptions = get_subscriptions()
         try:
             name = yfinance_service.get_name(ticker, mono=True)
@@ -80,7 +80,7 @@ async def handle_unsubscribe(update: Update, context: ContextTypes.DEFAULT_TYPE)
         return
 
     lines = []
-    for ticker in context.args:
+    for ticker in [arg.upper() for arg in context.args]:
         subscriptions = get_subscriptions()
         try:
             name = yfinance_service.get_name(ticker, mono=True)
@@ -137,7 +137,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def handle_ticker_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    tickers = update.message.text.strip().split()
+    tickers = update.message.text.strip().upper().split()
     for ticker in tickers:
         context.args = [ticker]
         await handle_analyze(update, context)
@@ -155,7 +155,7 @@ async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
             logging.error(f"Failed to send error message to chat: {send_error}. Original error: {e}")
         return
 
-    for ticker in context.args:
+    for ticker in [arg.upper() for arg in context.args]:
         if is_stock(ticker):
             try:
                 pe_ratios = pe_utility.get_pe_ratios()
