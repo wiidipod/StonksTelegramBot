@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-output_directory = '/Users/moritzwidmayer/github/StonksTelegramBot/output/'
+output_directory = '/home/moritz/PycharmProjects/StonksTelegramBot/output/'
 
 
 class DictionaryKeys(Enum):
