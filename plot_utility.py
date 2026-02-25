@@ -338,14 +338,20 @@ def plot_rsi_by_df(df, rsi_subplot):
     rsi_subplot.plot(df.index, df['RSI'], label='RSI')
 
     # Add text annotation for current RSI value
-    rsi_subplot.text(length - 1, current_rsi, f' {human_format(current_rsi)}',
-                     verticalalignment='center', fontsize=9, color='C0')
+    rsi_subplot.text(
+        df.index[-1],
+        current_rsi,
+        f' {human_format(current_rsi)}',
+        verticalalignment='center',
+        # fontsize=9,
+        color='C0'
+    )
 
     if 'RSI SMA' in df.columns:
         current_rsi_sma = df['RSI SMA'].iloc[-1]
         rsi_subplot.plot(df.index, df['RSI SMA'], label='SMA')
         # Add text annotation for current RSI SMA value
-        rsi_subplot.text(length - 1, current_rsi_sma, f' {human_format(current_rsi_sma)}',
+        rsi_subplot.text(df.index[-1], current_rsi_sma, f' {human_format(current_rsi_sma)}',
                          verticalalignment='center', fontsize=9, color='C1')
 
     gray = 'tab:gray'
@@ -354,8 +360,24 @@ def plot_rsi_by_df(df, rsi_subplot):
     rsi_subplot.plot(df.index, [30] * length, color='tab:green', linestyle='dashed', label='Oversold')
 
     # Add text annotations for overbought and oversold levels on the left side
-    rsi_subplot.text(0, 70, '70 ', horizontalalignment='right', verticalalignment='center', fontsize=900, color='tab:red')
-    rsi_subplot.text(0, 30, '30 ', horizontalalignment='right', verticalalignment='center', fontsize=900, color='tab:green')
+    rsi_subplot.text(
+        df.index[0],
+        70,
+        '70 ',
+        horizontalalignment='right',
+        verticalalignment='center',
+        # fontsize=9,
+        color='tab:red'
+    )
+    rsi_subplot.text(
+        df.index[0],
+        30,
+        '30 ',
+        horizontalalignment='right',
+        verticalalignment='center',
+        # fontsize=9,
+        color='tab:green'
+    )
 
     # rect = Rectangle((0, 30), length - 1, 40, color=gray, alpha=0.3)
     # rsi_subplot.add_patch(rect)
@@ -388,6 +410,7 @@ def plot_macd_by_df(df, macd_subplot):
     # Get current (last) MACD values
     current_macd = df['MACD'].iloc[-1]
     current_signal = df['MACD Signal'].iloc[-1]
+    current_diff = df['MACD Diff'].iloc[-1]
 
     macd_subplot.plot(df.index, df['MACD'], label='MACD')
     macd_subplot.plot(df.index, df['MACD Signal'], label='Signal')
@@ -400,13 +423,33 @@ def plot_macd_by_df(df, macd_subplot):
     else:
         macd_valign = 'bottom'
         signal_valign = 'top'
-
-    macd_subplot.text(length - 1, current_macd, f' {human_format(current_macd)}',
-                      verticalalignment=macd_valign, fontsize=9, color='C0')
-    macd_subplot.text(length - 1, current_signal, f' {human_format(current_signal)}',
-                      verticalalignment=signal_valign, fontsize=9, color='C1')
-
     colors = get_colors(df['MACD Diff'].values)
+
+    macd_subplot.text(
+        df.index[-1],
+        current_macd,
+        f' {human_format(current_macd)}',
+        verticalalignment=macd_valign,
+        # fontsize=9,
+        color='C0'
+    )
+    macd_subplot.text(
+        df.index[-1],
+        current_signal,
+        f' {human_format(current_signal)}',
+        verticalalignment=signal_valign,
+        # fontsize=9,
+        color='C1'
+    )
+    macd_subplot.text(
+        df.index[-1],
+        0.0,
+        f'{human_format(current_diff)}',
+        verticalalignment=signal_valign,
+        horizontalalignment='center',
+        color=colors[-1]
+    )
+
     macd_subplot.bar(df.iloc[1:].index, df['MACD Diff'].values[1:], color=colors)
     # macd_subplot.set_xlim(-1, length)
     macd_subplot.grid(True)
@@ -507,19 +550,46 @@ def plot_bands_by_labels_with_ta(df, ticker, title, labels, subtitle=None, fname
     # subplot.set_xlabel('Date')
     subplot.grid(True)
 
-    for label in labels:
+    for i, label in enumerate(labels):
         if not close_only:
             subplot.fill_between(df.index, df[f'{label} (High)'], df[f'{label} (Low)'], label=f'{label} ({human_format_from_string(round_up(df[f"{label} (High)"].iat[today]))} / {human_format_from_string(round_down(df[f"{label} (Low)"].iat[today]))})')
         else:
-            subplot.plot(df.index, df[label], label=f'{label} ({human_format_from_string(round_down(df[label].iat[today]))})')
+            # subplot.plot(df.index, df[label], label=f'{label} ({human_format_from_string(round_down(df[label].iat[today]))})')
+            subplot.plot(df.index, df[label], label=f'{label}')
+            subplot.text(
+                df.index[-1],
+                df[label].iat[-1],
+                f' {human_format_from_string(round_down(df[label].iat[today]))}',
+                color=f'C{i}',
+                verticalalignment='center',
+                horizontalalignment='left',
+            )
 
     if not close_only:
         subplot.fill_between(df.index, df[P.H.value], df[P.L.value], label=f'Price ({human_format_from_string(round_up(df[P.H.value].iat[today]))} / {human_format_from_string(round_down(df[P.L.value].iat[today]))})')
     else:
-        subplot.plot(df.index, df[P.C.value], label=f'Price ({human_format(df[P.C.value].iat[today])})')
+        # subplot.plot(df.index, df[P.C.value], label=f'Price ({human_format(df[P.C.value].iat[today])})')
+        subplot.plot(df.index, df[P.C.value], label=f'Price')
+        subplot.text(
+            df.index[-1],
+            df[P.C.value].iat[-1],
+            f' {human_format(df[P.C.value].iat[today])}',
+            color=f'C{len(labels)}',
+            verticalalignment='center',
+            horizontalalignment='left',
+        )
 
     if sma_label:
-        subplot.plot(df.index, df[sma_label], label=f'{sma_label} ({human_format_from_string(round_down(df[sma_label].iat[today]))})')
+        # subplot.plot(df.index, df[sma_label], label=f'{sma_label} ({human_format_from_string(round_down(df[sma_label].iat[today]))})')
+        subplot.plot(df.index, df[sma_label], label=f'{sma_label}')
+        subplot.text(
+            df.index[-1],
+            df[sma_label].iat[-1],
+            f' {human_format_from_string(round_down(df[sma_label].iat[today]))}',
+            color=f'C{len(labels)+1}',
+            verticalalignment='center',
+            horizontalalignment='left',
+        )
 
     subplot.legend()
 
@@ -553,6 +623,7 @@ if __name__ == '__main__':
 
     ticker_df = ta_utility.add_rsi(ticker_df)
     ticker_df = ta_utility.add_macd(ticker_df)
+    ticker_df = ta_utility.add_sma(ticker_df, window=200)
 
     future = len(ticker_df) // 10
 
@@ -564,7 +635,7 @@ if __name__ == '__main__':
     )
 
     plot_path = plot_bands_by_labels_with_ta(
-        df=ticker_df,
+        df=ticker_df.iloc[-future - 200:-future],
         ticker=main_ticker,
         title=main_ticker,
         subtitle=main_ticker,
@@ -574,8 +645,9 @@ if __name__ == '__main__':
             'Growth Upper',
         ],
         yscale='linear',
-        today=-1-future,
+        # today=-1-future,
         close_only=True,
+        sma_label='SMA-200',
     )
 
     print(plot_path)
