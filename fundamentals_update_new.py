@@ -80,7 +80,8 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         macd = False
         above_sma = False
         sma = False
-    if not (macd and above_sma) and not (macd_positive and sma):
+    # if not (macd and above_sma) and not (macd_positive and sma):
+    if not macd and not sma:
         dictionary[DictionaryKeysNew.no_technicals] = True
 
     # regression
