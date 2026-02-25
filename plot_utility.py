@@ -359,8 +359,8 @@ def plot_rsi_by_df(df, rsi_subplot):
     rsi_subplot.text(0, 30, '30 ', horizontalalignment='right', verticalalignment='center',
                      fontsize=9, color='tab:green')
 
-    rect = Rectangle((0, 30), length - 1, 40, color=gray, alpha=0.3)
-    rsi_subplot.add_patch(rect)
+    # rect = Rectangle((0, 30), length - 1, 40, color=gray, alpha=0.3)
+    # rsi_subplot.add_patch(rect)
     # rsi_subplot.set_xlim(-1, length)
     rsi_subplot.grid(True)
     # rsi_subplot.legend(loc='upper left')
