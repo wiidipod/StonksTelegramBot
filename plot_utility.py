@@ -409,7 +409,7 @@ def plot_macd_by_df(df, macd_subplot):
                       verticalalignment=signal_valign, fontsize=9, color='C1')
 
     colors = get_colors(df['MACD Diff'].values)
-    macd_subplot.bar(df.index.iloc[1:], df['MACD Diff'].iloc[1:], color=colors)
+    macd_subplot.bar(df.iloc[1:].index.iloc[1:], df['MACD Diff'].values[1:], color=colors)
     # macd_subplot.set_xlim(-1, length)
     macd_subplot.grid(True)
     # macd_subplot.legend(loc='upper left')
