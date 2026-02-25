@@ -73,8 +73,8 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     try:
         macd_positive = df[TechnicalsKeys.macd_diff.value].iat[-1] >= 0.0
         macd = macd_positive and 0.0 >= df[TechnicalsKeys.macd_diff.value].iat[-2]
-        above_sma = df[f'{TechnicalsKeys.sma.value}{sma_window}'][-1] >= df[P.C.value][-1]
-        sma = above_sma and df[f'{TechnicalsKeys.sma.value}{sma_window}'][-2] <= df[P.C.value][-2]
+        above_sma = df[f'{TechnicalsKeys.sma.value}{sma_window}'][-1] <= df[P.C.value][-1]
+        sma = above_sma and df[f'{TechnicalsKeys.sma.value}{sma_window}'][-2] >= df[P.C.value][-2]
     except:
         macd_positive = False
         macd = False
