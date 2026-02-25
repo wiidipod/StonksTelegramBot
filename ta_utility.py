@@ -41,7 +41,7 @@ def add_macd(df):
 
 def add_sma(df, window=200):
     sma = SMAIndicator(df[P.C.value], window=window, fillna=True)
-    df[f"SMA-{window}"] = sma.sma_indicator()
+    df[f"{TechnicalsKeys.sma.value}{window}"] = sma.sma_indicator()
     return df
 
 

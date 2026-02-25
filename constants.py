@@ -39,6 +39,7 @@ class TechnicalsKeys(Enum):
     macd_signal = 'MACD Signal'
     macd_diff = 'MACD Diff'
     rsi = 'RSI'
+    sma = 'SMA-'
 
 
 class GrowthKeys(Enum):

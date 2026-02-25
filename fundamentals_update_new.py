@@ -14,7 +14,7 @@ from yfinance_service import extract_ticker_df, get_pe_ratio_from_info, get_peg_
 from constants import DictionaryKeysNew, UndervaluedKey, CommonDictionaryKey, TechnicalsKeys, GrowthKeys
 from message_utility import get_message_by_dictionary_new, round_down, human_format, human_format_from_string, round_up
 from telegram_service import get_application, send_plots, send_message_to_first
-from ta_utility import add_macd, add_rsi
+from ta_utility import add_macd, add_rsi, add_sma
 from regression_utility import add_close_window_growths
 from plot_utility import plot_bands_by_labels_with_ta
 
@@ -68,20 +68,19 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     # no_technicals
     df = add_macd(df)
     df = add_rsi(df)
+    sma_window = 200
+    df = add_sma(df=df, window=sma_window)
     try:
-        # macd_positive = df[TechnicalsKeys.macd_diff.value].iat[-1] > 0.0
-        # macd_growing = df[TechnicalsKeys.macd_diff.value].iat[-1] > df[TechnicalsKeys.macd_diff.value].iat[-2]
-        # macd = macd_positive or macd_growing
-        macd = df[TechnicalsKeys.macd_diff.value].iat[-1] >= 0.0 >= df[TechnicalsKeys.macd_diff.value].iat[-2]
-        # macd = df[TechnicalsKeys.macd_diff.value].iat[-1] >= 0.0
-        # macd = True
-        # macd = df[TechnicalsKeys.macd_diff.value].iat[-1] >= 0.0 >= df[TechnicalsKeys.macd_diff.value].iat[-2] or
+        macd_positive = df[TechnicalsKeys.macd_diff.value].iat[-1] >= 0.0
+        macd = macd_positive and 0.0 >= df[TechnicalsKeys.macd_diff.value].iat[-2]
+        above_sma = df[f'{TechnicalsKeys.sma.value}{sma_window}'][-1] >= df[P.C.value][-1]
+        sma = above_sma and df[f'{TechnicalsKeys.sma.value}{sma_window}'][-2] <= df[P.C.value][-2]
     except:
-        macd = None
-    if macd is not None:
-        if not macd:
-            dictionary[DictionaryKeysNew.no_technicals] = True
-    else:
+        macd_positive = False
+        macd = False
+        above_sma = False
+        sma = False
+    if not (macd and above_sma) and not (macd_positive and sma):
         dictionary[DictionaryKeysNew.no_technicals] = True
 
     # regression
@@ -178,18 +177,19 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         subtitle = subtitle[:-3]
 
     plot_path = plot_bands_by_labels_with_ta(
-        df=df,
+        df=df.iloc[-future - sma_window:],
         ticker=ticker,
         title=name,
         subtitle=subtitle,
         labels=[
+            GrowthKeys.growth_upper.value,
             GrowthKeys.growth.value,
             GrowthKeys.growth_lower.value,
-            GrowthKeys.growth_upper.value,
         ],
         yscale='linear',
         today=today_index,
         close_only=True,
+        sma_label=f'{TechnicalsKeys.sma.value}{sma_window}'
     )
 
     return dictionary, plot_path
