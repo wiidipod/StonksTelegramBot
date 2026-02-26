@@ -169,9 +169,9 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         if market_cap is not None:
             subtitle += f'MC: {human_format(market_cap)} - '
         if value is not None:
-            subtitle += f'V: {human_format_from_string(round_down(value))} - '
+            subtitle += f'V: {human_format(value)} - '
         if price_target is not None:
-            subtitle += f'PT: {human_format_from_string(round_down(price_target))} - '
+            subtitle += f'PT: {human_format(price_target)} - '
         if peg_ratio is not None:
             subtitle += f'PEG: {round_up(peg_ratio)} - '
         if pe_ratio is not None:

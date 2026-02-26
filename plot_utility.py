@@ -575,14 +575,14 @@ def plot_bands_by_labels_with_ta(df, ticker, title, labels, subtitle=None, fname
             subplot.text(
                 df.index[-1],
                 df[label].iat[-1],
-                f' {human_format_from_string(round_down(df[label].iat[today]))}',
+                f' {human_format(df[label].iat[-1])}',
                 color=f'C{i}',
                 verticalalignment='center',
                 horizontalalignment='left',
             )
 
     if not close_only:
-        subplot.fill_between(df.index, df[P.H.value], df[P.L.value], label=f'Price ({human_format_from_string(round_up(df[P.H.value].iat[today]))} / {human_format_from_string(round_down(df[P.L.value].iat[today]))})')
+        subplot.fill_between(df.index, df[P.H.value], df[P.L.value], label=f'Price ({human_format(df[P.H.value].iat[today])} / {human_format_from_string(round_down(df[P.L.value].iat[today]))})')
     else:
         # subplot.plot(df.index, df[P.C.value], label=f'Price ({human_format(df[P.C.value].iat[today])})')
         subplot.plot(df.index, df[P.C.value], label=f'Price')
