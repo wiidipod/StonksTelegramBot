@@ -326,7 +326,7 @@ def plot_rsi(rsi, rsi_sma, rsi_subplot):
     rsi_subplot.legend(loc='upper left')
 
 
-def plot_rsi_by_df(df, rsi_subplot):
+def plot_rsi_by_df(df, rsi_subplot, today=-1):
     """Plot RSI using a dataframe slice with date index for proper x-axis labels."""
     # Drop rows with NaN RSI values to skip weekends/holidays
     length = len(df)
@@ -334,12 +334,12 @@ def plot_rsi_by_df(df, rsi_subplot):
     rsi_subplot.set_ylabel('RSI')
 
     # Get current (last) RSI value
-    current_rsi = df['RSI'].iloc[-1]
+    current_rsi = df['RSI'].iloc[today]
     rsi_subplot.plot(df.index, df['RSI'], label='RSI')
 
     # Add text annotation for current RSI value
     rsi_subplot.text(
-        df.index[-1],
+        df.index[today],
         current_rsi,
         f' {human_format(current_rsi)}',
         verticalalignment='center',
@@ -348,11 +348,17 @@ def plot_rsi_by_df(df, rsi_subplot):
     )
 
     if 'RSI SMA' in df.columns:
-        current_rsi_sma = df['RSI SMA'].iloc[-1]
+        current_rsi_sma = df['RSI SMA'].iloc[today]
         rsi_subplot.plot(df.index, df['RSI SMA'], label='SMA')
         # Add text annotation for current RSI SMA value
-        rsi_subplot.text(df.index[-1], current_rsi_sma, f' {human_format(current_rsi_sma)}',
-                         verticalalignment='center', fontsize=9, color='C1')
+        rsi_subplot.text(
+            df.index[today],
+            current_rsi_sma,
+            f' {human_format(current_rsi_sma)}',
+            verticalalignment='center',
+            fontsize=9,
+            color='C1'
+        )
 
     gray = 'tab:gray'
     rsi_subplot.plot(df.index, [70] * length, color='tab:red', linestyle='dashed', label='Overbought')
@@ -581,8 +587,8 @@ def plot_bands_by_labels_with_ta(df, ticker, title, labels, subtitle=None, fname
         # subplot.plot(df.index, df[P.C.value], label=f'Price ({human_format(df[P.C.value].iat[today])})')
         subplot.plot(df.index, df[P.C.value], label=f'Price')
         subplot.text(
-            df.index[-1],
-            df[P.C.value].iat[-1],
+            df.index[today],
+            df[P.C.value].iat[today],
             f' {human_format(df[P.C.value].iat[today])}',
             color=f'C{len(labels)}',
             verticalalignment='center',
@@ -607,7 +613,7 @@ def plot_bands_by_labels_with_ta(df, ticker, title, labels, subtitle=None, fname
     if has_rsi:
         rsi_subplot = fig.add_subplot(gs[1])
         # df_slice = df.iloc[today-14:today+1]
-        plot_rsi_by_df(df, rsi_subplot)
+        plot_rsi_by_df(df, rsi_subplot, today=today)
 
     # MACD subplot
     if has_macd:

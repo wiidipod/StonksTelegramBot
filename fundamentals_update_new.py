@@ -194,7 +194,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
             GrowthKeys.growth_lower.value,
         ],
         yscale='linear',
-        # today=today_index,
+        today=today_index,
         close_only=True,
         # sma_label=f'{TechnicalsKeys.sma.value}{sma_window}'
     )
