@@ -753,7 +753,7 @@ def get_all_tickers():
         print(f'Error fetching energy tickers: {e}')
     tickers.extend(['BZ=F', 'CL=F'])  # Energy
 
-    tickers.extend(get_currency_tickers())  # Currencies
+    # tickers.extend(get_currency_tickers())  # Currencies
 
     tickers.extend(get_index_tickers())  # Additional Indexes
 
