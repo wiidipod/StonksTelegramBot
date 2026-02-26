@@ -604,14 +604,17 @@ def plot_bands_by_labels_with_ta(df, ticker, title, labels, subtitle=None, fname
     subplot.legend()
 
     # RSI subplot
-    rsi_subplot = fig.add_subplot(gs[1])
-    if 'RSI' in df.columns:
+    if has_rsi:
+        rsi_subplot = fig.add_subplot(gs[1])
         # df_slice = df.iloc[today-14:today+1]
         plot_rsi_by_df(df, rsi_subplot)
 
     # MACD subplot
-    macd_subplot = fig.add_subplot(gs[2])
-    if 'MACD' in df.columns and 'MACD Signal' in df.columns and 'MACD Diff' in df.columns:
+    if has_macd:
+        if has_rsi:
+            macd_subplot = fig.add_subplot(gs[2])
+        else:
+            macd_subplot = fig.add_subplot(gs[1])
         # df_slice = df.iloc[today-25:today+1]
         plot_macd_by_df(df, macd_subplot)
 
