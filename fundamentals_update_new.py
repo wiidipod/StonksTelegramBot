@@ -71,17 +71,20 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     sma_window = 200
     df = add_sma(df=df, window=sma_window)
     try:
-        macd_positive = df[TechnicalsKeys.macd_diff.value].iat[-1] >= 0.0
-        macd = macd_positive and 0.0 >= df[TechnicalsKeys.macd_diff.value].iat[-2]
-        above_sma = df[f'{TechnicalsKeys.sma.value}{sma_window}'][-1] <= df[P.C.value][-1]
-        sma = above_sma and df[f'{TechnicalsKeys.sma.value}{sma_window}'][-2] >= df[P.C.value][-2]
+        # macd_positive = df[TechnicalsKeys.macd_diff.value].iat[-1] >= 0.0
+        # macd = macd_positive and 0.0 >= df[TechnicalsKeys.macd_diff.value].iat[-2]
+        # above_sma = df[f'{TechnicalsKeys.sma.value}{sma_window}'][-1] <= df[P.C.value][-1]
+        # sma = above_sma and df[f'{TechnicalsKeys.sma.value}{sma_window}'][-2] >= df[P.C.value][-2]
+        rsi = df[TechnicalsKeys.rsi.value].iat[-1] <= 30.0
     except:
-        macd_positive = False
-        macd = False
-        above_sma = False
-        sma = False
+        # macd_positive = False
+        # macd = False
+        # above_sma = False
+        # sma = False
+        rsi = False
     # if not (macd and above_sma) and not (macd_positive and sma):
-    if not macd_positive and not above_sma:
+    # if not macd_positive and not above_sma:
+    if not rsi:
         dictionary[DictionaryKeysNew.no_technicals] = True
 
     # regression
@@ -150,7 +153,8 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         ev_to_ebitda_to_growth = None
 
     # too_expensive
-    if min(price_target, df[GrowthKeys.growth.value].iat[today_index]) < df[P.C.value].iat[today_index]:
+    value = min(price_target / (growth / 100.0 + 1.0), df[GrowthKeys.growth_lower.value].iat[today_index])
+    if value < df[P.C.value].iat[today_index]:
         dictionary[DictionaryKeysNew.too_expensive] = True
 
     if not full and not has_buy_signal(dictionary):
@@ -164,6 +168,8 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         subtitle = ''
         if market_cap is not None:
             subtitle += f'MC: {human_format(market_cap)} - '
+        if value is not None:
+            subtitle += f'V: {human_format_from_string(round_down(value))} - '
         if price_target is not None:
             subtitle += f'PT: {human_format_from_string(round_down(price_target))} - '
         if peg_ratio is not None:
