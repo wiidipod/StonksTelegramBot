@@ -533,11 +533,21 @@ def plot_bands_by_labels_with_ta(df, ticker, title, labels, subtitle=None, fname
     if fname is None:
         fname = f'{output_directory}{ticker}_two_bands_plot.png'
 
-    fig = plt.figure(figsize=(9.0, 15.0), dpi=300)
-    fig.suptitle(title)
 
     # Create gridspec with 3 rows: price (larger), RSI, MACD
-    gs = gridspec.GridSpec(3, 1, height_ratios=[3, 1, 1])
+    has_rsi = 'RSI' in df.columns
+    has_macd = 'MACD' in df.columns and 'MACD Signal' in df.columns and 'MACD Diff' in df.columns
+    if has_rsi and has_macd:
+        fig = plt.figure(figsize=(9.0, 15.0), dpi=300)
+        gs = gridspec.GridSpec(3, 1, height_ratios=[3, 1, 1])
+    elif has_rsi or has_macd:
+        fig = plt.figure(figsize=(9.0, 12.0), dpi=300)
+        gs = gridspec.GridSpec(2, 1, height_ratios=[3, 1])
+    else:
+        fig = plt.figure(figsize=(9.0, 9.0), dpi=300)
+        gs = gridspec.GridSpec(1, 1)
+
+    fig.suptitle(title)
 
     # Price subplot
     subplot = fig.add_subplot(gs[0])
