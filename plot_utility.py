@@ -575,10 +575,10 @@ def plot_bands_by_labels_with_ta(df, ticker, title, labels, subtitle=None, fname
             subplot.text(
                 df.index[-1],
                 df[label].iat[-1],
-                f' {human_format(df[label].iat[-1])}',
+                f'{human_format(df[label].iat[-1])}',
                 color=f'C{i}',
-                verticalalignment='center',
-                horizontalalignment='left',
+                verticalalignment='bottom',
+                horizontalalignment='center',
             )
 
     if not close_only:
