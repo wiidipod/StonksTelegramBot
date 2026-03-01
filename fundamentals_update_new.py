@@ -266,8 +266,6 @@ def process_chunk(tickers, pe_ratios):
 
         plot_paths.append(plot_path)
 
-        indicator_counts[UndervaluedKey.undervalued] += 1
-
     return messages, plot_paths, indicator_counts
 
 
@@ -310,7 +308,7 @@ def main():
     for key in DictionaryKeysNew:
         print(f'{key.value}: {indicator_counts[key]}')
     print(f'Total tickers: {len(tickers)}')
-    print(f'{UndervaluedKey.undervalued.value}: {indicator_counts[UndervaluedKey.undervalued]}')
+    print(f'{UndervaluedKey.undervalued.value}: {len(plot_paths)}')
 
     application = get_application()
     asyncio.run(send_plots(
