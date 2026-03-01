@@ -309,6 +309,8 @@ def main():
         print(f'{key.value}: {indicator_counts[key]}')
     print(f'Total tickers: {len(tickers)}')
     print(f'{UndervaluedKey.undervalued.value}: {len(plot_paths)}')
+    for message in messages:
+        print(f'\n{message}')
 
     application = get_application()
     asyncio.run(send_plots(
