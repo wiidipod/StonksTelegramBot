@@ -10,7 +10,7 @@ import regression_utility
 from yfinance_service import P
 import yfinance_service
 from message_utility import round_down, round_up, human_format, human_format_from_string
-from constants import output_directory
+from constants import output_directory, TechnicalsKeys
 import ta_utility
 
 
@@ -331,11 +331,11 @@ def plot_rsi_by_df(df, rsi_subplot, today=-1):
     # Drop rows with NaN RSI values to skip weekends/holidays
     length = len(df)
     # x = np.arange(length)
-    rsi_subplot.set_ylabel('RSI')
+    rsi_subplot.set_ylabel(TechnicalsKeys.rsi)
 
     # Get current (last) RSI value
-    current_rsi = df['RSI'].iloc[today]
-    rsi_subplot.plot(df.index, df['RSI'], label='RSI')
+    current_rsi = df[TechnicalsKeys.rsi].iloc[today]
+    rsi_subplot.plot(df.index, df[TechnicalsKeys.rsi], label=TechnicalsKeys.rsi)
 
     # Add text annotation for current RSI value
     rsi_subplot.text(
@@ -372,7 +372,6 @@ def plot_rsi_by_df(df, rsi_subplot, today=-1):
         '70 ',
         horizontalalignment='right',
         verticalalignment='center',
-        # fontsize=9,
         color='tab:red'
     )
     rsi_subplot.text(
@@ -381,7 +380,6 @@ def plot_rsi_by_df(df, rsi_subplot, today=-1):
         '30 ',
         horizontalalignment='right',
         verticalalignment='center',
-        # fontsize=9,
         color='tab:green'
     )
 
@@ -411,15 +409,15 @@ def plot_macd_by_df(df, macd_subplot):
     # Drop rows with NaN MACD values to skip weekends/holidays
     length = len(df)
     # x = np.arange(length)
-    macd_subplot.set_ylabel('MACD')
+    macd_subplot.set_ylabel(TechnicalsKeys.macd)
 
     # Get current (last) MACD values
-    current_macd = df['MACD'].iloc[-1]
-    current_signal = df['MACD Signal'].iloc[-1]
-    current_diff = df['MACD Diff'].iloc[-1]
+    current_macd = df[TechnicalsKeys.macd].iloc[-1]
+    current_signal = df[TechnicalsKeys.macd_signal].iloc[-1]
+    current_diff = df[TechnicalsKeys.macd_diff].iloc[-1]
 
-    macd_subplot.plot(df.index, df['MACD'], label='MACD')
-    macd_subplot.plot(df.index, df['MACD Signal'], label='Signal')
+    macd_subplot.plot(df.index, df[TechnicalsKeys.macd], label=TechnicalsKeys.macd)
+    macd_subplot.plot(df.index, df[TechnicalsKeys.macd_signal], label='Signal')
 
     # Add text annotations for current MACD and Signal values
     # Position them above/below to avoid overlap based on which is greater
@@ -429,14 +427,13 @@ def plot_macd_by_df(df, macd_subplot):
     else:
         macd_valign = 'bottom'
         signal_valign = 'top'
-    colors = get_colors(df['MACD Diff'].values)
+    colors = get_colors(df[TechnicalsKeys.macd_diff].values)
 
     macd_subplot.text(
         df.index[-1],
         current_macd,
         f' {human_format(current_macd)}',
         verticalalignment=macd_valign,
-        # fontsize=9,
         color='C0'
     )
     macd_subplot.text(
@@ -444,7 +441,6 @@ def plot_macd_by_df(df, macd_subplot):
         current_signal,
         f' {human_format(current_signal)}',
         verticalalignment=signal_valign,
-        # fontsize=9,
         color='C1'
     )
     macd_subplot.text(
@@ -456,7 +452,7 @@ def plot_macd_by_df(df, macd_subplot):
         color=colors[-1]
     )
 
-    macd_subplot.bar(df.iloc[1:].index, df['MACD Diff'].values[1:], color=colors)
+    macd_subplot.bar(df.iloc[1:].index, df[TechnicalsKeys.macd_diff].values[1:], color=colors)
     # macd_subplot.set_xlim(-1, length)
     macd_subplot.grid(True)
     # macd_subplot.legend(loc='upper left')
@@ -541,8 +537,8 @@ def plot_bands_by_labels_with_ta(df, ticker, title, labels, subtitle=None, fname
 
 
     # Create gridspec with 3 rows: price (larger), RSI, MACD
-    has_rsi = 'RSI' in df.columns
-    has_macd = 'MACD' in df.columns and 'MACD Signal' in df.columns and 'MACD Diff' in df.columns
+    has_rsi = TechnicalsKeys.rsi in df.columns
+    has_macd = TechnicalsKeys.macd in df.columns and TechnicalsKeys.macd_signal in df.columns and TechnicalsKeys.macd_diff in df.columns
     if has_rsi and has_macd:
         fig = plt.figure(figsize=(9.0, 15.0), dpi=300)
         gs = gridspec.GridSpec(3, 1, height_ratios=[3, 1, 1])

@@ -66,26 +66,26 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         dictionary[DictionaryKeysNew.too_short] = True
 
     # no_technicals
-    # df = add_macd(df)
+    df = add_macd(df)
     df = add_rsi(df)
-    # sma_window = 200
-    # df = add_sma(df=df, window=sma_window)
-    try:
+    sma_window = 200
+    df = add_sma(df=df, window=sma_window)
+    # try:
         # macd_positive = df[TechnicalsKeys.macd_diff.value].iat[-1] >= 0.0
         # macd = macd_positive and 0.0 >= df[TechnicalsKeys.macd_diff.value].iat[-2]
         # above_sma = df[f'{TechnicalsKeys.sma.value}{sma_window}'][-1] <= df[P.C.value][-1]
         # sma = above_sma and df[f'{TechnicalsKeys.sma.value}{sma_window}'][-2] >= df[P.C.value][-2]
-        rsi = df[TechnicalsKeys.rsi.value].iat[-1] <= 30.0
-    except:
+        # rsi = df[TechnicalsKeys.rsi.value].iat[-1] <= 30.0
+    # except:
         # macd_positive = False
         # macd = False
         # above_sma = False
         # sma = False
-        rsi = False
+        # rsi = False
     # if not (macd and above_sma) and not (macd_positive and sma):
     # if not macd_positive and not above_sma:
-    if not rsi:
-        dictionary[DictionaryKeysNew.no_technicals] = True
+    # if not rsi:
+    #     dictionary[DictionaryKeysNew.no_technicals] = True
 
     # regression
     window = len(df) - 1
@@ -184,7 +184,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         subtitle = subtitle[:-3]
 
     plot_path = plot_bands_by_labels_with_ta(
-        df=df,  # .iloc[-future - sma_window:-future],
+        df=df.iloc[-future - sma_window:-future],
         ticker=ticker,
         title=name,
         subtitle=subtitle,
@@ -196,7 +196,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         yscale='linear',
         today=today_index,
         close_only=True,
-        # sma_label=f'{TechnicalsKeys.sma.value}{sma_window}'
+        sma_label=f'{TechnicalsKeys.sma.value}{sma_window}'
     )
 
     return dictionary, plot_path
