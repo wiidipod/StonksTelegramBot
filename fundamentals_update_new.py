@@ -74,20 +74,20 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     df = add_ema(df=df, window=ema_window_short)
     try:
         # macd_positive = df[TechnicalsKeys.macd_diff.value].iat[-1] >= 0.0
-        macd = df[TechnicalsKeys.macd_diff.value].iat[-1] >= df[TechnicalsKeys.macd_diff.value].iat[-2]
-        above_sma = df[f'{TechnicalsKeys.ema.value}{ema_window_long}'].iat[-1] <= df[f'{TechnicalsKeys.ema.value}{ema_window_short}'].iat[-1]
+        # macd = df[TechnicalsKeys.macd_diff.value].iat[-1] >= df[TechnicalsKeys.macd_diff.value].iat[-2]
+        # above_sma = df[f'{TechnicalsKeys.ema.value}{ema_window_long}'].iat[-1] <= df[f'{TechnicalsKeys.ema.value}{ema_window_short}'].iat[-1]
         # sma = above_sma and df[f'{TechnicalsKeys.sma.value}{sma_window}'][-2] >= df[P.C.value][-2]
-        rsi = df[TechnicalsKeys.rsi.value].iat[-1] <= 50.0
+        rsi = df[TechnicalsKeys.rsi.value].iat[-1] <= 30.0
     except:
         # macd_positive = False
-        macd = False
-        above_sma = False
+        # macd = False
+        # above_sma = False
         # sma = False
         rsi = False
     # if not (macd and above_sma) and not (macd_positive and sma):
     # if not macd_positive and not above_sma:
-    # if not rsi:
-    if not rsi or not macd or not above_sma:
+    if not rsi:
+    # if not rsi or not macd or not above_sma:
         dictionary[DictionaryKeysNew.no_technicals] = True
 
     # regression
