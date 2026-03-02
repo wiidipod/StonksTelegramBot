@@ -139,7 +139,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         else:
             if growth != 0:
                 ev_to_ebitda_to_growth = ev_to_ebitda / growth
-                if ev_to_ebitda_to_growth > 1.0:
+                if ev_to_ebitda_to_growth > 1.0 or ev_to_ebitda_to_growth < 0.0:
                     dictionary[DictionaryKeysNew.no_fundamentals] = True
             else:
                 ev_to_ebitda_to_growth = None
@@ -153,7 +153,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         ev_to_ebitda_to_growth = None
 
     # too_expensive
-    value = min(price_target / (growth / 100.0 + 1.0), df[GrowthKeys.growth_lower.value].iat[today_index])
+    value = min(price_target / (growth / 100.0 + 1.0), df[GrowthKeys.growth.value].iat[today_index])
     if value < df[P.C.value].iat[today_index]:
         dictionary[DictionaryKeysNew.too_expensive] = True
 
