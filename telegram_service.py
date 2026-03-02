@@ -399,9 +399,12 @@ async def set_commands(context: ContextTypes.DEFAULT_TYPE):
         BotCommand(command='end', description='Unsubscribe from daily updates'),
         BotCommand(command='analyze', description='/analyze AAPL'),
         BotCommand(command='subscribe', description='/subscribe AAPL'),
+        BotCommand(command='sub', description='/sub AAPL (alias for /subscribe)'),
         BotCommand(command='unsubscribe', description='/unsubscribe AAPL'),
+        BotCommand(command='unsub', description='/unsub AAPL (alias for /unsubscribe)'),
         BotCommand(command='unsubscribe_all', description='/unsubscribe_all'),
         BotCommand(command='subscriptions', description='List your subscriptions'),
+        BotCommand(command='subs', description='List your subscriptions (alias for /subscriptions)'),
     ]
     await context.bot.set_my_commands(commands)
 
@@ -425,16 +428,16 @@ def get_handling_application():
     analyze_handler = CommandHandler('analyze', handle_analyze)
     application.add_handler(analyze_handler)
 
-    subscribe_handler = CommandHandler('subscribe', handle_subscribe)
+    subscribe_handler = CommandHandler(['subscribe', 'sub'], handle_subscribe)
     application.add_handler(subscribe_handler)
 
-    unsubscribe_handler = CommandHandler('unsubscribe', handle_unsubscribe)
+    unsubscribe_handler = CommandHandler(['unsubscribe', 'unsub'], handle_unsubscribe)
     application.add_handler(unsubscribe_handler)
 
     unsubscribe_all_handler = CommandHandler('unsubscribe_all', handle_unsubscribe_all)
     application.add_handler(unsubscribe_all_handler)
 
-    subscriptions_handler = CommandHandler('subscriptions', handle_subscriptions)
+    subscriptions_handler = CommandHandler(['subscriptions', 'subs'], handle_subscriptions)
     application.add_handler(subscriptions_handler)
 
     ticker_handler = MessageHandler(filters.TEXT & ~filters.COMMAND, handle_ticker_message)
