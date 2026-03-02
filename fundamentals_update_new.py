@@ -70,24 +70,23 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     df = add_rsi(df)
     ema_window_long = 500
     ema_window_short = 250
+    sma_window_long = 200
+    sma_window_short = 50
     df = add_ema(df=df, window=ema_window_long)
     df = add_ema(df=df, window=ema_window_short)
+    df = add_sma(df=df, window=sma_window_long)
+    df = add_sma(df=df, window=sma_window_short)
     try:
-        # macd_positive = df[TechnicalsKeys.macd_diff.value].iat[-1] >= 0.0
-        # macd = df[TechnicalsKeys.macd_diff.value].iat[-1] >= df[TechnicalsKeys.macd_diff.value].iat[-2]
-        # above_sma = df[f'{TechnicalsKeys.ema.value}{ema_window_long}'].iat[-1] <= df[f'{TechnicalsKeys.ema.value}{ema_window_short}'].iat[-1]
-        # sma = above_sma and df[f'{TechnicalsKeys.sma.value}{sma_window}'][-2] >= df[P.C.value][-2]
+        macd = df[TechnicalsKeys.macd_diff.value].iat[-1] >= df[TechnicalsKeys.macd_diff.value].iat[-2]
+        sma = df[f'{TechnicalsKeys.sma.value}{sma_window_short}'][-1] >= df[f'{TechnicalsKeys.sma.value}{sma_window_long}'][-1]
+        ema = df[f'{TechnicalsKeys.ema.value}{ema_window_short}'][-1] >= df[f'{TechnicalsKeys.ema.value}{ema_window_long}'][-1]
         rsi = df[TechnicalsKeys.rsi.value].iat[-1] <= 30.0
     except:
-        # macd_positive = False
-        # macd = False
-        # above_sma = False
-        # sma = False
+        macd = False
+        sma = False
+        ema = False
         rsi = False
-    # if not (macd and above_sma) and not (macd_positive and sma):
-    # if not macd_positive and not above_sma:
-    if not rsi:
-    # if not rsi or not macd or not above_sma:
+    if not macd and not sma and not ema and not rsi:
         dictionary[DictionaryKeysNew.no_technicals] = True
 
     # regression
@@ -202,6 +201,8 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         sma_labels=[
             f'{TechnicalsKeys.ema.value}{ema_window_long}',
             f'{TechnicalsKeys.ema.value}{ema_window_short}',
+            f'{TechnicalsKeys.sma.value}{sma_window_long}',
+            f'{TechnicalsKeys.sma.value}{sma_window_short}',
         ],
     )
 
