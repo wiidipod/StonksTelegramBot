@@ -331,7 +331,7 @@ def plot_rsi_by_df(df, rsi_subplot, today=-1):
     # Drop rows with NaN RSI values to skip weekends/holidays
     length = len(df)
     # x = np.arange(length)
-    rsi_subplot.set_ylabel(TechnicalsKeys.rsi)
+    rsi_subplot.set_ylabel(TechnicalsKeys.rsi.value)
 
     # Get current (last) RSI value
     current_rsi = df[TechnicalsKeys.rsi].iloc[today]
@@ -343,7 +343,6 @@ def plot_rsi_by_df(df, rsi_subplot, today=-1):
         current_rsi,
         f' {human_format(current_rsi)}',
         verticalalignment='center',
-        # fontsize=9,
         color='C0'
     )
 
@@ -372,7 +371,15 @@ def plot_rsi_by_df(df, rsi_subplot, today=-1):
         '70 ',
         horizontalalignment='right',
         verticalalignment='center',
-        color='tab:red'
+        color='tab:red',
+    )
+    rsi_subplot.text(
+        df.index[0],
+        50,
+        '50 ',
+        horizontalalignment='right',
+        verticalalignment='center',
+        color=gray,
     )
     rsi_subplot.text(
         df.index[0],
@@ -380,7 +387,7 @@ def plot_rsi_by_df(df, rsi_subplot, today=-1):
         '30 ',
         horizontalalignment='right',
         verticalalignment='center',
-        color='tab:green'
+        color='tab:green',
     )
 
     # rect = Rectangle((0, 30), length - 1, 40, color=gray, alpha=0.3)
@@ -404,17 +411,17 @@ def plot_macd(macd, macd_diff, macd_signal, macd_subplot):
     macd_subplot.legend(loc='upper left')
 
 
-def plot_macd_by_df(df, macd_subplot):
+def plot_macd_by_df(df, macd_subplot, today=-1):
     """Plot MACD using a dataframe slice with date index for proper x-axis labels."""
     # Drop rows with NaN MACD values to skip weekends/holidays
     length = len(df)
     # x = np.arange(length)
-    macd_subplot.set_ylabel(TechnicalsKeys.macd)
+    macd_subplot.set_ylabel(TechnicalsKeys.macd.value)
 
     # Get current (last) MACD values
-    current_macd = df[TechnicalsKeys.macd].iloc[-1]
-    current_signal = df[TechnicalsKeys.macd_signal].iloc[-1]
-    current_diff = df[TechnicalsKeys.macd_diff].iloc[-1]
+    current_macd = df[TechnicalsKeys.macd].iloc[today]
+    current_signal = df[TechnicalsKeys.macd_signal].iloc[today]
+    current_diff = df[TechnicalsKeys.macd_diff].iloc[today]
 
     macd_subplot.plot(df.index, df[TechnicalsKeys.macd], label=TechnicalsKeys.macd)
     macd_subplot.plot(df.index, df[TechnicalsKeys.macd_signal], label='Signal')
@@ -437,14 +444,14 @@ def plot_macd_by_df(df, macd_subplot):
         color='C0'
     )
     macd_subplot.text(
-        df.index[-1],
+        df.index[today],
         current_signal,
         f' {human_format(current_signal)}',
         verticalalignment=signal_valign,
         color='C1'
     )
     macd_subplot.text(
-        df.index[-1],
+        df.index[today],
         0.0,
         f'{human_format(current_diff)}',
         verticalalignment=signal_valign,
@@ -531,7 +538,7 @@ def plot_bands_by_labels(df, ticker, title, labels, subtitle=None, fname=None, y
     return fname
 
 
-def plot_bands_by_labels_with_ta(df, ticker, title, labels, subtitle=None, fname=None, yscale='linear', today=-1, close_only=False, sma_label=None):
+def plot_bands_by_labels_with_ta(df, ticker, title, labels, subtitle=None, fname=None, yscale='linear', today=-1, close_only=False, sma_labels=None):
     if fname is None:
         fname = f'{output_directory}{ticker}_two_bands_plot.png'
 
@@ -573,8 +580,16 @@ def plot_bands_by_labels_with_ta(df, ticker, title, labels, subtitle=None, fname
                 df[label].iat[-1],
                 f'{human_format(df[label].iat[-1])}',
                 color=f'C{i}',
-                verticalalignment='bottom',
-                horizontalalignment='center',
+                verticalalignment='center',
+                horizontalalignment='left',
+            )
+            subplot.text(
+                df.index[0],
+                df[label].iat[0],
+                f'{human_format(df[label].iat[0])}',
+                color=f'C{i}',
+                verticalalignment='center',
+                horizontalalignment='right',
             )
 
     if not close_only:
@@ -591,17 +606,17 @@ def plot_bands_by_labels_with_ta(df, ticker, title, labels, subtitle=None, fname
             horizontalalignment='left',
         )
 
-    if sma_label:
-        # subplot.plot(df.index, df[sma_label], label=f'{sma_label} ({human_format_from_string(round_down(df[sma_label].iat[today]))})')
-        subplot.plot(df.index, df[sma_label], label=f'{sma_label}')
-        subplot.text(
-            df.index[-1],
-            df[sma_label].iat[-1],
-            f' {human_format_from_string(round_down(df[sma_label].iat[today]))}',
-            color=f'C{len(labels)+1}',
-            verticalalignment='center',
-            horizontalalignment='left',
-        )
+    if sma_labels:
+        for sma_label in sma_labels:
+            subplot.plot(df.index, df[sma_label], label=f'{sma_label}')
+            subplot.text(
+                df.index[-1],
+                df[sma_label].iat[-1],
+                f' {human_format_from_string(round_down(df[sma_label].iat[today]))}',
+                color=f'C{len(labels)+1}',
+                verticalalignment='center',
+                horizontalalignment='left',
+            )
 
     subplot.legend()
 
@@ -618,7 +633,7 @@ def plot_bands_by_labels_with_ta(df, ticker, title, labels, subtitle=None, fname
         else:
             macd_subplot = fig.add_subplot(gs[1])
         # df_slice = df.iloc[today-25:today+1]
-        plot_macd_by_df(df, macd_subplot)
+        plot_macd_by_df(df, macd_subplot, today=today)
 
     fig.tight_layout()
     fig.savefig(fname)
@@ -638,7 +653,8 @@ if __name__ == '__main__':
 
     ticker_df = ta_utility.add_rsi(ticker_df)
     ticker_df = ta_utility.add_macd(ticker_df)
-    ticker_df = ta_utility.add_sma(ticker_df, window=200)
+    ticker_df = ta_utility.add_ema(ticker_df, window=500)
+    ticker_df = ta_utility.add_ema(ticker_df, window=250)
 
     future = len(ticker_df) // 10
 
@@ -650,7 +666,7 @@ if __name__ == '__main__':
     )
 
     plot_path = plot_bands_by_labels_with_ta(
-        df=ticker_df.iloc[-future - 200:-future],
+        df=ticker_df.iloc[-future - 500:-future],
         ticker=main_ticker,
         title=main_ticker,
         subtitle=main_ticker,
@@ -662,7 +678,10 @@ if __name__ == '__main__':
         yscale='linear',
         # today=-1-future,
         close_only=True,
-        sma_label='SMA-200',
+        sma_labels=[
+            'EMA-500',
+            'EMA-250',
+        ]
     )
 
     print(plot_path)

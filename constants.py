@@ -34,12 +34,13 @@ class UndervaluedKey(CommonDictionaryKey):
     undervalued = 'undervalued'
 
 
-class TechnicalsKeys(Enum):
+class TechnicalsKeys(str, Enum):
     macd = 'MACD'
     macd_signal = 'MACD Signal'
     macd_diff = 'MACD Diff'
     rsi = 'RSI'
     sma = 'SMA-'
+    ema = 'EMA-'
 
 
 class GrowthKeys(Enum):

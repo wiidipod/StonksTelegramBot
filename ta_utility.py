@@ -45,6 +45,12 @@ def add_sma(df, window=200):
     return df
 
 
+def add_ema(df, window=200):
+    sma = EMAIndicator(df[P.C.value], window=window, fillna=True)
+    df[f"{TechnicalsKeys.ema.value}{window}"] = sma.ema_indicator()
+    return df
+
+
 def has_technicals(close):
     # open_momentum = has_momentum(df[P.O.value])
     # high_momentum = has_momentum(df[P.H.value])
