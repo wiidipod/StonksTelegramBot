@@ -66,27 +66,26 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         dictionary[DictionaryKeysNew.too_short] = True
 
     # no_technicals
-    df = add_macd(df)
+    # df = add_macd(df)
     df = add_rsi(df)
-    ema_window_long = 500
-    ema_window_short = 250
-    sma_window_long = 200
-    sma_window_short = 50
-    df = add_ema(df=df, window=ema_window_long)
-    df = add_ema(df=df, window=ema_window_short)
-    df = add_sma(df=df, window=sma_window_long)
-    df = add_sma(df=df, window=sma_window_short)
+    # ema_window_long = 500
+    # ema_window_short = 250
+    # sma_window_long = 200
+    # sma_window_short = 50
+    # df = add_ema(df=df, window=ema_window_long)
+    # df = add_ema(df=df, window=ema_window_short)
+    # df = add_sma(df=df, window=sma_window_long)
+    # df = add_sma(df=df, window=sma_window_short)
     try:
-        macd = df[TechnicalsKeys.macd_diff.value].iat[-1] >= df[TechnicalsKeys.macd_diff.value].iat[-2]
-        sma = df[f'{TechnicalsKeys.sma.value}{sma_window_short}'][-1] >= df[f'{TechnicalsKeys.sma.value}{sma_window_long}'][-1]
-        ema = df[f'{TechnicalsKeys.ema.value}{ema_window_short}'][-1] >= df[f'{TechnicalsKeys.ema.value}{ema_window_long}'][-1]
+        # macd = df[TechnicalsKeys.macd_diff.value].iat[-1] >= df[TechnicalsKeys.macd_diff.value].iat[-2]
+        # sma = df[f'{TechnicalsKeys.sma.value}{sma_window_short}'][-1] <= df[P.C.value][-1]
+        # ema = df[f'{TechnicalsKeys.ema.value}{ema_window_short}'][-1] >= df[f'{TechnicalsKeys.ema.value}{ema_window_long}'][-1]
         rsi = df[TechnicalsKeys.rsi.value].iat[-1] <= 30.0
+        # momentum = macd or sma  # or ema
     except:
-        macd = False
-        sma = False
-        ema = False
+        # momentum = False
         rsi = False
-    if not macd and not sma and not ema and not rsi:
+    if not rsi:
         dictionary[DictionaryKeysNew.no_technicals] = True
 
     # regression
@@ -186,7 +185,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         subtitle = subtitle[:-3]
 
     plot_path = plot_bands_by_labels_with_ta(
-        df=df.iloc[-future - ema_window_long:-future],
+        df=df.iloc[-future - future:-future],
         ticker=ticker,
         title=name,
         subtitle=subtitle,
@@ -199,10 +198,10 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         # today=today_index,
         close_only=True,
         sma_labels=[
-            f'{TechnicalsKeys.ema.value}{ema_window_long}',
-            f'{TechnicalsKeys.ema.value}{ema_window_short}',
-            f'{TechnicalsKeys.sma.value}{sma_window_long}',
-            f'{TechnicalsKeys.sma.value}{sma_window_short}',
+            # f'{TechnicalsKeys.ema.value}{ema_window_long}',
+            # f'{TechnicalsKeys.ema.value}{ema_window_short}',
+            # f'{TechnicalsKeys.sma.value}{sma_window_long}',
+            # f'{TechnicalsKeys.sma.value}{sma_window_short}',
         ],
     )
 
