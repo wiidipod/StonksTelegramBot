@@ -343,7 +343,8 @@ def plot_rsi_by_df(df, rsi_subplot, today=-1):
         current_rsi,
         f' {human_format(current_rsi)}',
         verticalalignment='center',
-        color='C0'
+        color='C0',
+        size='x-small',
     )
 
     if 'RSI SMA' in df.columns:
@@ -356,7 +357,8 @@ def plot_rsi_by_df(df, rsi_subplot, today=-1):
             f' {human_format(current_rsi_sma)}',
             verticalalignment='center',
             fontsize=9,
-            color='C1'
+            color='C1',
+            size='x-small',
         )
 
     gray = 'tab:gray'
@@ -372,6 +374,7 @@ def plot_rsi_by_df(df, rsi_subplot, today=-1):
         horizontalalignment='right',
         verticalalignment='center',
         color='tab:red',
+        size='x-small',
     )
     rsi_subplot.text(
         df.index[0],
@@ -380,6 +383,7 @@ def plot_rsi_by_df(df, rsi_subplot, today=-1):
         horizontalalignment='right',
         verticalalignment='center',
         color=gray,
+        size='x-small',
     )
     rsi_subplot.text(
         df.index[0],
@@ -388,6 +392,7 @@ def plot_rsi_by_df(df, rsi_subplot, today=-1):
         horizontalalignment='right',
         verticalalignment='center',
         color='tab:green',
+        size='x-small',
     )
 
     # rect = Rectangle((0, 30), length - 1, 40, color=gray, alpha=0.3)
@@ -441,14 +446,16 @@ def plot_macd_by_df(df, macd_subplot, today=-1):
         current_macd,
         f' {human_format(current_macd)}',
         verticalalignment=macd_valign,
-        color='C0'
+        color='C0',
+        size='x-small',
     )
     macd_subplot.text(
         df.index[today],
         current_signal,
         f' {human_format(current_signal)}',
         verticalalignment=signal_valign,
-        color='C1'
+        color='C1',
+        size='x-small',
     )
     macd_subplot.text(
         df.index[today],
@@ -456,7 +463,8 @@ def plot_macd_by_df(df, macd_subplot, today=-1):
         f'{human_format(current_diff)}',
         verticalalignment=signal_valign,
         horizontalalignment='center',
-        color=colors[-1]
+        color=colors[-1],
+        size='x-small',
     )
 
     macd_subplot.bar(df.iloc[1:].index, df[TechnicalsKeys.macd_diff].values[1:], color=colors)
@@ -578,18 +586,20 @@ def plot_bands_by_labels_with_ta(df, ticker, title, labels, subtitle=None, fname
             subplot.text(
                 df.index[-1],
                 df[label].iat[-1],
-                f'{human_format(df[label].iat[-1])}',
+                f' {human_format(df[label].iat[-1])}',
                 color=f'C{i}',
                 verticalalignment='center',
                 horizontalalignment='left',
+                size='x-small',
             )
             subplot.text(
                 df.index[0],
                 df[label].iat[0],
-                f'{human_format(df[label].iat[0])}',
+                f'{human_format(df[label].iat[0])} ',
                 color=f'C{i}',
                 verticalalignment='center',
                 horizontalalignment='right',
+                size='x-small',
             )
 
     if not close_only:
@@ -604,6 +614,7 @@ def plot_bands_by_labels_with_ta(df, ticker, title, labels, subtitle=None, fname
             color=f'C{len(labels)}',
             verticalalignment='center',
             horizontalalignment='left',
+            size='x-small',
         )
 
     if sma_labels:
@@ -616,6 +627,7 @@ def plot_bands_by_labels_with_ta(df, ticker, title, labels, subtitle=None, fname
                 color=f'C{len(labels)+1}',
                 verticalalignment='center',
                 horizontalalignment='left',
+                size='x-small',
             )
 
     subplot.legend()
@@ -641,7 +653,7 @@ def plot_bands_by_labels_with_ta(df, ticker, title, labels, subtitle=None, fname
 
 
 if __name__ == '__main__':
-    main_ticker = 'MSFT'
+    main_ticker = 'BTC-EUR'
 
     df_main = yf.download(
         [main_ticker],
@@ -652,9 +664,9 @@ if __name__ == '__main__':
     ticker_df = yfinance_service.extract_ticker_df(df=df_main, ticker=main_ticker)
 
     ticker_df = ta_utility.add_rsi(ticker_df)
-    ticker_df = ta_utility.add_macd(ticker_df)
-    ticker_df = ta_utility.add_ema(ticker_df, window=500)
-    ticker_df = ta_utility.add_ema(ticker_df, window=250)
+    # ticker_df = ta_utility.add_macd(ticker_df)
+    # ticker_df = ta_utility.add_ema(ticker_df, window=500)
+    # ticker_df = ta_utility.add_ema(ticker_df, window=250)
 
     future = len(ticker_df) // 10
 
@@ -666,7 +678,7 @@ if __name__ == '__main__':
     )
 
     plot_path = plot_bands_by_labels_with_ta(
-        df=ticker_df.iloc[-future - 500:-future],
+        df=ticker_df.iloc[-future - future:-future],
         ticker=main_ticker,
         title=main_ticker,
         subtitle=main_ticker,
@@ -678,10 +690,10 @@ if __name__ == '__main__':
         yscale='linear',
         # today=-1-future,
         close_only=True,
-        sma_labels=[
-            'EMA-500',
-            'EMA-250',
-        ]
+        # sma_labels=[
+        #     'EMA-500',
+        #     'EMA-250',
+        # ]
     )
 
     print(plot_path)

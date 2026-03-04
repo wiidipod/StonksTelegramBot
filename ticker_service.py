@@ -51,7 +51,7 @@ def get_tickers(
             ticker = ticker.replace('.', '-')
 
         if is_crypto:
-            # tickers.append(ticker + '-EUR')
+            tickers.append(ticker + '-EUR')
             ticker = ticker + '-USD'
 
         if is_future:
@@ -727,7 +727,7 @@ def get_all_tickers():
     except Exception as e:
         print(f'Error fetching cryptocurrency tickers: {e}')
     tickers.extend([
-        # "BTC-EUR", "ETH-EUR", "XRP-EUR", "SOL-EUR", "ADA-EUR", "DOGE-EUR",
+        "BTC-EUR", "ETH-EUR", "XRP-EUR", "SOL-EUR", "ADA-EUR", "DOGE-EUR",
         "BTC-USD", "ETH-USD", "XRP-USD", "SOL-USD", "ADA-USD", "DOGE-USD",
     ])
 
