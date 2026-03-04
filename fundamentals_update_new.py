@@ -85,8 +85,8 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     except:
         # momentum = False
         rsi = False
-    # if not rsi:
-    #     dictionary[DictionaryKeysNew.no_technicals] = True
+    if not rsi:
+        dictionary[DictionaryKeysNew.no_technicals] = True
 
     # regression
     window = len(df) - 1
