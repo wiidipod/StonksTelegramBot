@@ -141,6 +141,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
                 growth = min(pe_ratio / peg_ratio, growth)
         if (ev_to_ebitda is None and pe_ratio is None) or growth is None:
             dictionary[DictionaryKeysNew.no_fundamentals] = True
+            ev_to_ebitda_to_growth = None
         else:
             if growth > 0.0:
                 if ev_to_ebitda is None:
