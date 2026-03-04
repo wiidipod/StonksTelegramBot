@@ -80,10 +80,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         # macd = df[TechnicalsKeys.macd_diff.value].iat[-1] >= df[TechnicalsKeys.macd_diff.value].iat[-2]
         # sma = df[f'{TechnicalsKeys.sma.value}{sma_window_short}'][-1] <= df[P.C.value][-1]
         # ema = df[f'{TechnicalsKeys.ema.value}{ema_window_short}'][-1] >= df[f'{TechnicalsKeys.ema.value}{ema_window_long}'][-1]
-        if is_stock(ticker):
-            rsi = df[TechnicalsKeys.rsi.value].iat[-1] <= 50.0
-        else:
-            rsi = df[TechnicalsKeys.rsi.value].iat[-1] <= 30.0
+        rsi = df[TechnicalsKeys.rsi.value].iat[-1] <= 30.0
         # momentum = macd or sma  # or ema
     except:
         # momentum = False
