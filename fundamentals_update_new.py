@@ -130,22 +130,36 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
                 )
             )
             price_target = min(price_target, price_target_growth)
-        if pe_ratio is None or peg_ratio is None:
+        if peg_ratio is None:
             dictionary[DictionaryKeysNew.no_fundamentals] = True
         else:
             if peg_ratio != 0:
                 growth = min(pe_ratio / peg_ratio, growth)
-        if ev_to_ebitda is None:
+        if ev_to_ebitda is None and pe_ratio is None:
             dictionary[DictionaryKeysNew.no_fundamentals] = True
-            ev_to_ebitda_to_growth = None
         else:
-            if growth != 0:
-                ev_to_ebitda_to_growth = ev_to_ebitda / growth
-                if ev_to_ebitda_to_growth > 1.0 or ev_to_ebitda_to_growth < 0.0:
+            if growth > 0.0:
+                if ev_to_ebitda is None:
+                    ev_to_ebitda_to_growth = None
+                else:
+                    ev_to_ebitda_to_growth = ev_to_ebitda / growth
+                if pe_ratio is not None:
+                    peg_ratio = max(peg_ratio, pe_ratio / growth)
+                if peg_ratio is None and ev_to_ebitda_to_growth is None:
+                    dictionary[DictionaryKeysNew.no_fundamentals] = True
+                elif peg_ratio is None and ev_to_ebitda_to_growth is not None:
+                    if ev_to_ebitda_to_growth > 1.0 or ev_to_ebitda_to_growth < 0.0:
+                        dictionary[DictionaryKeysNew.no_fundamentals] = True
+                elif ev_to_ebitda_to_growth is None and peg_ratio is not None:
+                    if peg_ratio > 1.0 or peg_ratio < 0.0:
+                        dictionary[DictionaryKeysNew.no_fundamentals] = True
+                elif (ev_to_ebitda_to_growth > 1.0 or ev_to_ebitda_to_growth < 0.0) and (peg_ratio > 1.0 or peg_ratio < 0.0):
                     dictionary[DictionaryKeysNew.no_fundamentals] = True
             else:
                 ev_to_ebitda_to_growth = None
-                dictionary[DictionaryKeysNew.no_fundamentals] = True
+                if peg_ratio is not None:
+                    if peg_ratio > 1.0 or peg_ratio < 0.0:
+                        dictionary[DictionaryKeysNew.no_fundamentals] = True
     else:
         pe_ratio = None
         peg_ratio = None
