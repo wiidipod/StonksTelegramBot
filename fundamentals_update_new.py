@@ -80,7 +80,10 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         # macd = df[TechnicalsKeys.macd_diff.value].iat[-1] >= df[TechnicalsKeys.macd_diff.value].iat[-2]
         # sma = df[f'{TechnicalsKeys.sma.value}{sma_window_short}'][-1] <= df[P.C.value][-1]
         # ema = df[f'{TechnicalsKeys.ema.value}{ema_window_short}'][-1] >= df[f'{TechnicalsKeys.ema.value}{ema_window_long}'][-1]
-        rsi = df[TechnicalsKeys.rsi.value].iat[-1] <= 30.0
+        if is_stock(ticker):
+            rsi = df[TechnicalsKeys.rsi.value].iat[-1] <= 50.0
+        else:
+            rsi = df[TechnicalsKeys.rsi.value].iat[-1] <= 30.0
         # momentum = macd or sma  # or ema
     except:
         # momentum = False
@@ -120,9 +123,9 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         if price_target is None:
             dictionary[DictionaryKeysNew.no_fundamentals] = True
             price_target = price_target_growth
-            value = df[GrowthKeys.growth_lower.value].iat[today_index]
+            value = df[GrowthKeys.growth.value].iat[today_index]
         else:
-            value = min(price_target / (growth / 100.0 + 1.0), df[GrowthKeys.growth_lower.value].iat[today_index])
+            value = min(price_target / (growth / 100.0 + 1.0), df[GrowthKeys.growth.value].iat[today_index])
             growth = min(
                 growth,
                 get_growth(
@@ -170,7 +173,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         ev_to_ebitda = None
         industry_pe_ratio = None
         price_target = price_target_growth
-        value = df[GrowthKeys.growth.value].iat[today_index]
+        value = df[GrowthKeys.growth_lower.value].iat[today_index]
         ev_to_ebitda_to_growth = None
 
     # too_expensive
