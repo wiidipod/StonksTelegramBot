@@ -117,6 +117,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         industry = get_industry_from_info(info)
         industry_pe_ratio = pe_ratios.get(industry) or pe_ratios.get('S&P 500') or 19.38
         price_target = get_price_target(ticker, low=True)
+        value = min(price_target / (growth / 100.0 + 1.0), df[GrowthKeys.growth.value].iat[today_index])
         if price_target is None:
             dictionary[DictionaryKeysNew.no_fundamentals] = True
             price_target = price_target_growth
@@ -151,10 +152,10 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         ev_to_ebitda = None
         industry_pe_ratio = None
         price_target = price_target_growth
+        value = df[GrowthKeys.growth.value].iat[today_index]
         ev_to_ebitda_to_growth = None
 
     # too_expensive
-    value = min(price_target / (growth / 100.0 + 1.0), df[GrowthKeys.growth.value].iat[today_index])
     if value < df[P.C.value].iat[today_index]:
         dictionary[DictionaryKeysNew.too_expensive] = True
 
