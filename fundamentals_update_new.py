@@ -101,10 +101,16 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         value_today=df[GrowthKeys.growth.value].iat[today_index],
         value_future=df[GrowthKeys.growth.value].iat[-1],
     )
-    price_target_growth = min(
-        df[GrowthKeys.growth_lower.value].iat[-1],
-        df[P.C.value].iat[today_index] * (1.0 + growth / 100.0),
-    )
+    if is_stock(ticker):
+        price_target_growth = min(
+            df[GrowthKeys.growth.value].iat[-1],
+            df[P.C.value].iat[today_index] * (1.0 + growth / 100.0),
+        )
+    else:
+        price_target_growth = min(
+            df[GrowthKeys.growth_lower.value].iat[-1],
+            df[P.C.value].iat[today_index] * (1.0 + growth / 100.0),
+            )
     if growth < 0.0:
         dictionary[DictionaryKeysNew.no_growth] = True
 
