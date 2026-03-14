@@ -848,5 +848,5 @@ if __name__ == '__main__':
     # print(get_precious_metals_tickers())
     # print(get_cryptocurrency_tickers())
 
-    main_tickers = get_s_p_600_tickers()
+    main_tickers = get_all_tickers()
     print(len(main_tickers))
