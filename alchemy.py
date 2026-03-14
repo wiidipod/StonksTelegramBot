@@ -6,6 +6,78 @@ import yfinance as yf
 
 from telegram_service import send_message_to_first, get_application
 from ticker_service import get_all_tickers, get_nasdaq_100_tickers, chunk_list
+from message_utility import human_format
+
+
+def get_alchemy_scores(ticker):
+    """
+    Extracts the continuous variables used to score and rank the stocks.
+    Handles missing yfinance data safely.
+    """
+    yf_ticker = yf.Ticker(ticker)
+    info = yf_ticker.info
+    scores = {
+        'score': 1.0,
+    }
+
+    try:
+        # 1. Size: Total Enterprise Value (TEV) - Lower is better
+        scores['TEV'] = info.get('enterpriseValue')
+        scores['score'] /= scores['TEV']
+
+        # 2. Profitability: ROA - Higher is better
+        scores['ROA'] = info.get('returnOnAssets')
+        scores['score'] *= max(scores['ROA'], 0.0)
+
+        # 3. Value: Book-to-Market (B/M) - Higher is better
+        pb_ratio = info.get('priceToBook')
+        scores['B_M'] = 1 / pb_ratio if pb_ratio else None
+        scores['score'] *= max(scores['B_M'], 0.0)
+
+        # 4. Value: Free Cash Flow Yield (FCF/P) - Higher is better
+        fcf = info.get('freeCashflow')
+        market_cap = info.get('marketCap')
+        scores['FCF_Yield'] = (fcf / market_cap) if (fcf and market_cap) else None
+        scores['score'] *= max(scores['FCF_Yield'], 0.0)
+
+        # 5. Contrarian Entry: Price Range - Higher is better
+        current_price = info.get('currentPrice') or info.get('regularMarketPrice')
+        low_52 = info.get('fiftyTwoWeekLow')
+        high_52 = info.get('fiftyTwoWeekHigh')
+
+        if current_price and low_52 and high_52 and (high_52 - low_52) > 0.0:
+            scores['Price_Range'] = (high_52 - current_price) / (high_52 - low_52)
+            scores['score'] *= max(scores['Price_Range'], 0.0)
+        else:
+            scores['Price_Range'] = None
+
+        # 6. Momentum: 3m and 6m returns - Lower is better
+        hist = yf_ticker.history(period="6mo")
+        if not hist.empty and len(hist) > 0:
+            current_close = hist['Close'].iloc[-1]
+
+            # 3-month momentum
+            three_month_index = len(hist) // 2
+            if len(hist) >= three_month_index:
+                price_3m_ago = hist['Close'].iloc[-three_month_index]
+                scores['Mom_3M'] = current_close / price_3m_ago
+                scores['score'] /= scores['Mom_3M']
+            else:
+                scores['Mom_3M'] = None
+
+            # 6-month momentum (first element in 6mo history)
+            price_6m_ago = hist['Close'].iloc[0]
+            scores['Mom_6M'] = current_close / price_6m_ago
+            scores['score'] /= scores['Mom_6M']
+        else:
+            scores['Mom_3M'] = None
+            scores['Mom_6M'] = None
+
+    except Exception as e:
+        print(f"Error calculating scores: {e}")
+        return None
+
+    return scores
 
 
 def check_investment_rule(balance_sheet, financials):
@@ -61,13 +133,21 @@ def process_chunk(tickers):
     ticker_scores = {}
     for ticker in tickers:
         yf_ticker = yf.Ticker(ticker)
+
+        # 1. Run the Hard Filter
         balance_sheet = yf_ticker.balance_sheet
         financials = yf_ticker.financials
-        investment_rule = check_investment_rule(balance_sheet, financials)
-        # if not investment_rule:
-        #     continue
-        # ticker_scores[ticker] = get_score(ticker)
-        ticker_scores[ticker] = [investment_rule[0], investment_rule[1]]
+        passes_inv_rule, rule_details = check_investment_rule(balance_sheet, financials)
+
+        if not passes_inv_rule:
+            print(f"Investment rule failed for {ticker}: {rule_details}")
+            continue
+
+        scores = get_alchemy_scores(ticker)
+        if scores is None:
+            continue
+
+        ticker_scores[ticker] = scores
     return ticker_scores
 
 
@@ -76,7 +156,8 @@ def main():
     parser.add_argument('--all', action='store_true', help='Send plots to all subscribers')
     args = parser.parse_args()
 
-    tickers = ["AAPL", "MSFT", "PLTR", "SNOW"]
+    tickers = get_nasdaq_100_tickers()
+    # tickers =["AAPL", "MSFT", "PLTR", "SNOW"]
     ticker_scores = {}
 
     chunk_size = 100
@@ -88,7 +169,67 @@ def main():
         ticker_scores_chunk = process_chunk(tickers=ticker_chunk)
         ticker_scores.update(ticker_scores_chunk)
 
-    print(ticker_scores)
+    # ---------------------------------------------------------
+    # SORT AND BUILD TELEGRAM MESSAGE
+    # ---------------------------------------------------------
+    if not ticker_scores:
+        empty_msg = "No tickers passed the investment rules."
+        print(empty_msg)
+        asyncio.run(send_message_to_first(message=empty_msg, context=(get_application())))
+        return
+
+    sorted_tickers = sorted(ticker_scores.items(), key=lambda item: item[1]['score'], reverse=True)
+    highest_score = sorted_tickers[0][1]['score']
+    lowest_score = sorted_tickers[-1][1]['score']
+    score_range = highest_score - lowest_score
+
+    top_tickers = sorted_tickers[:10]
+
+    # Build the message line by line
+    message_lines =[]
+    message_lines.append("🧪 *Alchemy Multibagger Screener Top 10*\n")
+
+    # Wrap in triple backticks so Telegram uses a monospaced font (keeps columns aligned)
+    message_lines.append("```text")
+    message_lines.append(f"{'Ticker':<8} | {'Score':<7} | {'TEV':<7} | {'ROA':<5} | {'B/M':<5} | {'FCF Yld':<7} | {'Range':<5} | {'3M Mom':<6} | {'6M Mom':<6}")
+    message_lines.append("-" * 88)
+
+    for ticker, data in top_tickers:
+        raw_score = data['score']
+        if score_range > 0:
+            normalized_score = ((raw_score - lowest_score) / score_range) * 100
+        else:
+            normalized_score = 100.0
+
+        score_str = f"{human_format(normalized_score)}%"
+        tev_str = f"{human_format(data['TEV'])}" if data.get('TEV') else "N/A"
+        roa_str = f"{human_format(data.get('ROA'))}" if data.get('ROA') is not None else "N/A"
+        bm_str = f"{human_format(data.get('B_M'))}" if data.get('B_M') is not None else "N/A"
+        fcf_str = f"{human_format(data.get('FCF_Yield'))}" if data.get('FCF_Yield') is not None else "N/A"
+        range_str = f"{human_format(data.get('Price_Range'))}" if data.get('Price_Range') is not None else "N/A"
+        mom3_str = f"{human_format(data.get('Mom_3M'))}" if data.get('Mom_3M') is not None else "N/A"
+        mom6_str = f"{human_format(data.get('Mom_6M'))}" if data.get('Mom_6M') is not None else "N/A"
+
+        message_lines.append(f"{ticker:<8} | {score_str:<7} | {tev_str:<7} | {roa_str:<5} | {bm_str:<5} | {fcf_str:<7} | {range_str:<5} | {mom3_str:<6} | {mom6_str:<6}")
+
+    # Close the code block
+    message_lines.append("```")
+
+    # Join the lines into a single string
+    final_message = "\n".join(message_lines)
+
+    # Print to console for your own logging
+    print("\n" + final_message + "\n")
+
+    # Send the final string to Telegram
+    try:
+        asyncio.run(send_message_to_first(
+            message=final_message,
+            context=(get_application())
+        ))
+        print("Successfully sent to Telegram.")
+    except Exception as telegram_error:
+        print(f"Failed to send success notification: {telegram_error}")
 
 
 if __name__ == '__main__':

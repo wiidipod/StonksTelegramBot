@@ -80,6 +80,20 @@ def get_s_p_500_tickers():
     return tickers
 
 
+def get_s_p_400_tickers():
+    source = 'https://en.wikipedia.org/wiki/List_of_S%26P_400_companies'
+    tickers = get_tickers(source, replace_dots=True)
+    tickers.append('^SP400')
+    return tickers
+
+
+def get_s_p_600_tickers():
+    source = 'https://en.wikipedia.org/wiki/List_of_S%26P_600_companies'
+    tickers = get_tickers(source, replace_dots=True)
+    tickers.append('^SP600')
+    return tickers
+
+
 def get_nasdaq_100_tickers():
     source = 'https://en.wikipedia.org/wiki/Nasdaq-100'
     tickers = get_tickers(source, replace_dots=True)
@@ -636,6 +650,26 @@ def get_all_tickers():
         print(f'Error fetching S&P 500 tickers: {e}')
 
     try:
+        s_p_400_tickers = get_s_p_400_tickers()
+        if len(s_p_400_tickers) < 400:
+            print('S&P 400 tickers missing!')
+        else:
+            print(f'S&P 400 tickers: {len(s_p_400_tickers)}')
+        tickers.extend(s_p_400_tickers)  # United States 400
+    except Exception as e:
+        print(f'Error fetching S&P 400 tickers: {e}')
+
+    try:
+        s_p_600_tickers = get_s_p_600_tickers()
+        if len(s_p_600_tickers) < 600:
+            print('S&P 600 tickers missing!')
+        else:
+            print(f'S&P 600 tickers: {len(s_p_600_tickers)}')
+        tickers.extend(s_p_600_tickers)  # United States 600
+    except Exception as e:
+        print(f'Error fetching S&P 600 tickers: {e}')
+
+    try:
         dow_jones_tickers = get_dow_jones_tickers()
         if len(dow_jones_tickers) < 30:
             print('Dow Jones tickers missing!')
@@ -814,5 +848,5 @@ if __name__ == '__main__':
     # print(get_precious_metals_tickers())
     # print(get_cryptocurrency_tickers())
 
-    main_tickers = get_all_tickers()
+    main_tickers = get_s_p_600_tickers()
     print(len(main_tickers))
