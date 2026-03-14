@@ -6,7 +6,7 @@ import asyncio
 import traceback
 from typing import Dict
 
-from ticker_service import get_all_tickers, is_crypto, is_stock, get_s_p_500_tickers
+from ticker_service import get_all_tickers, is_crypto, is_stock, get_s_p_500_tickers, chunk_list
 from pe_utility import update_pe_ratios
 from yfinance_service import extract_ticker_df, get_pe_ratio_from_info, get_peg_ratio_from_info, \
     get_ev_to_ebitda_from_info, get_industry_from_info, get_price_target, P, get_name_from_info, \
@@ -232,11 +232,6 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     )
 
     return dictionary, plot_path
-
-
-def chunk_list(lst, chunk_size):
-    for list_index in range(0, len(lst), chunk_size):
-        yield lst[list_index:list_index + chunk_size]
 
 
 def process_ticker(df, ticker, pe_ratios):

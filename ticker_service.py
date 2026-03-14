@@ -5,6 +5,11 @@ import yfinance
 from bs4 import BeautifulSoup
 
 
+def chunk_list(lst, chunk_size):
+    for list_index in range(0, len(lst), chunk_size):
+        yield lst[list_index:list_index + chunk_size]
+
+
 def get_tickers(
         source,
         attribute='id',
