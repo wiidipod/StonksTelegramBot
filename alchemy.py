@@ -21,57 +21,66 @@ def get_alchemy_scores(ticker):
     }
 
     try:
-        # 1. Size: Total Enterprise Value (TEV) - Lower is better
+        # Size: Total Enterprise Value (TEV) - Lower is better
         scores['TEV'] = info.get('enterpriseValue')
         scores['score'] /= scores['TEV']
 
-        # 2. Profitability: ROA - Higher is better
+        # Profitability: ROA - Higher is better
         scores['ROA'] = info.get('returnOnAssets')
         scores['score'] *= max(scores['ROA'], 0.0)
 
-        # 3. Value: Book-to-Market (B/M) - Higher is better
+        # Value
+        # Book-to-Market (B/M) - Higher is better
         pb_ratio = info.get('priceToBook')
         scores['B_M'] = 1 / pb_ratio if pb_ratio else None
-        scores['score'] *= max(scores['B_M'], 0.0)
-
-        # 4. Value: Free Cash Flow Yield (FCF/P) - Higher is better
+        # Free Cash Flow Yield (FCF/P) - Higher is better
         fcf = info.get('freeCashflow')
         market_cap = info.get('marketCap')
         scores['FCF_Yield'] = (fcf / market_cap) if (fcf and market_cap) else None
-        scores['score'] *= max(scores['FCF_Yield'], 0.0)
+        if scores['B_M'] is not None and scores['FCF_Yield'] is not None:
+            scores['Value'] = (max(scores['B_M'], 0.0) * max(scores['FCF_Yield'], 0.0)) ** (1/2)
+        else:
+            scores['Value'] = 0.0
+        scores['score'] *= scores['Value']
 
-        # 5. Contrarian Entry: Price Range - Higher is better
+        # Technical
+        # Contrarian Entry: Price Range - Higher is better
         current_price = info.get('currentPrice') or info.get('regularMarketPrice')
         low_52 = info.get('fiftyTwoWeekLow')
         high_52 = info.get('fiftyTwoWeekHigh')
 
         if current_price and low_52 and high_52 and (high_52 - low_52) > 0.0:
             scores['Price_Range'] = (high_52 - current_price) / (high_52 - low_52)
-            scores['score'] *= max(scores['Price_Range'], 0.0)
         else:
             scores['Price_Range'] = None
 
-        # 6. Momentum: 3m and 6m returns - Lower is better
         hist = yf_ticker.history(period="6mo")
         if not hist.empty and len(hist) > 0:
             current_close = hist['Close'].iloc[-1]
 
             # 3-month momentum
             three_month_index = len(hist) // 2
-            if len(hist) >= three_month_index:
+            if len(hist) >= three_month_index and current_close > 0:
                 price_3m_ago = hist['Close'].iloc[-three_month_index]
-                scores['Mom_3M'] = current_close / price_3m_ago
-                scores['score'] /= scores['Mom_3M']
+                scores['Mom_3M'] = price_3m_ago / current_close
             else:
                 scores['Mom_3M'] = None
 
             # 6-month momentum (first element in 6mo history)
-            price_6m_ago = hist['Close'].iloc[0]
-            scores['Mom_6M'] = current_close / price_6m_ago
-            scores['score'] /= scores['Mom_6M']
+            if current_close > 0:
+                price_6m_ago = hist['Close'].iloc[0]
+                scores['Mom_6M'] = price_6m_ago / current_close
+            else:
+                scores['Mom_6M'] = None
         else:
             scores['Mom_3M'] = None
             scores['Mom_6M'] = None
+        if scores['Price_Range'] is not None and scores['Mom_3M'] is not None and scores['Mom_6M'] is not None:
+            # Prevent negative numbers from turning into complex numbers
+            scores['Technical'] = (max(scores['Price_Range'], 0.0) * scores['Mom_3M'] * scores['Mom_6M']) ** (1/3)
+        else:
+            scores['Technical'] = 0.0
+        scores['score'] *= scores['Technical']
 
     except Exception as e:
         print(f"Error calculating scores: {e}")
@@ -156,8 +165,9 @@ def main():
     parser.add_argument('--all', action='store_true', help='Send plots to all subscribers')
     args = parser.parse_args()
 
-    tickers = get_all_tickers()
+    # tickers = get_all_tickers()
     # tickers =["AAPL", "MSFT", "PLTR", "SNOW"]
+    tickers = get_nasdaq_100_tickers()
     ticker_scores = {}
 
     chunk_size = 100
@@ -186,13 +196,13 @@ def main():
     top_tickers = sorted_tickers[:10]
 
     # Build the message line by line
-    message_lines =[]
+    message_lines = []
     message_lines.append("🧪 *Alchemy Multibagger Screener Top 10*\n")
 
     # Wrap in triple backticks so Telegram uses a monospaced font (keeps columns aligned)
     message_lines.append("```text")
-    message_lines.append(f"{'Ticker':<8} | {'Score':<7} | {'TEV':<7} | {'ROA':<5} | {'B/M':<5} | {'FCF Yld':<7} | {'Range':<5} | {'3M Mom':<6} | {'6M Mom':<6}")
-    message_lines.append("-" * 88)
+    message_lines.append(f"{'Ticker':<8} | {'Score':<7} | {'TEV':<7} | {'ROA':<5} | {'Value':<7} | {'Tech':<5}")
+    message_lines.append("-" * 55)
 
     for ticker, data in top_tickers:
         raw_score = data['score']
@@ -204,13 +214,9 @@ def main():
         score_str = f"{human_format(normalized_score)}%"
         tev_str = f"{human_format(data['TEV'])}" if data.get('TEV') else "N/A"
         roa_str = f"{human_format(data.get('ROA'))}" if data.get('ROA') is not None else "N/A"
-        bm_str = f"{human_format(data.get('B_M'))}" if data.get('B_M') is not None else "N/A"
-        fcf_str = f"{human_format(data.get('FCF_Yield'))}" if data.get('FCF_Yield') is not None else "N/A"
-        range_str = f"{human_format(data.get('Price_Range'))}" if data.get('Price_Range') is not None else "N/A"
-        mom3_str = f"{human_format(data.get('Mom_3M'))}" if data.get('Mom_3M') is not None else "N/A"
-        mom6_str = f"{human_format(data.get('Mom_6M'))}" if data.get('Mom_6M') is not None else "N/A"
-
-        message_lines.append(f"{ticker:<8} | {score_str:<7} | {tev_str:<7} | {roa_str:<5} | {bm_str:<5} | {fcf_str:<7} | {range_str:<5} | {mom3_str:<6} | {mom6_str:<6}")
+        value_str = f"{human_format(data.get('Value'))}" if data.get('Value') is not None else "N/A"
+        technical_str = f"{human_format(data.get('Technical'))}" if data.get('Technical') is not None else "N/A"
+        message_lines.append(f"{ticker:<8} | {score_str:<7} | {tev_str:<7} | {roa_str:<5} | {value_str:<7} | {technical_str:<5}")
 
     # Close the code block
     message_lines.append("```")
@@ -223,6 +229,7 @@ def main():
 
     # Send the final string to Telegram
     try:
+        print(final_message)
         asyncio.run(send_message_to_first(
             message=final_message,
             context=(get_application())
