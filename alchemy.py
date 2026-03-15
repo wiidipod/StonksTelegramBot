@@ -165,9 +165,9 @@ def main():
     parser.add_argument('--all', action='store_true', help='Send plots to all subscribers')
     args = parser.parse_args()
 
-    # tickers = get_all_tickers()
+    tickers = get_all_tickers()
     # tickers =["AAPL", "MSFT", "PLTR", "SNOW"]
-    tickers = get_nasdaq_100_tickers()
+    # tickers = get_nasdaq_100_tickers()
     ticker_scores = {}
 
     chunk_size = 100
