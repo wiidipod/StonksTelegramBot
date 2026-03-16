@@ -32,7 +32,7 @@ def get_alchemy_scores(ticker):
         # Value
         # Book-to-Market (B/M) - Higher is better
         pb_ratio = info.get('priceToBook')
-        scores['B_M'] = 1 / pb_ratio if pb_ratio else None
+        scores['B_M'] = 1.0 / pb_ratio if pb_ratio else None
         # Free Cash Flow Yield (FCF/P) - Higher is better
         fcf = info.get('freeCashflow')
         market_cap = info.get('marketCap')

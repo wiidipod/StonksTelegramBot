@@ -10,7 +10,7 @@ from ticker_service import get_all_tickers, is_crypto, is_stock, get_s_p_500_tic
 from pe_utility import update_pe_ratios
 from yfinance_service import extract_ticker_df, get_pe_ratio_from_info, get_peg_ratio_from_info, \
     get_ev_to_ebitda_from_info, get_industry_from_info, get_price_target, P, get_name_from_info, \
-    get_market_cap_from_info
+    get_market_cap_from_info, get_price_to_book_from_info, get_free_cash_flow_from_info
 from constants import DictionaryKeysNew, UndervaluedKey, CommonDictionaryKey, TechnicalsKeys, GrowthKeys
 from message_utility import get_message_by_dictionary_new, round_down, human_format, human_format_from_string, round_up
 from telegram_service import get_application, send_plots, send_message_to_first
@@ -170,6 +170,10 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     name = get_name_from_info(info=info, ticker=ticker, industry_pe_ratio=industry_pe_ratio)
     subtitle = None
     market_cap = get_market_cap_from_info(info)
+    price_to_book = get_price_to_book_from_info(info)
+    book_to_market = 1.0 / price_to_book if (price_to_book is not None and price_to_book > 0.0) else None
+    free_cash_flow = get_free_cash_flow_from_info(info)
+    fcf_to_price = free_cash_flow / market_cap if (free_cash_flow is not None and market_cap is not None and market_cap > 0.0) else None
 
     if market_cap is not None or price_target is not None or peg_ratio is not None or pe_ratio is not None or ev_to_ebitda is not None:
         subtitle = ''
@@ -188,6 +192,10 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
             if ev_to_ebitda_to_growth is not None:
                 subtitle += f' ({round_up(ev_to_ebitda_to_growth)})'
             subtitle += ' - '
+        if book_to_market is not None:
+            subtitle += f'B/M: {book_to_market} - '
+        if fcf_to_price is not None:
+            subtitle += f'FCF/P: {fcf_to_price} - '
         subtitle = subtitle[:-3]
 
     plot_path = plot_bands_by_labels_with_ta(

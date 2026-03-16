@@ -270,6 +270,26 @@ def get_price_target(ticker, low=True):
         return None
 
 
+def get_price_to_book_from_info(info):
+    try:
+        price_to_book = info.get("priceToBook")
+        if price_to_book is None or price_to_book <= 0.0 or math.isnan(price_to_book):
+            return None
+        return price_to_book
+    except:
+        return None
+
+
+def get_free_cash_flow_from_info(info):
+    try:
+        free_cash_flow = info.get("freeCashFlow")
+        if free_cash_flow is None or free_cash_flow <= 0.0 or math.isnan(free_cash_flow):
+            return None
+        return free_cash_flow
+    except:
+        return None
+
+
 def get_ev_to_ebitda_from_info(info):
     try:
         ev_to_ebitda = info.get("enterpriseToEbitda")
