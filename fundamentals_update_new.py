@@ -288,8 +288,7 @@ def main():
     parser.add_argument('--all', action='store_true', help='Send plots to all subscribers')
     args = parser.parse_args()
 
-    # tickers = get_all_tickers()
-    tickers = ['CI', 'ELV']
+    tickers = get_all_tickers()
 
     messages = []
     plot_paths = []
