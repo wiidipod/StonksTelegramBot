@@ -84,7 +84,9 @@ def get_alchemy_scores(yf_ticker, info):
 
     except Exception as e:
         print(f"Error calculating scores: {e}")
-        return None
+        return {
+            'score': 0.0,
+        }
 
     return scores
 
