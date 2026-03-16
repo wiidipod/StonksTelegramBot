@@ -23,11 +23,11 @@ def get_alchemy_scores(ticker):
     try:
         # Size: Total Enterprise Value (TEV) - Lower is better
         scores['TEV'] = info.get('enterpriseValue')
-        scores['score'] /= scores['TEV']
+        scores['score'] /= scores['TEV'] ** (1/4)
 
         # Profitability: ROA - Higher is better
         scores['ROA'] = info.get('returnOnAssets')
-        scores['score'] *= max(scores['ROA'], 0.0)
+        scores['score'] *= max(scores['ROA'], 0.0) ** (1/4)
 
         # Value
         # Book-to-Market (B/M) - Higher is better
@@ -41,7 +41,7 @@ def get_alchemy_scores(ticker):
             scores['Value'] = (max(scores['B_M'], 0.0) * max(scores['FCF_Yield'], 0.0)) ** (1/2)
         else:
             scores['Value'] = 0.0
-        scores['score'] *= scores['Value']
+        scores['score'] *= scores['Value'] ** (1/4)
 
         # Technical
         # Contrarian Entry: Price Range - Higher is better
@@ -80,7 +80,7 @@ def get_alchemy_scores(ticker):
             scores['Technical'] = (max(scores['Price_Range'], 0.0) * scores['Mom_3M'] * scores['Mom_6M']) ** (1/3)
         else:
             scores['Technical'] = 0.0
-        scores['score'] *= scores['Technical']
+        scores['score'] *= scores['Technical'] ** (1/4)
 
     except Exception as e:
         print(f"Error calculating scores: {e}")

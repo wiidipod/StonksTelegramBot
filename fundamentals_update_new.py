@@ -6,6 +6,7 @@ import asyncio
 import traceback
 from typing import Dict
 
+from alchemy import get_alchemy_scores
 from ticker_service import get_all_tickers, is_crypto, is_stock, get_s_p_500_tickers, chunk_list
 from pe_utility import update_pe_ratios
 from yfinance_service import extract_ticker_df, get_pe_ratio_from_info, get_peg_ratio_from_info, \
@@ -104,16 +105,17 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         industry_pe_ratio = pe_ratios.get(industry) or pe_ratios.get('S&P 500') or 19.38
         price_target = get_price_target(ticker, low=True)
         market_cap = get_market_cap_from_info(info)
-        price_to_book = get_price_to_book_from_info(info)
-        book_to_market = 1.0 / price_to_book if (price_to_book is not None and price_to_book > 0.0) else None
-        free_cashflow = get_free_cashflow_from_info(info)
-        fcf_to_price = free_cashflow / market_cap if (free_cashflow is not None and market_cap is not None and market_cap > 0.0) else None
-
-        if book_to_market is None or fcf_to_price is None:
-            dictionary[DictionaryKeysNew.no_fundamentals] = True
-            score = None
-        else:
-            score = (book_to_market * fcf_to_price) ** 0.5
+        score = get_alchemy_scores(ticker).get('score')
+        # price_to_book = get_price_to_book_from_info(info)
+        # book_to_market = 1.0 / price_to_book if (price_to_book is not None and price_to_book > 0.0) else None
+        # free_cashflow = get_free_cashflow_from_info(info)
+        # fcf_to_price = free_cashflow / market_cap if (free_cashflow is not None and market_cap is not None and market_cap > 0.0) else None
+        #
+        # if book_to_market is None or fcf_to_price is None:
+        #     dictionary[DictionaryKeysNew.no_fundamentals] = True
+        #     score = None
+        # else:
+        #     score = (book_to_market * fcf_to_price) ** (1/2)
         if price_target is None:
             dictionary[DictionaryKeysNew.no_fundamentals] = True
             price_target = price_target_growth
