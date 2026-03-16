@@ -917,23 +917,13 @@ def get_all_tickers():
 
     try:
         hang_seng_tickers = get_hang_seng_tickers()  # Hong Kong
-        if len(hang_seng_tickers) < 50:
+        if len(hang_seng_tickers) < 80:
             print('Hang Seng tickers missing!')
         else:
             print(f'Hang Seng tickers: {len(hang_seng_tickers)}')
         tickers.extend(hang_seng_tickers)
     except Exception as e:
         print(f'Error fetching Hang Seng tickers: {e}')
-
-    try:
-        nikkei_225_tickers = get_nikkei_225_tickers()  # Japan
-        if len(nikkei_225_tickers) < 225:
-            print('Nikkei 225 tickers missing!')
-        else:
-            print(f'Nikkei 225 tickers: {len(nikkei_225_tickers)}')
-        tickers.extend(nikkei_225_tickers)
-    except Exception as e:
-        print(f'Error fetching Nikkei 225 tickers: {e}')
 
     try:
         sse_50_tickers = get_sse_50_tickers()  # Shanghai
