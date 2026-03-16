@@ -17,7 +17,8 @@ def get_tickers(
         table_index=0,
         column=0,
         replace_dots=False,
-        exchange='',
+        replace_space=False,
+        exchange=None,
         fill_digits=0,
         is_crypto=False,
         is_future=False,
@@ -36,6 +37,15 @@ def get_tickers(
     table = tables[table_index]
 
     tickers = []
+
+    # Normalize exchange into a list for consistent iteration
+    if isinstance(exchange, str) and exchange:
+        exchange_list = [exchange]
+    elif isinstance(exchange, list):
+        exchange_list = exchange
+    else:
+        exchange_list = []
+
     rows = table.find_all('tr')
     data_rows = [row for row in rows if row.find_all('td')]
     if not data_rows or len(data_rows[0].find_all('td')) <= column:
@@ -47,7 +57,9 @@ def get_tickers(
         if len(cells) <= column:
             continue
         ticker = cells[column].text.strip()
-        ticker = ticker.split(',')[0].split('[')[0].split(':')[-1].split(' ')[0].strip()
+        if replace_space:
+            ticker = ticker.replace(' ', '-')
+        ticker = ticker.split(',')[0].split('[')[0].split(':')[-1].strip().split(' ')[0].strip()
 
         if not ticker:
             continue
@@ -56,19 +68,23 @@ def get_tickers(
             ticker = ticker.replace('.', '-')
 
         if is_crypto:
-            tickers.append(ticker + '-EUR')
-            ticker = ticker + '-USD'
+            tickers.append(f'{ticker}-USD')
+            tickers.append(f'{ticker}-EUR')
+            continue
 
         if is_future:
-            ticker = ticker + '=F'
+            tickers.append(f'{ticker}=F')
+            continue
 
         if fill_digits:
             ticker = ticker.zfill(fill_digits)
 
-        if exchange:
-            ticker = f'{ticker}.{exchange}'
-
-        tickers.append(ticker)
+        # Handle exchange logic
+        if exchange_list:
+            for e in exchange_list:
+                tickers.append(f'{ticker}.{e}')
+        else:
+            tickers.append(ticker)
 
     return list(set(tickers))
 
@@ -222,6 +238,88 @@ def get_kospi_tickers():
     exchange = 'KS'
     tickers = get_tickers(source, attribute=attribute, name=name, table_index=table_index, column=column, exchange=exchange)
     tickers.append('^KS200')
+    return tickers
+
+
+def get_sse_50_tickers():
+    source = 'https://en.wikipedia.org/wiki/SSE_50_Index'
+    exchange = 'SS'
+    tickers = get_tickers(source, column=1, exchange=exchange, fill_digits=6)
+    tickers.append('000016.SS')
+    return tickers
+
+
+def get_ibovespa_tickers():
+    source = 'https://en.wikipedia.org/wiki/List_of_companies_listed_on_B3'
+    column = 1
+    exchange = 'SA'
+    tickers = get_tickers(source, column=column, exchange=exchange)
+    tickers.append('^BVSP')
+    return tickers
+
+
+def get_nifty_50_tickers():
+    source = 'https://en.wikipedia.org/wiki/NIFTY_50'
+    column = 1
+    exchanges = ['NS', 'BO']
+    tickers = get_tickers(source, column=column, exchange=exchanges)
+    tickers.append('^NSEI')
+    return tickers
+
+
+def get_ftse_250_tickers():
+    source = 'https://en.wikipedia.org/wiki/FTSE_250_Index'
+    column = 1
+    exchange = 'L'
+    tickers = get_tickers(source, column=column, exchange=exchange)
+    tickers.append('^FTMC')
+    return tickers
+
+
+def get_tsx_60_tickers():
+    source = 'https://en.wikipedia.org/wiki/S%26P/TSX_60'
+    exchange = 'TO'
+    attribute = 'class'
+    name = 'wikitable'
+    tickers = get_tickers(source, attribute=attribute, name=name, exchange=exchange, replace_dots=True)
+    tickers.append('TX60.TS')
+    return tickers
+
+
+def get_tsx_composite_tickers():
+    source = 'https://en.wikipedia.org/wiki/S%26P/TSX_Composite_Index'
+    name = 'components'
+    exchange = 'TO'
+    tickers = get_tickers(source, name=name, exchange=exchange, replace_dots=True)
+    tickers.append('^GSPTSE')
+    return tickers
+
+
+def get_omx_stockholm_30_tickers():
+    source = 'https://en.wikipedia.org/wiki/OMX_Stockholm_30'
+    attribute = 'class'
+    name = 'wikitable'
+    tickers = get_tickers(source, attribute=attribute, name=name)
+    tickers.append('^OMX')
+    return tickers
+
+
+def get_omx_copenhagen_25_tickers():
+    source = 'https://en.wikipedia.org/wiki/OMX_Copenhagen_25'
+    attribute = 'class'
+    name = 'wikitable'
+    column = 2
+    exchange = 'CO'
+    tickers = get_tickers(source, attribute=attribute, name=name, column=column, exchange=exchange, replace_space=True)
+    tickers.append('^OMXC25')
+    return tickers
+
+
+def get_ibex_35_tickers():
+    source = 'https://en.wikipedia.org/wiki/IBEX_35'
+    name = 'components'
+    tickers = get_tickers(source, name=name)
+    tickers.append('^IBEX')
     return tickers
 
 
@@ -837,6 +935,96 @@ def get_all_tickers():
     except Exception as e:
         print(f'Error fetching Nikkei 225 tickers: {e}')
 
+    try:
+        sse_50_tickers = get_sse_50_tickers()  # Shanghai
+        if len(sse_50_tickers) < 50:
+            print('SSE 50 tickers missing!')
+        else:
+            print(f'SSE 50 tickers: {len(sse_50_tickers)}')
+        tickers.extend(sse_50_tickers)
+    except Exception as e:
+        print(f'Error fetching SSE 50 tickers: {e}')
+
+    try:
+        ibovespa_tickers = get_ibovespa_tickers()  # Brazil
+        if len(ibovespa_tickers) < 80:
+            print('Ibovespa tickers missing!')
+        else:
+            print(f'Ibovespa tickers: {len(ibovespa_tickers)}')
+        tickers.extend(ibovespa_tickers)
+    except Exception as e:
+        print(f'Error fetching Ibovespa tickers: {e}')
+
+    try:
+        nifty_50_tickers = get_nifty_50_tickers()  # India
+        if len(nifty_50_tickers) < 100:
+            print('NIFTY 50 tickers missing!')
+        else:
+            print(f'NIFTY 50 tickers: {len(nifty_50_tickers)}')
+        tickers.extend(nifty_50_tickers)
+    except Exception as e:
+        print(f'Error fetching NIFTY 50 tickers: {e}')
+
+    try:
+        ftse_250_tickers = get_ftse_250_tickers()  # Great Britain 250
+        if len(ftse_250_tickers) < 250:
+            print('FTSE 250 tickers missing!')
+        else:
+            print(f'FTSE 250 tickers: {len(ftse_250_tickers)}')
+        tickers.extend(ftse_250_tickers)
+    except Exception as e:
+        print(f'Error fetching FTSE 250 tickers: {e}')
+
+    try:
+        tsx_60_tickers = get_tsx_60_tickers()  # Canada 60
+        if len(tsx_60_tickers) < 60:
+            print('S&P/TSX 60 tickers missing!')
+        else:
+            print(f'S&P/TSX 60 tickers: {len(tsx_60_tickers)}')
+        tickers.extend(tsx_60_tickers)
+    except Exception as e:
+        print(f'Error fetching S&P/TSX 60 tickers: {e}')
+
+    try:
+        tsx_composite_tickers = get_tsx_composite_tickers()  # Canada
+        if len(tsx_composite_tickers) < 200:
+            print('S&P/TSX Composite tickers missing!')
+        else:
+            print(f'S&P/TSX Composite tickers: {len(tsx_composite_tickers)}')
+        tickers.extend(tsx_composite_tickers)
+    except Exception as e:
+        print(f'Error fetching S&P/TSX Composite tickers: {e}')
+
+    try:
+        omx_stockholm_30_tickers = get_omx_stockholm_30_tickers()  # Stockholm 30
+        if len(omx_stockholm_30_tickers) < 30:
+            print('OMX Stockholm 30 tickers missing!')
+        else:
+            print(f'OMX Stockholm 30 tickers: {len(omx_stockholm_30_tickers)}')
+        tickers.extend(omx_stockholm_30_tickers)
+    except Exception as e:
+        print(f'Error fetching OMX Stockholm 30 tickers: {e}')
+
+    try:
+        omx_copenhagen_25_tickers = get_omx_copenhagen_25_tickers()  # Copenhagen 25
+        if len(omx_copenhagen_25_tickers) < 25:
+            print('OMX Copenhagen 25 tickers missing!')
+        else:
+            print(f'OMX Copenhagen 25 tickers: {len(omx_copenhagen_25_tickers)}')
+        tickers.extend(omx_copenhagen_25_tickers)
+    except Exception as e:
+        print(f'Error fetching OMX Copenhagen 25 tickers: {e}')
+
+    try:
+        ibex_35_tickers = get_ibex_35_tickers()  # Spain 35
+        if len(ibex_35_tickers) < 35:
+            print('IBEX 35 tickers missing!')
+        else:
+            print(f'IBEX 35 tickers: {len(ibex_35_tickers)}')
+        tickers.extend(ibex_35_tickers)
+    except Exception as e:
+        print(f'Error fetching IBEX 35 tickers: {e}')
+
     tickers = sort_tickers(list(set(tickers)))
     print(f"Total tickers collected: {len(tickers)}")
     return tickers
@@ -850,3 +1038,4 @@ if __name__ == '__main__':
 
     main_tickers = get_all_tickers()
     print(len(main_tickers))
+    # print(main_tickers)
