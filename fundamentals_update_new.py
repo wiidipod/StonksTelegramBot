@@ -103,6 +103,17 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         industry = get_industry_from_info(info)
         industry_pe_ratio = pe_ratios.get(industry) or pe_ratios.get('S&P 500') or 19.38
         price_target = get_price_target(ticker, low=True)
+        market_cap = get_market_cap_from_info(info)
+        price_to_book = get_price_to_book_from_info(info)
+        book_to_market = 1.0 / price_to_book if (price_to_book is not None and price_to_book > 0.0) else None
+        free_cash_flow = get_free_cash_flow_from_info(info)
+        fcf_to_price = free_cash_flow / market_cap if (free_cash_flow is not None and market_cap is not None and market_cap > 0.0) else None
+
+        if book_to_market is None or fcf_to_price is None:
+            dictionary[DictionaryKeysNew.no_fundamentals] = True
+            score = None
+        else:
+            score = (book_to_market * fcf_to_price) ** 0.5
         if price_target is None:
             dictionary[DictionaryKeysNew.no_fundamentals] = True
             price_target = price_target_growth
@@ -152,6 +163,10 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
                     if peg_ratio > 1.0 or peg_ratio < 0.0:
                         dictionary[DictionaryKeysNew.no_fundamentals] = True
     else:
+        market_cap = None
+        book_to_market = None
+        fcf_to_price = None
+        score = None
         pe_ratio = None
         peg_ratio = None
         ev_to_ebitda = None
@@ -169,11 +184,6 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
 
     name = get_name_from_info(info=info, ticker=ticker, industry_pe_ratio=industry_pe_ratio)
     subtitle = None
-    market_cap = get_market_cap_from_info(info)
-    price_to_book = get_price_to_book_from_info(info)
-    book_to_market = 1.0 / price_to_book if (price_to_book is not None and price_to_book > 0.0) else None
-    free_cash_flow = get_free_cash_flow_from_info(info)
-    fcf_to_price = free_cash_flow / market_cap if (free_cash_flow is not None and market_cap is not None and market_cap > 0.0) else None
 
     if market_cap is not None or price_target is not None or peg_ratio is not None or pe_ratio is not None or ev_to_ebitda is not None:
         subtitle = ''
@@ -192,10 +202,8 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
             if ev_to_ebitda_to_growth is not None:
                 subtitle += f' ({round_up(ev_to_ebitda_to_growth)})'
             subtitle += ' - '
-        if book_to_market is not None:
-            subtitle += f'B/M: {book_to_market} - '
-        if fcf_to_price is not None:
-            subtitle += f'FCF/P: {fcf_to_price} - '
+        if score is not None:
+            subtitle += f'S: {score} - '
         subtitle = subtitle[:-3]
 
     plot_path = plot_bands_by_labels_with_ta(
