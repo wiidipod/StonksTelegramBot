@@ -595,6 +595,7 @@ def get_index_tickers():
         '^CASE30',    # EGX 30 Price Return Index
         '^JN0U.JO',   # Top 40 USD Net TRI Index
         '000001.SS',  # SSE Composite Index
+        '000016.SS',  # SSE 50 Index
         '^N225',      # Nikkei 225
         'MOEX.ME',    # Moscow Exchange MICEX-RTS
         'DX-Y.NYB',   # US Dollar Index
@@ -605,6 +606,21 @@ def get_index_tickers():
         '^XDA',       # Australian Dollar Currency Index
         '^SDAXI',     # SDAX P
         '^SSHI',      # SPI TR
+        '^NSEI',       # Nifty 50
+        '^FTMC',       # FTSE 250
+        'TX60.TS',       # S&P/TSX 60
+        '^OMX',        # OMX Stockholm 30
+        '^OMXC25',     # OMX Copenhagen 25
+        '^IBEX',        # IBEX 35
+        '^KS200',       # KOSPI 200
+        '^AFLI',        # S&P/ASX 50
+        '^SSMI',       # SMI Index
+        '^TECDAX',      # TecDAX
+        '^MDAXI',       # MDAX P
+        '^STOXX50E',      # EURO STOXX 50 I
+        '^NDX',        # NASDAQ 100
+        '^SP600',       # S&P 600
+        '^SP400',       # S&P 400
     ]
 
 
@@ -675,8 +691,30 @@ def get_bond_tickers():
     ]
 
 
+def get_3x_etf_tickers():
+    return [
+        '3OIL.L',  # WTI Crude Oil
+        '3BRL.L',  # Brent Crude Oil
+        '3SIL.L',  # Silver
+        'QQQ3.L',  # NASDAQ 100
+        '3LNG.L',  # Natural Gas
+        '3GOL.L',  # Gold
+        '3LDE.L',  # DAX
+        '3BAL.L',  # EURO STOXX Banks
+        '3USL.L',  # S&P 500
+        '3EUL.L',  # EURO STOXX 50
+        '3SMC.L',  # Semiconductor
+        '3EML.MI',  # Emerging Markets
+        '3EDF.L',  # STOXX Europe Aerospa
+        '3CAC.PA',  # CAC 40
+        '3HCL.L',  # Copper
+        '3MG7.L',  # Magnificent 7
+        '3TYL.MI',  # US Treasuries 10Y
+    ]
+
+
 def is_index(ticker):
-    return ticker[0] == '^' or ticker in get_index_tickers()
+    return (ticker[0] == '^' and ticker not in get_bond_tickers()) or ticker in get_index_tickers()
 
 
 def is_crypto(ticker):
@@ -684,24 +722,29 @@ def is_crypto(ticker):
 
 
 def is_future(ticker):
-    return ticker[-2:] == '=F' or ticker in get_future_tickers()
+    return (ticker[-2:] == '=F' and ticker not in get_bond_tickers()) or ticker in get_future_tickers()
 
 
 def is_currency(ticker):
     return ticker[-2:] == '=X' or ticker in get_currency_tickers()
 
 
+def is_3x_etf(ticker):
+    return ticker in get_3x_etf_tickers()
+
+
 def is_stock(ticker):
-    return not is_index(ticker) and not is_crypto(ticker) and not is_future(ticker) and not is_currency(ticker)
+    return not is_index(ticker) and not is_crypto(ticker) and not is_future(ticker) and not is_currency(ticker) and not is_3x_etf(ticker)
 
 
 def sort_tickers(tickers):
     stock_tickers = sorted([t for t in tickers if is_stock(t)])
     index_tickers = sorted([t for t in tickers if is_index(t)])
+    etf_tickers = sorted([t for t in tickers if is_3x_etf(t)])
     future_tickers = sorted([t for t in tickers if is_future(t)])
     currency_tickers = sorted([t for t in tickers if is_currency(t)])
     crypto_tickers = sorted([t for t in tickers if is_crypto(t)])
-    return stock_tickers + index_tickers + future_tickers + currency_tickers + crypto_tickers
+    return stock_tickers + index_tickers + etf_tickers + future_tickers + currency_tickers + crypto_tickers
 
     
 def get_all_tickers():
@@ -897,6 +940,8 @@ def get_all_tickers():
     tickers.extend(get_future_tickers())  # Futures
 
     tickers.extend(get_bond_tickers())  # Bonds
+
+    tickers.extend(get_3x_etf_tickers())  # 3x ETFs
 
     # try:
     #     hype_tickers = get_hype_tickers()
