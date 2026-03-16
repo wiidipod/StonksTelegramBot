@@ -164,8 +164,6 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
                         dictionary[DictionaryKeysNew.no_fundamentals] = True
     else:
         market_cap = None
-        book_to_market = None
-        fcf_to_price = None
         score = None
         pe_ratio = None
         peg_ratio = None
