@@ -1,23 +1,24 @@
 import argparse
-import time
-import yfinance as yf
-from tqdm import tqdm
 import asyncio
+import time
 import traceback
 from typing import Dict
 
+import yfinance as yf
+from tqdm import tqdm
+
 from alchemy import get_alchemy_scores
-from ticker_service import get_all_tickers, is_crypto, is_stock, get_s_p_500_tickers, chunk_list
+from constants import DictionaryKeysNew, UndervaluedKey, CommonDictionaryKey, TechnicalsKeys, GrowthKeys
+from message_utility import get_message_by_dictionary_new, human_format, round_up
 from pe_utility import update_pe_ratios
+from plot_utility import plot_bands_by_labels_with_ta
+from regression_utility import add_close_window_growths
+from ta_utility import add_rsi
+from telegram_service import get_application, send_plots, send_message_to_first
+from ticker_service import get_all_tickers, is_crypto, is_stock, chunk_list
 from yfinance_service import extract_ticker_df, get_pe_ratio_from_info, get_peg_ratio_from_info, \
     get_ev_to_ebitda_from_info, get_industry_from_info, get_price_target, P, get_name_from_info, \
-    get_market_cap_from_info, get_price_to_book_from_info, get_free_cashflow_from_info
-from constants import DictionaryKeysNew, UndervaluedKey, CommonDictionaryKey, TechnicalsKeys, GrowthKeys
-from message_utility import get_message_by_dictionary_new, round_down, human_format, human_format_from_string, round_up
-from telegram_service import get_application, send_plots, send_message_to_first
-from ta_utility import add_macd, add_rsi, add_sma, add_emas, add_ema
-from regression_utility import add_close_window_growths
-from plot_utility import plot_bands_by_labels_with_ta
+    get_market_cap_from_info
 
 
 def get_growth(value_today, value_future):
@@ -47,7 +48,7 @@ def get_plot_path_and_message_for(ticker, period='10y', pe_ratios=None):
 
     future = len(ticker_df) // 10
 
-    dictionary, plot_path = analyze(df=ticker_df, ticker=ticker, future=future, full=True, pe_ratios=pe_ratios)
+    dictionary, plot_path, _ = analyze(df=ticker_df, ticker=ticker, future=future, full=True, pe_ratios=pe_ratios)
 
     message = get_message_by_dictionary_new(dictionary=dictionary, ticker=ticker)
 
@@ -180,7 +181,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         dictionary[DictionaryKeysNew.too_expensive] = True
 
     if not full and not has_buy_signal(dictionary):
-        return dictionary, None
+        return dictionary, None, None
 
     name = get_name_from_info(info=info, ticker=ticker, industry_pe_ratio=industry_pe_ratio)
     subtitle = None
@@ -227,7 +228,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         ],
     )
 
-    return dictionary, plot_path
+    return dictionary, plot_path, score
 
 
 def process_ticker(df, ticker, pe_ratios):
@@ -248,7 +249,7 @@ def process_ticker(df, ticker, pe_ratios):
 
     except Exception as e:
         print(f'Error processing {ticker}: {e}')
-        return None, None
+        return None, None, None
 
 
 def process_chunk(tickers, pe_ratios):
@@ -263,9 +264,10 @@ def process_chunk(tickers, pe_ratios):
 
     messages = []
     plot_paths = []
+    scores = []
 
     for ticker in tqdm(tickers):
-        dictionary, plot_path = process_ticker(
+        dictionary, plot_path, score = process_ticker(
             df=df,
             ticker=ticker,
             pe_ratios=pe_ratios
@@ -286,10 +288,10 @@ def process_chunk(tickers, pe_ratios):
             ticker=ticker,
         )
         messages.append(message)
-
         plot_paths.append(plot_path)
+        scores.append(score)
 
-    return messages, plot_paths, indicator_counts
+    return messages, plot_paths, scores, indicator_counts
 
 
 def initialize_indicator_counts() -> Dict[CommonDictionaryKey, int]:
@@ -308,6 +310,7 @@ def main():
 
     messages = []
     plot_paths = []
+    scores = []
     indicator_counts = initialize_indicator_counts()
 
     pe_ratios = update_pe_ratios()
@@ -319,14 +322,24 @@ def main():
         if i > 0:
             time.sleep(chunk_size)
 
-        messages_chunk, plot_paths_chunk, indicator_counts_chunk = process_chunk(
+        messages_chunk, plot_paths_chunk, scores_chunk, indicator_counts_chunk = process_chunk(
             tickers=ticker_chunk,
             pe_ratios=pe_ratios,
         )
         messages.extend(messages_chunk)
         plot_paths.extend(plot_paths_chunk)
+        scores.extend(scores_chunk)
         for key in DictionaryKeysNew:
             indicator_counts[key] += indicator_counts_chunk[key]
+
+    # Sort by score descending; entries with None score come last
+    sorted_items = sorted(
+        zip(messages, plot_paths, scores),
+        key=lambda x: (x[2] is None, -(x[2] if x[2] is not None else 0)),
+    )
+    if sorted_items:
+        m, p, s = zip(*sorted_items)
+        messages, plot_paths, scores = list(m), list(p), list(s)
 
     for key in DictionaryKeysNew:
         print(f'{key.value}: {indicator_counts[key]}')
