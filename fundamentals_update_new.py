@@ -201,7 +201,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
                 subtitle += f' ({round_up(ev_to_ebitda_to_growth)})'
             subtitle += ' - '
         if score is not None:
-            subtitle += f'S: {human_format(score * 100.0)} - '
+            subtitle += f'S: {human_format(score * 10000.0)} - '
         subtitle = subtitle[:-3]
 
     plot_path = plot_bands_by_labels_with_ta(
