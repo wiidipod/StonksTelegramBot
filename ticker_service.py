@@ -714,7 +714,7 @@ def get_3x_etf_tickers():
 
 
 def is_index(ticker):
-    return (ticker[0] == '^' and ticker not in get_bond_tickers()) or ticker in get_index_tickers()
+    return (ticker[0] == '^' and not is_bond(ticker)) or ticker in get_index_tickers()
 
 
 def is_crypto(ticker):
@@ -722,7 +722,7 @@ def is_crypto(ticker):
 
 
 def is_future(ticker):
-    return (ticker[-2:] == '=F' and ticker not in get_bond_tickers()) or ticker in get_future_tickers()
+    return (ticker[-2:] == '=F' and not is_bond(ticker)) or ticker in get_future_tickers()
 
 
 def is_currency(ticker):
@@ -731,6 +731,10 @@ def is_currency(ticker):
 
 def is_3x_etf(ticker):
     return ticker in get_3x_etf_tickers()
+
+
+def is_bond(ticker):
+    return ticker in get_bond_tickers()
 
 
 def is_stock(ticker):
@@ -744,7 +748,8 @@ def sort_tickers(tickers):
     future_tickers = sorted([t for t in tickers if is_future(t)])
     currency_tickers = sorted([t for t in tickers if is_currency(t)])
     crypto_tickers = sorted([t for t in tickers if is_crypto(t)])
-    return stock_tickers + index_tickers + etf_tickers + future_tickers + currency_tickers + crypto_tickers
+    bond_tickers = sorted([t for t in tickers if is_bond(t)])
+    return stock_tickers + index_tickers + etf_tickers + future_tickers + currency_tickers + crypto_tickers + bond_tickers
 
     
 def get_all_tickers():
