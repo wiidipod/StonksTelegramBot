@@ -7,7 +7,7 @@ from typing import Dict
 import yfinance as yf
 from tqdm import tqdm
 
-from alchemy import get_alchemy_scores
+from alchemy import get_alchemy_scores, check_investment_rule
 from constants import DictionaryKeysNew, UndervaluedKey, CommonDictionaryKey, TechnicalsKeys, GrowthKeys
 from message_utility import get_message_by_dictionary_new, human_format, round_up
 from pe_utility import update_pe_ratios
@@ -97,8 +97,10 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         dictionary[DictionaryKeysNew.no_growth] = True
 
     # no_fundamentals
-    info = yf.Ticker(ticker).info
+    yf_ticker = yf.Ticker(ticker)
+    info = yf_ticker.info
     if is_stock(ticker):
+        passes_inv_rule, _ = check_investment_rule(yf_ticker.balance_sheet, yf_ticker.financials)
         pe_ratio = get_pe_ratio_from_info(info)
         peg_ratio = get_peg_ratio_from_info(info)
         ev_to_ebitda = get_ev_to_ebitda_from_info(info)
@@ -106,17 +108,9 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         industry_pe_ratio = pe_ratios.get(industry) or pe_ratios.get('S&P 500') or 19.38
         price_target = get_price_target(ticker, low=True)
         market_cap = get_market_cap_from_info(info)
-        score = get_alchemy_scores(ticker).get('score')
-        # price_to_book = get_price_to_book_from_info(info)
-        # book_to_market = 1.0 / price_to_book if (price_to_book is not None and price_to_book > 0.0) else None
-        # free_cashflow = get_free_cashflow_from_info(info)
-        # fcf_to_price = free_cashflow / market_cap if (free_cashflow is not None and market_cap is not None and market_cap > 0.0) else None
-        #
-        # if book_to_market is None or fcf_to_price is None:
-        #     dictionary[DictionaryKeysNew.no_fundamentals] = True
-        #     score = None
-        # else:
-        #     score = (book_to_market * fcf_to_price) ** (1/2)
+        score = get_alchemy_scores(yf_ticker, info).get('score')
+        if not passes_inv_rule:
+            dictionary[DictionaryKeysNew.no_fundamentals] = True
         if price_target is None:
             dictionary[DictionaryKeysNew.no_fundamentals] = True
             price_target = price_target_growth
@@ -158,7 +152,8 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
                 elif ev_to_ebitda_to_growth is None and peg_ratio is not None:
                     if peg_ratio > 1.0 or peg_ratio < 0.0:
                         dictionary[DictionaryKeysNew.no_fundamentals] = True
-                elif (ev_to_ebitda_to_growth > 1.0 or ev_to_ebitda_to_growth < 0.0) and (peg_ratio > 1.0 or peg_ratio < 0.0):
+                elif (ev_to_ebitda_to_growth > 1.0 or ev_to_ebitda_to_growth < 0.0) and (
+                        peg_ratio > 1.0 or peg_ratio < 0.0):
                     dictionary[DictionaryKeysNew.no_fundamentals] = True
             else:
                 ev_to_ebitda_to_growth = None

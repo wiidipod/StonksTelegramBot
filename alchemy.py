@@ -9,13 +9,13 @@ from ticker_service import get_all_tickers, get_nasdaq_100_tickers, chunk_list
 from message_utility import human_format
 
 
-def get_alchemy_scores(ticker):
+def get_alchemy_scores(yf_ticker, info):
     """
     Extracts the continuous variables used to score and rank the stocks.
     Handles missing yfinance data safely.
     """
-    yf_ticker = yf.Ticker(ticker)
-    info = yf_ticker.info
+    # yf_ticker = yf.Ticker(ticker)
+    # info = yf_ticker.info
     scores = {
         'score': 1.0,
     }
@@ -152,7 +152,7 @@ def process_chunk(tickers):
             print(f"Investment rule failed for {ticker}: {rule_details}")
             continue
 
-        scores = get_alchemy_scores(ticker)
+        scores = get_alchemy_scores(yf_ticker, yf_ticker.info)
         if scores is None:
             continue
 
