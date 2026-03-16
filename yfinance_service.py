@@ -280,9 +280,9 @@ def get_price_to_book_from_info(info):
         return None
 
 
-def get_free_cash_flow_from_info(info):
+def get_free_cashflow_from_info(info):
     try:
-        free_cash_flow = info.get("freeCashFlow")
+        free_cash_flow = info.get("freeCashflow")
         if free_cash_flow is None or free_cash_flow <= 0.0 or math.isnan(free_cash_flow):
             return None
         return free_cash_flow
