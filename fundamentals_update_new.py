@@ -66,24 +66,10 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         dictionary[DictionaryKeysNew.too_short] = True
 
     # no_technicals
-    # df = add_macd(df)
     df = add_rsi(df)
-    # ema_window_long = 500
-    # ema_window_short = 250
-    # sma_window_long = 200
-    # sma_window_short = 50
-    # df = add_ema(df=df, window=ema_window_long)
-    # df = add_ema(df=df, window=ema_window_short)
-    # df = add_sma(df=df, window=sma_window_long)
-    # df = add_sma(df=df, window=sma_window_short)
     try:
-        # macd = df[TechnicalsKeys.macd_diff.value].iat[-1] >= df[TechnicalsKeys.macd_diff.value].iat[-2]
-        # sma = df[f'{TechnicalsKeys.sma.value}{sma_window_short}'][-1] <= df[P.C.value][-1]
-        # ema = df[f'{TechnicalsKeys.ema.value}{ema_window_short}'][-1] >= df[f'{TechnicalsKeys.ema.value}{ema_window_long}'][-1]
         rsi = df[TechnicalsKeys.rsi.value].iat[-1] <= 100.0 / 3.0
-        # momentum = macd or sma  # or ema
     except:
-        # momentum = False
         rsi = False
     if not rsi:
         dictionary[DictionaryKeysNew.no_technicals] = True
@@ -101,16 +87,10 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         value_today=df[GrowthKeys.growth.value].iat[today_index],
         value_future=df[GrowthKeys.growth.value].iat[-1],
     )
-    if is_stock(ticker):
-        price_target_growth = min(
-            df[GrowthKeys.growth.value].iat[-1],
-            df[P.C.value].iat[today_index] * (1.0 + growth / 100.0),
-        )
-    else:
-        price_target_growth = min(
-            df[GrowthKeys.growth_lower.value].iat[-1],
-            df[P.C.value].iat[today_index] * (1.0 + growth / 100.0),
-            )
+    price_target_growth = min(
+        df[GrowthKeys.growth_lower.value].iat[-1],
+        df[P.C.value].iat[today_index] * (1.0 + growth / 100.0),
+    )
     if growth < 0.0:
         dictionary[DictionaryKeysNew.no_growth] = True
 
@@ -136,7 +116,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
                     price_target,
                 )
             )
-            price_target = min(price_target, price_target_growth)
+            price_target = min(price_target, price_target_growth, value)
         if peg_ratio is None:
             dictionary[DictionaryKeysNew.no_fundamentals] = True
         else:
@@ -308,7 +288,8 @@ def main():
     parser.add_argument('--all', action='store_true', help='Send plots to all subscribers')
     args = parser.parse_args()
 
-    tickers = get_all_tickers()
+    # tickers = get_all_tickers()
+    tickers = ['CI', 'ELV']
 
     messages = []
     plot_paths = []
