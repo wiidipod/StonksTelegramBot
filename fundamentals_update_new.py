@@ -110,7 +110,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         market_cap = get_market_cap_from_info(info)
         recommendation = get_recommendation_from_info(info)
         score = get_alchemy_scores(yf_ticker, info).get('score')
-        if recommendation != 'STRONG_BUY':
+        if recommendation is None or 'BUY' not in recommendation.upper():
             dictionary[DictionaryKeysNew.no_fundamentals] = True
         if not passes_inv_rule:
             score = 0.0
@@ -258,6 +258,7 @@ def process_chunk(tickers, pe_ratios):
         period='10y',
         interval='1d',
         group_by='ticker',
+        repair=True,
     )
 
     indicator_counts = initialize_indicator_counts()

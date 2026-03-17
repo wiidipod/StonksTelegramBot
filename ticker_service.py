@@ -694,22 +694,39 @@ def get_bond_tickers():
 def get_3x_etf_tickers():
     return [
         '3OIL.L',  # WTI Crude Oil
+        '3OIS.L',  # WTI Crude Oil Short
         '3BRL.L',  # Brent Crude Oil
+        '3BRS.L',  # Brent Crude Oil Short
         '3SIL.L',  # Silver
+        '3SIS.L',  # Silver Short
         'QQQ3.L',  # NASDAQ 100
+        'QQQS.L',  # NASDAQ 100 Short
         '3LNG.L',  # Natural Gas
+        '3NGS.L',  # Natural Gas Short
         '3GOL.L',  # Gold
+        '3GOS.L',  # Gold Short
         '3LDE.L',  # DAX
+        '3SDE.L',  # DAX Short
         '3BAL.L',  # EURO STOXX Banks
+        '3BAS.MI',  # EURO STOXX Banks Short
         '3USL.L',  # S&P 500
+        '3USS.L',  # S&P 500 Short
         '3EUL.L',  # EURO STOXX 50
+        '3LES.L',  # EURO STOXX 50 Short
         '3SMC.L',  # Semiconductor
+        'SC3S.L',  # Semiconductor Short
         '3EML.MI',  # Emerging Markets
+        '3EMS.MI',  # Emerging Markets Short
         '3EDF.L',  # STOXX Europe Aerospa
+        '3EDS.L',  # STOXX Europe Aerospa Short
         '3CAC.PA',  # CAC 40
+        '3CAS.PA',  # CAC 40 Short
         '3HCL.L',  # Copper
         '3MG7.L',  # Magnificent 7
+        '3M7S.L',  # Magnificent 7 Short
         '3TYL.MI',  # US Treasuries 10Y
+        '3TYS.MI',  # US Treasuries 10Y Short
+        '3UBS.MI',  # Bund 30Y Short
     ]
 
 
