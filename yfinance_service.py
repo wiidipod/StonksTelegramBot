@@ -416,6 +416,16 @@ def extract_ticker_df(df, ticker):
     ]
 
 
+def get_recommendation_from_info(info):
+    try:
+        recommendation = info.get('recommendationKey')
+        if recommendation is None:
+            return None
+        return recommendation
+    except:
+        return None
+
+
 def get_market_cap_from_info(info):
     try:
         market_cap = info.get("marketCap")

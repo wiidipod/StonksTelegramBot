@@ -1,127 +1,64 @@
+import datetime
 import yfinance as yf
-from datetime import datetime, timedelta
 
-def pf(k, v):  # Print if Value is present
-    if v not in [None, '', 'N/A']:
-        print(f"{k}: {v}")
+def print_today():
+    today = datetime.date.today()
+    print(f"Date: {today.strftime('%d-%m-%Y')}\n")
 
-def print_title(title):
-    print(f'\n{"="*20}\n{title}\n{"="*20}')
+def print_yf_data(ticker):
+    try:
+        info = ticker.info
+        symbol = info.get('symbol', 'Unknown')
 
-def display_head(df, n=3):
-    if df is not None and not df.empty:
-        print(df.iloc[:, :n].to_string())
-    else:
-        print("No data available.")
+        # Safely fetch metrics, defaulting to 'N/A' if missing
+        name = info.get('shortName', 'N/A')
+        current_price = info.get('currentPrice', info.get('regularMarketPrice', 'N/A'))
+        fifty_two_low = info.get('fiftyTwoWeekLow', 'N/A')
+        fifty_two_high = info.get('fiftyTwoWeekHigh', 'N/A')
+        trailing_pe = info.get('trailingPE', 'N/A')
+        forward_pe = info.get('forwardPE', 'N/A')
+        revenue_growth = info.get('revenueGrowth', 'N/A')
+        profit_margins = info.get('profitMargins', 'N/A')
+        target_price = info.get('targetMeanPrice', 'N/A')
+        recommendation = info.get('recommendationKey', 'N/A')
+
+        # Format percentages if they exist
+        if revenue_growth != 'N/A':
+            revenue_growth = f"{revenue_growth * 100:.2f}%"
+        if profit_margins != 'N/A':
+            profit_margins = f"{profit_margins * 100:.2f}%"
+
+        # Print the data in a clear, structured format
+        print(f"--- {symbol} ({name}) ---")
+        print(f"Current Price   : ${current_price}")
+        print(f"52-Week Range   : ${fifty_two_low} - ${fifty_two_high}")
+        print(f"Trailing P/E    : {trailing_pe}")
+        print(f"Forward P/E     : {forward_pe}")
+        print(f"Revenue Growth  : {revenue_growth}")
+        print(f"Profit Margins  : {profit_margins}")
+        print(f"Target Price    : ${target_price}")
+        print(f"Analyst Rec     : {recommendation.upper()}")
+        print("-" * 40)
+
+    except Exception as e:
+        print(f"--- Failed to fetch data for {ticker.ticker} ---")
+        print(f"Error: {e}")
+        print("-" * 40)
 
 def main():
-    ticker = input("Enter stock ticker (e.g. MSFT): ").strip().upper()
-    stock = yf.Ticker(ticker)
-    info = stock.info
-
-    print_title(f"[ {ticker} ] COMPANY PROFILE")
-    for k in ['longName','symbol','exchange','sector','industry','country','website']:
-        pf(k, info.get(k, 'N/A'))
-    pf('Full Description', info.get('longBusinessSummary', 'N/A'))
-
-    print_title("VALUATION & STATS")
-    for k in [
-        'marketCap','sharesOutstanding','currency','regularMarketPrice',
-        '52WeekChange','beta','trailingPE','forwardPE','trailingEps','dividendYield', 'priceToBook'
-    ]:
-        pf(k, info.get(k, 'N/A'))
-
-    print_title("KEY ANNUAL FINANCIALS (last 3 fiscal years)")
-    print("Income Statement:")
-    display_head(stock.financials)
-    print("\nBalance Sheet:")
-    display_head(stock.balance_sheet)
-    print("\nCash Flow:")
-    display_head(stock.cashflow)
-
-    print_title("LATEST QUARTERLY EARNINGS CALENDAR")
-    try:
-        cal = stock.calendar
-        print(cal.T.to_string())
-    except Exception as e:
-        print("No earnings calendar data.")
-
-    print_title("LATEST ANALYST RECOMMENDATIONS")
-    try:
-        rec = stock.recommendations
-        if rec is not None and not rec.empty:
-            print(rec.tail(5).to_string())
-        else:
-            print("No analyst recommendation data.")
-    except Exception as e:
-        print("No analyst recommendation data.")
-
-    print_title("LAST 20 DAYS: DAILY PRICE HISTORY (O/H/L/C/V)")
-    try:
-        end = datetime.now()
-        start = end - timedelta(days=30)
-        hist = stock.history(start=start.strftime('%Y-%m-%d'), end=end.strftime('%Y-%m-%d'), interval='1d')
-        print(hist[['Open','High','Low','Close','Volume']].tail(20).to_string())
-    except Exception as e:
-        print(f"Could not fetch price history: {e}")
-
-    print('\n' + '='*10 + ' END OF DATA ' + '='*10)
-
-    print_title("ANALYST PRICE TARGETS (1 YEAR)")
-    target_keys = ['targetLowPrice', 'targetMeanPrice', 'targetMedianPrice', 'targetHighPrice']
-    for k in target_keys:
-        pf(k.replace('target', '1Y Target '), info.get(k, 'N/A'))
-    pf('currentPrice', info.get('currentPrice', 'N/A'))
-
-    print_title("ANALYST RECOMMENDATION SUMMARY")
-    for k in [
-        'recommendationMean',  # Lower is better (1=strong buy, 5=sell)
-        'recommendationKey',   # "buy", "hold", etc.
-        'numberOfAnalystOpinions'
-    ]:
-        pf(k, info.get(k, 'N/A'))
-
-    print_title("FWD GROWTH ESTIMATES")
-    for k in [
-        'earningsQuarterlyGrowth',  # YOY recent EPS growth
-        'revenueQuarterlyGrowth',   # YOY recent revenue growth
-        'forwardEps',
-        'forwardPE',
-        'pegRatio'
-    ]:
-        pf(k, info.get(k, 'N/A'))
-
-    print_title("PROFITABILITY")
-    for k in [
-        'profitMargins',  # net margin
-        'operatingMargins',
-        'grossMargins',
-        'returnOnAssets',
-        'returnOnEquity'
-    ]:
-        pf(k, info.get(k, 'N/A'))
-
-    print_title("INSIDER & INSTITUTIONAL HOLDINGS")
-    for k in [
-        'heldPercentInsiders',
-        'heldPercentInstitutions',
-        'insiderOwn',
-        'insiderTransPercent'
-    ]:
-        pf(k, info.get(k, 'N/A'))
-
-    print_title("DEBT & LIQUIDITY")
-    for k in [
-        'debtToEquity',
-        'currentRatio',
-        'quickRatio',
-        'totalCash',
-        'totalDebt'
-    ]:
-        pf(k, info.get(k, 'N/A'))
-
-    print_title("SIMILAR TICKERS")
-    pf('relatedTickers', info.get('relatedTickers', 'N/A'))
+    symbols =[
+        'ADBE',
+        'AMZN',
+        'CI',
+        'ELV',
+        'KBR',
+        'LULU',
+        'MSFT',
+    ]
+    print_today()
+    for symbol in symbols:
+        ticker = yf.Ticker(symbol)
+        print_yf_data(ticker)
 
 if __name__ == "__main__":
     main()

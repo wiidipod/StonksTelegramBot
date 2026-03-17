@@ -18,7 +18,7 @@ from telegram_service import get_application, send_plots, send_message_to_first
 from ticker_service import get_all_tickers, is_crypto, is_stock, chunk_list
 from yfinance_service import extract_ticker_df, get_pe_ratio_from_info, get_peg_ratio_from_info, \
     get_ev_to_ebitda_from_info, get_industry_from_info, get_price_target, P, get_name_from_info, \
-    get_market_cap_from_info
+    get_market_cap_from_info, get_recommendation_from_info
 
 
 def get_growth(value_today, value_future):
@@ -108,7 +108,10 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         industry_pe_ratio = pe_ratios.get(industry) or pe_ratios.get('S&P 500') or 19.38
         price_target = get_price_target(ticker, low=True)
         market_cap = get_market_cap_from_info(info)
+        recommendation = get_recommendation_from_info(info)
         score = get_alchemy_scores(yf_ticker, info).get('score')
+        if recommendation != 'STRONG_BUY':
+            dictionary[DictionaryKeysNew.no_fundamentals] = True
         if not passes_inv_rule:
             score = 0.0
         if score <= 0.0:
