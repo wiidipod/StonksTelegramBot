@@ -110,7 +110,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         market_cap = get_market_cap_from_info(info)
         score = get_alchemy_scores(yf_ticker, info).get('score')
         if not passes_inv_rule:
-            dictionary[DictionaryKeysNew.no_fundamentals] = True
+            score = 0.0
         if score <= 0.0:
             dictionary[DictionaryKeysNew.no_fundamentals] = True
         if price_target is None:
