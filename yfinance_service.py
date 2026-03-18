@@ -8,9 +8,6 @@ from message_utility import human_format
 from ticker_service import is_stock
 
 
-# import retry_utility
-
-
 class P(Enum):
     O = 'Open'
     H = 'High'

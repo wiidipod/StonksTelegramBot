@@ -1,10 +1,7 @@
-import asyncio
-
 import message_utility
 import plot_utility
 import regression_utility
 import ta_utility
-import telegram_service
 import yfinance_service
 
 
