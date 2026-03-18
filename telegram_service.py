@@ -6,7 +6,7 @@ from telegram import Update, InputMediaPhoto, BotCommand
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
 import yfinance as yf
 
-import option_utility
+# import option_utility
 import ta_utility
 import yfinance_service
 from message_utility import get_subscriptions
@@ -176,33 +176,33 @@ async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 logging.error(f"Failed to send error message to chat: {send_error}. Original error: {e}")
 
 
-async def handle_stop_loss(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    try:
-        if len(context.args) < 1:
-            await update.message.reply_text("Invalid input. Try `/stoploss 1.23`", parse_mode='MarkdownV2')
-            return
-
-        option_close, delta, ticker = extract_option_close_delta_and_ticker(context)
-
-        high, low, close = yfinance_service.get_high_low_close(ticker, period='1y')
-        upperband, lowerband = ta_utility.get_supertrend(high, low, close)
-        if upperband[-1] is None:
-            supertrend = lowerband[-1]
-        else:
-            supertrend = upperband[-1]
-
-        stop_loss = option_utility.get_stop_loss(
-            option_close=option_close,
-            supertrend=supertrend,
-            delta=delta,
-            ticker=ticker,
-        )
-
-        await update.message.reply_text(f"Stop Loss: {stop_loss}")
-    except ValueError:
-        await update.message.reply_text("Invalid input. Please provide a valid number.")
-    except Exception as e:
-        await update.message.reply_text(f"An error occurred: {str(e)}")
+# async def handle_stop_loss(update: Update, context: ContextTypes.DEFAULT_TYPE):
+#     try:
+#         if len(context.args) < 1:
+#             await update.message.reply_text("Invalid input. Try `/stoploss 1.23`", parse_mode='MarkdownV2')
+#             return
+#
+#         option_close, delta, ticker = extract_option_close_delta_and_ticker(context)
+#
+#         high, low, close = yfinance_service.get_high_low_close(ticker, period='1y')
+#         upperband, lowerband = ta_utility.get_supertrend(high, low, close)
+#         if upperband[-1] is None:
+#             supertrend = lowerband[-1]
+#         else:
+#             supertrend = upperband[-1]
+#
+#         stop_loss = option_utility.get_stop_loss(
+#             option_close=option_close,
+#             supertrend=supertrend,
+#             delta=delta,
+#             ticker=ticker,
+#         )
+#
+#         await update.message.reply_text(f"Stop Loss: {stop_loss}")
+#     except ValueError:
+#         await update.message.reply_text("Invalid input. Please provide a valid number.")
+#     except Exception as e:
+#         await update.message.reply_text(f"An error occurred: {str(e)}")
 
 
 async def handle_reversal(update: Update, context: ContextTypes.DEFAULT_TYPE):
