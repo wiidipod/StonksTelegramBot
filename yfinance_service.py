@@ -149,7 +149,7 @@ def get_name_from_info(info, ticker='', mono=False, industry_pe_ratio=None):
 
     try:
         from message_utility import human_format
-        market_cap = f" - {human_format(info['marketCap'])}"
+        market_cap = f" - MC: {human_format(info['marketCap'])}"
     except:
         market_cap = ""
 
