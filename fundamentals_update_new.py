@@ -200,12 +200,12 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
 
     name = get_name_from_info(info=info, ticker=ticker, industry_pe_ratio=industry_pe_ratio)
     subtitle = None
-    # vola = round_down((1.0 - df[GrowthKeys.growth.value].iat[-1] / df[GrowthKeys.growth_upper.value].iat[-1]) * 100.0, digits=2)
+    vola = human_format((1.0 - df[GrowthKeys.growth.value].iat[-1] / df[GrowthKeys.growth_upper.value].iat[-1]) * 100.0)
     # tsl = round_down(((1.0 - df[P.C.value].iat[today_index] / min(value, price_target)) * 100.0), digits=2)
     sl = df[GrowthKeys.growth.value].iat[-1] / df[GrowthKeys.growth_upper.value].iat[-1] * 100.0
     tp = min(value, price_target) / df[P.C.value].iat[today_index] * 100.0
 
-    if price_target is not None or peg_ratio is not None or pe_ratio is not None or ev_to_ebitda is not None or (sl is not None and tp is not None) or score is not None:
+    if price_target is not None or peg_ratio is not None or pe_ratio is not None or ev_to_ebitda is not None or (sl is not None and tp is not None) or score is not None or vola is not None:
         subtitle = ''
         if value is not None:
             subtitle += f'V: {human_format(value)} - '
@@ -224,8 +224,8 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
             subtitle += ' - '
         if score is not None:
             subtitle += f'S: {human_format(score * 10000.0)} - '
-        # if vola is not None:
-        #     subtitle += f'Vola: {vola}% - '
+        if vola is not None:
+            subtitle += f'Vola: {vola}% - '
         subtitle = subtitle[:-3]
 
     plot_path = plot_bands_by_labels_with_ta(
