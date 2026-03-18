@@ -755,7 +755,7 @@ def is_bond(ticker):
 
 
 def is_stock(ticker):
-    return not is_index(ticker) and not is_crypto(ticker) and not is_future(ticker) and not is_currency(ticker) and not is_3x_etf(ticker)
+    return not is_index(ticker) and not is_crypto(ticker) and not is_future(ticker) and not is_currency(ticker) and not is_3x_etf(ticker) and not is_bond(ticker)
 
 
 def sort_tickers(tickers):
