@@ -100,24 +100,17 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     yf_ticker = yf.Ticker(ticker)
     info = yf_ticker.info
     if is_stock(ticker):
-        passes_inv_rule, _ = check_investment_rule(yf_ticker.balance_sheet, yf_ticker.financials)
+        market_cap = get_market_cap_from_info(info)
         pe_ratio = get_pe_ratio_from_info(info)
         peg_ratio = get_peg_ratio_from_info(info)
         ev_to_ebitda = get_ev_to_ebitda_from_info(info)
         industry = get_industry_from_info(info)
         industry_pe_ratio = pe_ratios.get(industry) or pe_ratios.get('S&P 500') or 19.38
         price_target = get_price_target(ticker, low=True)
-        market_cap = get_market_cap_from_info(info)
         recommendation = get_recommendation_from_info(info)
-        score = get_alchemy_scores(yf_ticker, info).get('score')
-        print(f'[{ticker}] recommendation={recommendation}, score={score}, price_target={price_target}, peg_ratio={peg_ratio}, pe_ratio={pe_ratio}, ev_to_ebitda={ev_to_ebitda}')
+        print(f'[{ticker}] recommendation={recommendation}, price_target={price_target}, peg_ratio={peg_ratio}, pe_ratio={pe_ratio}, ev_to_ebitda={ev_to_ebitda}')
         if recommendation is None or 'BUY' not in recommendation.upper():
             print(f'[{ticker}] no_fundamentals: recommendation={recommendation}')
-            dictionary[DictionaryKeysNew.no_fundamentals] = True
-        if not passes_inv_rule:
-            score = 0.0
-        if score <= 0.0:
-            print(f'[{ticker}] no_fundamentals: score={score}')
             dictionary[DictionaryKeysNew.no_fundamentals] = True
         if price_target is None:
             print(f'[{ticker}] no_fundamentals: price_target is None')
@@ -187,7 +180,19 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         value = df[GrowthKeys.growth_lower.value].iat[today_index]
         ev_to_ebitda_to_growth = None
 
-    # too_expensive
+    # no_multibagger
+    if is_stock(ticker):
+        passes_inv_rule, _ = check_investment_rule(yf_ticker.balance_sheet, yf_ticker.financials)
+        score = get_alchemy_scores(yf_ticker, info).get('score')
+        print(f'[{ticker}] score={score}')
+        if not passes_inv_rule:
+                score = 0.0
+        if score <= 0.0:
+            print(f'[{ticker}] no_multibagger: score={score}')
+            dictionary[DictionaryKeysNew.no_multibagger] = True
+
+
+# too_expensive
     if value < df[P.C.value].iat[today_index]:
         dictionary[DictionaryKeysNew.too_expensive] = True
 

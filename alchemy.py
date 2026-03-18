@@ -23,6 +23,8 @@ def get_alchemy_scores(yf_ticker, info):
     try:
         # Size: Total Enterprise Value (TEV) - Lower is better
         scores['TEV'] = info.get('enterpriseValue')
+        if scores['TEV'] is None or scores['TEV'] <= 0:
+            raise ValueError("TEV is None or non-positive")
         scores['score'] /= scores['TEV'] ** (1/4)
 
         # Profitability: ROA - Higher is better

@@ -28,6 +28,7 @@ class DictionaryKeysNew(CommonDictionaryKey):
     too_expensive = 'Too expensive'
     no_fundamentals = 'No fundamentals'
     no_technicals = 'No technicals'
+    no_multibagger = 'No multibagger'
 
 
 class UndervaluedKey(CommonDictionaryKey):
