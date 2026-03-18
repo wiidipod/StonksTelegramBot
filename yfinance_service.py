@@ -150,10 +150,15 @@ def get_name_from_info(info, ticker='', mono=False, industry_pe_ratio=None):
     except:
         country = ""
 
+    try:
+        market_cap = f" - {info['marketCap']}"
+    except:
+        market_cap = ""
+
     if mono:
         return f'{name} (`{ticker}`)'
     else:
-        return f'{name} ({ticker}){industry}{country}'
+        return f'{name} ({ticker}){industry}{country}{market_cap}'
 
 
 def get_name(ticker, mono=False, industry_pe_ratio=None):

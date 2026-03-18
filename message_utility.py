@@ -423,15 +423,15 @@ def add_rsi_message(message, rsi_emoji, rsi, rsi_sma):
     return message
 
 
-def round_down(value):
+def round_down(value, digits=3):
     if value == 0.0:
         return "0.0"
     sign = "-" if value < 0 else ""
     value = abs(value)
     order = math.floor(math.log10(value))
-    factor = 10 ** (order - 2)
+    factor = 10 ** (order - (digits - 1))
     rounded = math.floor(value / factor) * factor
-    precision = max(0, -order + 2)
+    precision = max(0, -order + (digits - 1))
     return f"{sign}{rounded:.{precision}f}"
 
 
@@ -493,13 +493,20 @@ if __name__ == "__main__":
     # text_main = "EUZ.DE (P/E: 12.34)"
     # print(escape_characters_for_markdown(text_main))
 
-    print(human_format_from_string("0.0"))
-    print(human_format_from_string("12345"))
-    print(human_format_from_string("543"))
-    print(human_format_from_string("0.0098765"))
-    print(human_format_from_string("-10.12345"))
-    print(human_format_from_string("1.23"))
-    print(human_format_from_string("0.01012345"))
+    print(round_down(35.05154639175, digits=1))
+    print(round_down(35.05154639175, digits=2))
+    print(round_down(35.05154639175, digits=3))
+    print(round_down(35.05154639175, digits=4))
+    print(round_down(35.05154639175, digits=5))
+
+
+# print(human_format_from_string("0.0"))
+    # print(human_format_from_string("12345"))
+    # print(human_format_from_string("543"))
+    # print(human_format_from_string("0.0098765"))
+    # print(human_format_from_string("-10.12345"))
+    # print(human_format_from_string("1.23"))
+    # print(human_format_from_string("0.01012345"))
     #
     # print(round_up(0.0))
     # print(round_up(12345))

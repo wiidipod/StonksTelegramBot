@@ -9,16 +9,16 @@ from tqdm import tqdm
 
 from alchemy import get_alchemy_scores, check_investment_rule
 from constants import DictionaryKeysNew, UndervaluedKey, CommonDictionaryKey, TechnicalsKeys, GrowthKeys
-from message_utility import get_message_by_dictionary_new, human_format, round_up
+from message_utility import get_message_by_dictionary_new, human_format, round_down
 from pe_utility import update_pe_ratios
 from plot_utility import plot_bands_by_labels_with_ta
 from regression_utility import add_close_window_growths
 from ta_utility import add_rsi
 from telegram_service import get_application, send_plots, send_message_to_first
-from ticker_service import get_all_tickers, is_crypto, is_stock, chunk_list, get_s_p_500_tickers
+from ticker_service import get_all_tickers, is_crypto, is_stock, chunk_list
 from yfinance_service import extract_ticker_df, get_pe_ratio_from_info, get_peg_ratio_from_info, \
     get_ev_to_ebitda_from_info, get_industry_from_info, get_price_target, P, get_name_from_info, \
-    get_market_cap_from_info, get_recommendation_from_info
+    get_recommendation_from_info
 
 
 def get_growth(value_today, value_future):
@@ -100,7 +100,6 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     yf_ticker = yf.Ticker(ticker)
     info = yf_ticker.info
     if is_stock(ticker):
-        market_cap = get_market_cap_from_info(info)
         pe_ratio = get_pe_ratio_from_info(info)
         peg_ratio = get_peg_ratio_from_info(info)
         ev_to_ebitda = get_ev_to_ebitda_from_info(info)
@@ -170,8 +169,6 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
                         print(f'[{ticker}] no_fundamentals: growth<=0 and peg_ratio={peg_ratio} out of range')
                         dictionary[DictionaryKeysNew.no_fundamentals] = True
     else:
-        market_cap = None
-        score = None
         pe_ratio = None
         peg_ratio = None
         ev_to_ebitda = None
@@ -190,6 +187,8 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         if score <= 0.0:
             print(f'[{ticker}] no_multibagger: score={score}')
             dictionary[DictionaryKeysNew.no_multibagger] = True
+    else:
+        score = None
 
 
 # too_expensive
@@ -201,26 +200,27 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
 
     name = get_name_from_info(info=info, ticker=ticker, industry_pe_ratio=industry_pe_ratio)
     subtitle = None
+    tsl = round_down((1.0 - df[GrowthKeys.growth.value].iat[-1] / df[GrowthKeys.growth_upper.value].iat[-1]) * 100.0, digits=2)
 
-    if market_cap is not None or price_target is not None or peg_ratio is not None or pe_ratio is not None or ev_to_ebitda is not None:
+    if price_target is not None or peg_ratio is not None or pe_ratio is not None or ev_to_ebitda is not None or tsl is not None or score is not None:
         subtitle = ''
-        if market_cap is not None:
-            subtitle += f'MC: {human_format(market_cap)} - '
         if value is not None:
             subtitle += f'V: {human_format(value)} - '
         if price_target is not None:
             subtitle += f'PT: {human_format(price_target)} - '
         if peg_ratio is not None:
-            subtitle += f'PEG: {round_up(peg_ratio)} - '
+            subtitle += f'PEG: {human_format(peg_ratio)} - '
         if pe_ratio is not None:
-            subtitle += f'P/E: {round_up(pe_ratio)} - '
+            subtitle += f'P/E: {human_format(pe_ratio)} - '
         if ev_to_ebitda is not None:
-            subtitle += f'EV/EBITDA: {round_up(ev_to_ebitda)}'
+            subtitle += f'EV/EBITDA: {human_format(ev_to_ebitda)}'
             if ev_to_ebitda_to_growth is not None:
-                subtitle += f' ({round_up(ev_to_ebitda_to_growth)})'
+                subtitle += f' ({human_format(ev_to_ebitda_to_growth)})'
             subtitle += ' - '
         if score is not None:
             subtitle += f'S: {human_format(score * 10000.0)} - '
+        if tsl is not None:
+            subtitle += f'TSL: {tsl} - '
         subtitle = subtitle[:-3]
 
     plot_path = plot_bands_by_labels_with_ta(
