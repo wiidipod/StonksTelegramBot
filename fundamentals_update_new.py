@@ -323,8 +323,7 @@ def main():
     parser.add_argument('--all', action='store_true', help='Send plots to all subscribers')
     args = parser.parse_args()
 
-    # tickers = get_all_tickers()
-    tickers = get_s_p_500_tickers()
+    tickers = get_all_tickers()
 
     messages = []
     plot_paths = []
