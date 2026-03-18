@@ -212,7 +212,7 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         if price_target is not None:
             subtitle += f'PT: {human_format(price_target)} - '
         if sl is not None and tp is not None:
-            subtitle += f'OCO: {human_format(sl)}% / {human_format(tp)}%'
+            subtitle += f'OCO: {human_format(sl)}% / {human_format(tp)}% - '
         if peg_ratio is not None:
             subtitle += f'PEG: {human_format(peg_ratio)} - '
         if pe_ratio is not None:
