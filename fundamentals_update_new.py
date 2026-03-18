@@ -15,7 +15,7 @@ from plot_utility import plot_bands_by_labels_with_ta
 from regression_utility import add_close_window_growths
 from ta_utility import add_rsi
 from telegram_service import get_application, send_plots, send_message_to_first
-from ticker_service import get_all_tickers, is_crypto, is_stock, chunk_list
+from ticker_service import get_all_tickers, is_crypto, is_stock, chunk_list, get_s_p_500_tickers
 from yfinance_service import extract_ticker_df, get_pe_ratio_from_info, get_peg_ratio_from_info, \
     get_ev_to_ebitda_from_info, get_industry_from_info, get_price_target, P, get_name_from_info, \
     get_market_cap_from_info, get_recommendation_from_info
@@ -110,13 +110,17 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         market_cap = get_market_cap_from_info(info)
         recommendation = get_recommendation_from_info(info)
         score = get_alchemy_scores(yf_ticker, info).get('score')
+        print(f'[{ticker}] recommendation={recommendation}, score={score}, price_target={price_target}, peg_ratio={peg_ratio}, pe_ratio={pe_ratio}, ev_to_ebitda={ev_to_ebitda}')
         if recommendation is None or 'BUY' not in recommendation.upper():
+            print(f'[{ticker}] no_fundamentals: recommendation={recommendation}')
             dictionary[DictionaryKeysNew.no_fundamentals] = True
         if not passes_inv_rule:
             score = 0.0
         if score <= 0.0:
+            print(f'[{ticker}] no_fundamentals: score={score}')
             dictionary[DictionaryKeysNew.no_fundamentals] = True
         if price_target is None:
+            print(f'[{ticker}] no_fundamentals: price_target is None')
             dictionary[DictionaryKeysNew.no_fundamentals] = True
             price_target = price_target_growth
             value = df[GrowthKeys.growth.value].iat[today_index]
@@ -131,11 +135,13 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
             )
             price_target = min(price_target, price_target_growth, value)
         if peg_ratio is None:
+            print(f'[{ticker}] no_fundamentals: peg_ratio is None')
             dictionary[DictionaryKeysNew.no_fundamentals] = True
         else:
             if peg_ratio != 0 and pe_ratio is not None:
                 growth = min(pe_ratio / peg_ratio, growth)
         if (ev_to_ebitda is None and pe_ratio is None) or growth is None:
+            print(f'[{ticker}] no_fundamentals: ev_to_ebitda={ev_to_ebitda}, pe_ratio={pe_ratio}, growth={growth}')
             dictionary[DictionaryKeysNew.no_fundamentals] = True
             ev_to_ebitda_to_growth = None
         else:
@@ -150,20 +156,25 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
                     else:
                         peg_ratio = pe_ratio / growth
                 if peg_ratio is None and ev_to_ebitda_to_growth is None:
+                    print(f'[{ticker}] no_fundamentals: peg_ratio and ev_to_ebitda_to_growth are both None')
                     dictionary[DictionaryKeysNew.no_fundamentals] = True
                 elif peg_ratio is None and ev_to_ebitda_to_growth is not None:
                     if ev_to_ebitda_to_growth > 1.0 or ev_to_ebitda_to_growth < 0.0:
+                        print(f'[{ticker}] no_fundamentals: ev_to_ebitda_to_growth={ev_to_ebitda_to_growth} out of range')
                         dictionary[DictionaryKeysNew.no_fundamentals] = True
                 elif ev_to_ebitda_to_growth is None and peg_ratio is not None:
                     if peg_ratio > 1.0 or peg_ratio < 0.0:
+                        print(f'[{ticker}] no_fundamentals: peg_ratio={peg_ratio} out of range')
                         dictionary[DictionaryKeysNew.no_fundamentals] = True
                 elif (ev_to_ebitda_to_growth > 1.0 or ev_to_ebitda_to_growth < 0.0) and (
                         peg_ratio > 1.0 or peg_ratio < 0.0):
+                    print(f'[{ticker}] no_fundamentals: ev_to_ebitda_to_growth={ev_to_ebitda_to_growth}, peg_ratio={peg_ratio} both out of range')
                     dictionary[DictionaryKeysNew.no_fundamentals] = True
             else:
                 ev_to_ebitda_to_growth = None
                 if peg_ratio is not None:
                     if peg_ratio > 1.0 or peg_ratio < 0.0:
+                        print(f'[{ticker}] no_fundamentals: growth<=0 and peg_ratio={peg_ratio} out of range')
                         dictionary[DictionaryKeysNew.no_fundamentals] = True
     else:
         market_cap = None
@@ -307,7 +318,8 @@ def main():
     parser.add_argument('--all', action='store_true', help='Send plots to all subscribers')
     args = parser.parse_args()
 
-    tickers = get_all_tickers()
+    # tickers = get_all_tickers()
+    tickers = get_s_p_500_tickers()
 
     messages = []
     plot_paths = []
