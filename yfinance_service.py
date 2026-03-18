@@ -4,6 +4,7 @@ import pandas as pd
 import yfinance as yf
 import math
 
+from message_utility import human_format
 from ticker_service import is_stock
 
 
@@ -151,7 +152,7 @@ def get_name_from_info(info, ticker='', mono=False, industry_pe_ratio=None):
         country = ""
 
     try:
-        market_cap = f" - {info['marketCap']}"
+        market_cap = f" - {human_format(info['marketCap'])}"
     except:
         market_cap = ""
 
