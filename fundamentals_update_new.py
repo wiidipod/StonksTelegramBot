@@ -208,24 +208,24 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     if price_target is not None or peg_ratio is not None or pe_ratio is not None or ev_to_ebitda is not None or (sl is not None and tp is not None) or score is not None or vola is not None:
         subtitle = ''
         if value is not None:
-            subtitle += f'V: {human_format(value)} - '
+            subtitle += f'V:{human_format(value)} - '
         if price_target is not None:
-            subtitle += f'PT: {human_format(price_target)} - '
+            subtitle += f'PT:{human_format(price_target)} - '
         if sl is not None and tp is not None:
-            subtitle += f'OCO: {human_format(sl)}% / {human_format(tp)}% - '
+            subtitle += f'OCO:{human_format(sl)}%/{human_format(tp)}% - '
         if peg_ratio is not None:
-            subtitle += f'PEG: {human_format(peg_ratio)} - '
+            subtitle += f'PEG:{human_format(peg_ratio)} - '
         if pe_ratio is not None:
-            subtitle += f'P/E: {human_format(pe_ratio)} - '
+            subtitle += f'P/E:{human_format(pe_ratio)} - '
         if ev_to_ebitda is not None:
-            subtitle += f'EV/EBITDA: {human_format(ev_to_ebitda)}'
+            subtitle += f'EV/EBITDA:{human_format(ev_to_ebitda)}'
             if ev_to_ebitda_to_growth is not None:
-                subtitle += f' ({human_format(ev_to_ebitda_to_growth)})'
+                subtitle += f'({human_format(ev_to_ebitda_to_growth)})'
             subtitle += ' - '
         if score is not None:
-            subtitle += f'S: {human_format(score * 10000.0)} - '
+            subtitle += f'S:{human_format(score * 10000.0)} - '
         if vola is not None:
-            subtitle += f'Vola: {vola}% - '
+            subtitle += f'Vola:{vola}% - '
         subtitle = subtitle[:-3]
 
     plot_path = plot_bands_by_labels_with_ta(
