@@ -179,21 +179,21 @@ def get_name(ticker, mono=False, industry_pe_ratio=None):
         info = {}
 
     try:
-        industry = f" - {info['industry']}"
+        industry = f"-{info['industry']}"
         if industry_pe_ratio is not None:
-            industry += f" (P/E: {industry_pe_ratio})"
+            industry += f"(P/E: {industry_pe_ratio})"
     except:
         industry = ""
 
     try:
-        country = f" - {info['country']}"
+        country = f"-{info['country']}"
     except:
         country = ""
 
     if mono:
-        return f'{name} (`{ticker}`)'
+        return f'{name}(`{ticker}`)'
     else:
-        return f'{name} ({ticker}){industry}{country}'
+        return f'{name}({ticker}){industry}{country}'
 
 
 def get_pe_ratio_from_info(info):
