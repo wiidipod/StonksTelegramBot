@@ -204,11 +204,8 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
     # tsl = round_down(((1.0 - df[P.C.value].iat[today_index] / min(value, price_target)) * 100.0), digits=2)
     sl = df[GrowthKeys.growth.value].iat[-1] / df[GrowthKeys.growth_upper.value].iat[-1] * 100.0
     tp = min(value, price_target) / df[P.C.value].iat[today_index] * 100.0
-    if is_stock(ticker):
-        l = None
-    else:
-        lowest_growth = df[GrowthKeys.growth_lower.value].iat[today_index] * df[GrowthKeys.growth.value].iat[today_index] / df[GrowthKeys.growth_upper.value].iat[today_index]
-        l = min(df[P.C.value].iat[today_index] // (df[P.C.value].iat[today_index] - lowest_growth), 1.0)
+    lowest_growth = df[GrowthKeys.growth_lower.value].iat[today_index] * df[GrowthKeys.growth.value].iat[today_index] / df[GrowthKeys.growth_upper.value].iat[today_index]
+    l = max(df[P.C.value].iat[today_index] // (df[P.C.value].iat[today_index] - lowest_growth), 1.0)
 
     if price_target is not None or peg_ratio is not None or pe_ratio is not None or ev_to_ebitda is not None or (sl is not None and tp is not None) or score is not None or vola is not None or l is not None:
         subtitle = ''
