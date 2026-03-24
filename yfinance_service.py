@@ -136,27 +136,27 @@ def get_name_from_info(info, ticker='', mono=False, industry_pe_ratio=None):
         info = {}
 
     try:
-        industry = f" - {info['industry']}"
+        industry = f"-{info['industry']}"
         if industry_pe_ratio is not None:
             industry += f" (P/E: {industry_pe_ratio})"
     except:
         industry = ""
 
     try:
-        country = f" - {info['country']}"
+        country = f"-{info['country']}"
     except:
         country = ""
 
     try:
         from message_utility import human_format
-        market_cap = f" - MC: {human_format(info['marketCap'])}"
+        market_cap = f"-MC: {human_format(info['marketCap'])}"
     except:
         market_cap = ""
 
     if mono:
         return f'{name} (`{ticker}`)'
     else:
-        return f'{name} ({ticker}){industry}{country}{market_cap}'
+        return f'{name}({ticker}){industry}{country}{market_cap}'
 
 
 def get_name(ticker, mono=False, industry_pe_ratio=None):
@@ -191,7 +191,7 @@ def get_name(ticker, mono=False, industry_pe_ratio=None):
         country = ""
 
     if mono:
-        return f'{name}(`{ticker}`)'
+        return f'{name} (`{ticker}`)'
     else:
         return f'{name}({ticker}){industry}{country}'
 
