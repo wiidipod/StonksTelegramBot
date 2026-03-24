@@ -49,11 +49,17 @@ def main():
     symbols =[
         'ADBE',
         'AMZN',
+        'CCK',
         'CI',
         'ELV',
+        'FLUT',
+        'GEN',
         'KBR',
         'LULU',
         'MSFT',
+        'SGO.PA',
+        'SLGN',
+        'SW',
     ]
     print_today()
     for symbol in symbols:
