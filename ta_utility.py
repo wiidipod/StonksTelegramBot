@@ -174,3 +174,62 @@ def add_emas(df, window):
     df[f"EMA-{window} (Low)"] = ema_low.ema_indicator()
 
     return df
+
+
+def compute_price_for_rsi(df, target_rsi=50.0, deviation=10.0/3.0):
+    """Return the price nearest to the last close that, when appended as the
+    next close, brings the RSI exactly to the edge of
+    [target_rsi - deviation, target_rsi + deviation].  Returns None when:
+      - the RSI column (TechnicalsKeys.rsi.value) is missing from df, or
+      - the current RSI is already inside the target band.
+
+    Solved analytically by rearranging the Wilder-smoothed RSI formula:
+
+      RSI  = 100 - 100 / (1 + avg_gain / avg_loss)
+      RS   = avg_gain / avg_loss  =  RSI / (100 - RSI)
+
+    Wilder update for one new candle (alpha = 1/n):
+      new_avg_gain = avg_gain*(n-1)/n + gain/n
+      new_avg_loss = avg_loss*(n-1)/n + loss/n
+
+    Price goes up  (gain = Δ, loss = 0):
+      Δ = (n-1) * (target_RS * avg_loss - avg_gain)
+      next_price = last_price + Δ
+
+    Price goes down (gain = 0, loss = Δ):
+      Δ = (n-1) * (avg_gain - target_RS * avg_loss) / target_RS
+      next_price = last_price - Δ
+    """
+    if TechnicalsKeys.rsi.value not in df.columns:
+        return None
+
+    current_rsi = df[TechnicalsKeys.rsi.value].iloc[-1]
+    if pd.isna(current_rsi):
+        return None
+
+    lower_bound = target_rsi - deviation
+    upper_bound = target_rsi + deviation
+
+    if lower_bound <= current_rsi <= upper_bound:
+        return None
+
+    n = 14
+    last_price = df[P.C.value].iloc[-1]
+
+    # Reconstruct Wilder's EWM avg_gain / avg_loss (mirrors RSIIndicator internals)
+    diff = df[P.C.value].diff(1)
+    avg_gain = diff.where(diff > 0.0, 0.0).ewm(alpha=1.0 / n, adjust=False).mean().iloc[-1]
+    avg_loss = (-diff.where(diff < 0.0, 0.0)).ewm(alpha=1.0 / n, adjust=False).mean().iloc[-1]
+
+    if current_rsi < lower_bound:
+        # Need a higher price; solve for the required gain
+        target_rs = lower_bound / (100.0 - lower_bound)
+        gain = (n - 1) * (target_rs * avg_loss - avg_gain)
+        return last_price + gain
+    else:
+        # Need a lower price; solve for the required loss
+        target_rs = upper_bound / (100.0 - upper_bound)
+        if target_rs == 0:
+            return None
+        loss = (n - 1) * (avg_gain - target_rs * avg_loss) / target_rs
+        return last_price - loss

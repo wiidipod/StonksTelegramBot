@@ -365,6 +365,39 @@ def plot_rsi_by_df(df, rsi_subplot, today=-1):
     rsi_subplot.plot(df.index, [70] * length, color='tab:red', linestyle='dashed', label='Overbought')
     rsi_subplot.plot(df.index, [50] * length, color=gray, linestyle='dashed')
     rsi_subplot.plot(df.index, [30] * length, color='tab:green', linestyle='dashed', label='Oversold')
+    overbought_target = ta_utility.compute_price_for_rsi(df, target_rsi = 70.0)
+    if overbought_target is not None:
+        rsi_subplot.text(
+            df.index[-1],
+            70,
+            f' {human_format(overbought_target)}',
+            horizontalalignment='left',
+            verticalalignment='center',
+            color='tab:red',
+            size='x-small',
+        )
+    fifty_target = ta_utility.compute_price_for_rsi(df, target_rsi = 50.0)
+    if fifty_target is not None:
+        rsi_subplot.text(
+            df.index[-1],
+            50,
+            f' {human_format(fifty_target)}',
+            horizontalalignment='left',
+            verticalalignment='center',
+            color=gray,
+            size='x-small',
+        )
+    oversold_target = ta_utility.compute_price_for_rsi(df, target_rsi = 30.0)
+    if oversold_target is not None:
+        rsi_subplot.text(
+            df.index[-1],
+            30,
+            f' {human_format(oversold_target)}',
+            horizontalalignment='left',
+            verticalalignment='center',
+            color='tab:green',
+            size='x-small',
+        )
 
     # Add text annotations for overbought and oversold levels on the left side
     rsi_subplot.text(
