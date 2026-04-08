@@ -735,6 +735,9 @@ def get_3x_etf_tickers():
         '5USS.L',  # S&P 500 Short
         'QS5S.L',  # NASDAQ 100 Short
         '5EUL.MI',  # EURO STOXX 50
+        '5EUS.MI',  # EURO STOXX 50 Short
+        'EUS5.MI',  # Long USD Short EUR
+        'USE5.MI',  # Short USD Long EUR
     ]
 
 
