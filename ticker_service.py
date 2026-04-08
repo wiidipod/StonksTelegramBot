@@ -693,6 +693,7 @@ def get_bond_tickers():
 
 def get_3x_etf_tickers():
     return [
+        # 3x
         '3OIL.L',  # WTI Crude Oil
         '3OIS.L',  # WTI Crude Oil Short
         '3BRL.L',  # Brent Crude Oil
@@ -727,6 +728,13 @@ def get_3x_etf_tickers():
         '3TYL.MI',  # US Treasuries 10Y
         '3TYS.MI',  # US Treasuries 10Y Short
         '3UBS.MI',  # Bund 30Y Short
+
+        # 5x
+        'QS5L.L',  # NASDAQ 100
+        '5USL.MI',  # S&P 500
+        '5USS.L',  # S&P 500 Short
+        'QS5S.L',  # NASDAQ 100 Short
+        '5EUL.MI',  # EURO STOXX 50
     ]
 
 
