@@ -691,7 +691,7 @@ def get_bond_tickers():
     ]
 
 
-def get_3x_etf_tickers():
+def get_letf_tickers():
     return [
         # 3x
         '3OIL.L',  # WTI Crude Oil
@@ -758,7 +758,7 @@ def is_currency(ticker):
 
 
 def is_3x_etf(ticker):
-    return ticker in get_3x_etf_tickers()
+    return ticker in get_letf_tickers()
 
 
 def is_bond(ticker):
@@ -974,7 +974,7 @@ def get_all_tickers():
 
     tickers.extend(get_bond_tickers())  # Bonds
 
-    tickers.extend(get_3x_etf_tickers())  # 3x ETFs
+    tickers.extend(get_letf_tickers())  # 3x ETFs
 
     # try:
     #     hype_tickers = get_hype_tickers()
