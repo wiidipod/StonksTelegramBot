@@ -73,8 +73,8 @@ def analyze(df, ticker, future=250, full=False, pe_ratios=None):
         rsi = df[TechnicalsKeys.rsi.value].iat[-1] <= 100.0 / 3.0
     except:
         rsi = False
-    if not rsi:
-        dictionary[DictionaryKeysNew.no_technicals] = True
+    # if not rsi:
+    #     dictionary[DictionaryKeysNew.no_technicals] = True
 
     # regression
     window = len(df) - 1
