@@ -74,7 +74,7 @@ def get_prices(tickers, period='10y', interval='1d'):
                     lows[ticker].append(l)
                     closes[ticker].append(c)
                     opens[ticker].append(o)
-        except:
+        except Exception:
             pass
     return highs, lows, closes, opens
 
@@ -89,7 +89,7 @@ def get_closes(tickers, period='10y', interval='1d'):
             for close in close_all[ticker]:
                 if close != 0.0 and not math.isnan(close):
                     closes[ticker].append(close)
-        except:
+        except Exception:
             pass
     return closes
 
@@ -110,7 +110,7 @@ def get_close_as_series(ticker, period='10y', interval='1d'):
 def get_industry_from_info(info):
     try:
         return info["industry"]
-    except:
+    except Exception:
         return ""
 
 
@@ -121,14 +121,14 @@ def get_industry(ticker):
 
         info = _fetch_info()
         return info["industry"]
-    except:
+    except Exception:
         return ""
 
 
 def get_name_from_info(info, ticker='', mono=False, industry_pe_ratio=None):
     try:
         name = info.get("shortName") or info.get("longName") or ticker
-    except:
+    except Exception:
         info = {}
         name = ticker
 
@@ -143,18 +143,18 @@ def get_name_from_info(info, ticker='', mono=False, industry_pe_ratio=None):
         industry = f"-{info['industry']}"
         if industry_pe_ratio is not None:
             industry += f" (P/E: {industry_pe_ratio})"
-    except:
+    except Exception:
         industry = ""
 
     try:
         country = f"-{info['country']}"
-    except:
+    except Exception:
         country = ""
 
     try:
         from message_utility import human_format
         market_cap = f"-MC: {human_format(info['marketCap'])}"
-    except:
+    except Exception:
         market_cap = ""
 
     if mono:
@@ -170,7 +170,7 @@ def get_name(ticker, mono=False, industry_pe_ratio=None):
 
         info = _fetch_info()
         name = info.get("shortName") or info.get("longName") or ticker
-    except:
+    except Exception:
         info = {}
         name = ticker
 
@@ -185,12 +185,12 @@ def get_name(ticker, mono=False, industry_pe_ratio=None):
         industry = f"-{info['industry']}"
         if industry_pe_ratio is not None:
             industry += f"(P/E: {industry_pe_ratio})"
-    except:
+    except Exception:
         industry = ""
 
     try:
         country = f"-{info['country']}"
-    except:
+    except Exception:
         country = ""
 
     if mono:
@@ -205,7 +205,7 @@ def get_pe_ratio_from_info(info):
         if pe_ratio is None or pe_ratio <= 0.0 or math.isnan(pe_ratio):
             return None
         return pe_ratio
-    except:
+    except Exception:
         return None
 
 
@@ -219,7 +219,7 @@ def get_pe_ratio(ticker):
         if pe_ratio is None or pe_ratio <= 0.0 or math.isnan(pe_ratio):
             return None
         return pe_ratio
-    except:
+    except Exception:
         return None
 
 
@@ -229,7 +229,7 @@ def get_peg_ratio_from_info(info):
         if peg_ratio is None or peg_ratio <= 0.0 or math.isnan(peg_ratio):
             return None
         return peg_ratio
-    except:
+    except Exception:
         return None
 
 
@@ -243,7 +243,7 @@ def get_peg_ratio(ticker):
         if peg_ratio is None or peg_ratio <= 0.0 or math.isnan(peg_ratio):
             return None
         return peg_ratio
-    except:
+    except Exception:
         return None
 
 
@@ -269,7 +269,7 @@ def get_price_target(ticker, low=True):
         if is_valid_price(median_price_target):
             return median_price_target
         return None
-    except:
+    except Exception:
         return None
 
 
@@ -279,7 +279,7 @@ def get_price_to_book_from_info(info):
         if price_to_book is None or price_to_book <= 0.0 or math.isnan(price_to_book):
             return None
         return price_to_book
-    except:
+    except Exception:
         return None
 
 
@@ -289,7 +289,7 @@ def get_free_cashflow_from_info(info):
         if free_cash_flow is None or free_cash_flow <= 0.0 or math.isnan(free_cash_flow):
             return None
         return free_cash_flow
-    except:
+    except Exception:
         return None
 
 
@@ -299,7 +299,7 @@ def get_ev_to_ebitda_from_info(info):
         if ev_to_ebitda is None or ev_to_ebitda <= 0.0 or math.isnan(ev_to_ebitda):
             return None
         return ev_to_ebitda
-    except:
+    except Exception:
         return None
 
 
@@ -313,7 +313,7 @@ def get_ev_to_ebitda(ticker):
         if ev_to_ebitda is None or ev_to_ebitda <= 0.0 or math.isnan(ev_to_ebitda):
             return None
         return ev_to_ebitda
-    except:
+    except Exception:
         return None
 
 
@@ -339,7 +339,7 @@ def get_fair_value(ticker, growth_10y=None, growth_1y=None, backtest=False):
             growth_value_estimate = (next_year / current_year - 1.0) * 100.0
         if growth_value_estimate is None or growth_value_estimate <= 0.0 or math.isnan(growth_value_estimate):
             growth_value_estimate = 40.0
-    except:
+    except Exception:
         growth_value_estimate = 40.0
 
     try:
@@ -357,7 +357,7 @@ def get_fair_value(ticker, growth_10y=None, growth_1y=None, backtest=False):
         if eps is None or eps <= 0.0 or math.isnan(eps) or growth_value <= 0.0:
             return None
         return eps * growth_value
-    except:
+    except Exception:
         return None
 
 
@@ -400,7 +400,7 @@ def get_currency(ticker):
 
         info = _fetch_info()
         return info["currency"]
-    except:
+    except Exception:
         return ""
 
 
@@ -420,7 +420,7 @@ def get_recommendation_from_info(info):
         if recommendation is None:
             return None
         return recommendation
-    except:
+    except Exception:
         return None
 
 
@@ -430,7 +430,7 @@ def get_market_cap_from_info(info):
         if market_cap is None or market_cap <= 0.0 or math.isnan(market_cap):
             return None
         return market_cap
-    except:
+    except Exception:
         return None
 
 def get_market_cap(ticker):
@@ -443,7 +443,7 @@ def get_market_cap(ticker):
         if market_cap is None or market_cap <= 0.0 or math.isnan(market_cap):
             return None
         return market_cap
-    except:
+    except Exception:
         return None
 
 

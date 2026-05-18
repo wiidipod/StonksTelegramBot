@@ -60,7 +60,7 @@ async def handle_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if f'{chat_id}${ticker}' in subscriptions:
             try:
                 name = yfinance_service.get_name(ticker, mono=True)
-            except:
+            except Exception:
                 name = ticker
             lines.append(f"You are already subscribed to {name}!")
             continue
@@ -72,7 +72,7 @@ async def handle_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         try:
             name = yfinance_service.get_name(ticker, mono=True)
-        except:
+        except Exception:
             name = ticker
         subscriptions.append(f'{chat_id}${ticker}')
         with open(subscriptions_file, 'w') as file:
@@ -93,7 +93,7 @@ async def handle_unsubscribe(update: Update, context: ContextTypes.DEFAULT_TYPE)
         subscriptions = get_subscriptions()
         try:
             name = yfinance_service.get_name(ticker, mono=True)
-        except:
+        except Exception:
             name = ticker
         if f'{chat_id}${ticker}' in subscriptions:
             subscriptions.remove(f'{chat_id}${ticker}')
@@ -382,7 +382,7 @@ async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if is_stock(ticker):
             try:
                 pe_ratios = pe_utility.get_pe_ratios()
-            except:
+            except Exception:
                 pe_ratios = {}
         else:
             pe_ratios = {}

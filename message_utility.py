@@ -64,7 +64,7 @@ async def get_subscriptions_message(chat_id):
         for ticker in sort_tickers(tickers):
             try:
                 name = yfinance_service.get_name(ticker, mono=True)
-            except:
+            except Exception:
                 name = f"`{ticker}`"
             message += f"- {name}\n"
     else:
