@@ -246,6 +246,27 @@ async def handle_groups(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await send_message_to_chat_id(chat_id, message, context=context)
 
 
+async def handle_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = str(update.effective_chat.id)
+    daily_all = chat_id in get_subscribers()
+    ticker_msg = await get_subscriptions_message(chat_id)
+    group_msg = await get_group_subscriptions_message(chat_id)
+
+    daily_marker = "✅ subscribed" if daily_all else "☐ not subscribed"
+    parts = [
+        "**Your Status**",
+        "",
+        f"**Daily updates (all tickers):** {daily_marker} (use /start or /end)",
+        "",
+        "**Single-ticker subscriptions:**",
+        ticker_msg,
+        "",
+        "**Group subscriptions:**",
+        group_msg,
+    ]
+    await send_message_to_chat_id(chat_id, "\n".join(parts), context=context)
+
+
 async def handle_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
     message = (
@@ -273,6 +294,7 @@ async def handle_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "- `/group_subscriptions` (alias `/group_subs`) — list your groups\n"
         "\n"
         "ℹ️ **Other**\n"
+        "- `/status` — overview of all your subscriptions\n"
         "- `/reversal` — S&P 500 reversal pattern check\n"
         "- `/help` — show this message"
     )
@@ -628,6 +650,7 @@ async def set_commands(context: ContextTypes.DEFAULT_TYPE):
         BotCommand(command='group_subscriptions', description='List your group subscriptions'),
         BotCommand(command='group_subs', description='List your group subscriptions (alias)'),
         BotCommand(command='groups', description='List available ticker groups'),
+        BotCommand(command='status', description='Show daily, ticker, and group subscriptions'),
         BotCommand(command='help', description='Show all commands and what they do'),
     ]
     await context.bot.set_my_commands(commands)
@@ -681,6 +704,9 @@ def get_handling_application():
 
     help_handler = CommandHandler('help', handle_help)
     application.add_handler(help_handler)
+
+    status_handler = CommandHandler('status', handle_status)
+    application.add_handler(status_handler)
 
     ticker_handler = MessageHandler(filters.TEXT & ~filters.COMMAND, handle_ticker_message)
     application.add_handler(ticker_handler)
