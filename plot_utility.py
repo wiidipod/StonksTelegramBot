@@ -442,9 +442,6 @@ def plot_macd(macd, macd_diff, macd_signal, macd_subplot):
 
 def plot_macd_by_df(df, macd_subplot, today=-1):
     """Plot MACD using a dataframe slice with date index for proper x-axis labels."""
-    # Drop rows with NaN MACD values to skip weekends/holidays
-    length = len(df)
-    # x = np.arange(length)
     macd_subplot.set_ylabel(TechnicalsKeys.macd.value)
 
     # Get current (last) MACD values
@@ -630,7 +627,7 @@ def plot_bands_by_labels_with_ta(df, ticker, title, labels, subtitle=None, fname
         subplot.fill_between(df.index, df[P.H.value], df[P.L.value], label=f'Price ({human_format(df[P.H.value].iat[today])} / {human_format_from_string(round_down(df[P.L.value].iat[today]))})')
     else:
         # subplot.plot(df.index, df[P.C.value], label=f'Price ({human_format(df[P.C.value].iat[today])})')
-        subplot.plot(df.index, df[P.C.value], label=f'Price')
+        subplot.plot(df.index, df[P.C.value], label='Price')
         subplot.text(
             df.index[today],
             df[P.C.value].iat[today],

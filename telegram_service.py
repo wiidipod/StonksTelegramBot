@@ -15,6 +15,7 @@ from constants import (
 from message_utility import (
     add_entry,
     escape_characters_for_markdown,
+    get_group_subscriptions,
     get_group_subscriptions_for_chat,
     get_group_subscriptions_message,
     get_subscriptions_message,
@@ -373,21 +374,21 @@ async def handle_reversal(update: Update, context: ContextTypes.DEFAULT_TYPE):
         o = gspc['Open'].iloc[-1]
         if h_yesterday > h_today and l_yesterday > l_today and o > c:
             us5l = yf.Ticker('US5L.DE').history(period='5d', interval='1d')
-            message = f"Long\nGSPC ``` "
+            message = "Long\nGSPC ``` "
             message += f"Buy@high0 {h_today:16.8f} \n "
             message += f"SL@low0 {l_today:16.8f} \n "
             message += f"PA@high-1 {h_yesterday:16.8f} ``` "
-            message += f"US5L ``` "
+            message += "US5L ``` "
             message += f"Buy@high0 {us5l['High'].iloc[-1]:16.8f} \n "
             message += f"SL@low0 {us5l['Low'].iloc[-1]:16.8f} \n "
             message += f"PA@high-1 {us5l['High'].iloc[-2]:16.8f} ``` "
         elif h_yesterday < h_today and l_yesterday < l_today and o < c:
             us5s = yf.Ticker('US5S.DE').history(period='5d', interval='1d')
-            message = f"Short\nGSPC ``` "
+            message = "Short\nGSPC ``` "
             message += f"Buy@high0 {l_today:16.8f} \n "
             message += f"SL@low0   {h_today:16.8f} \n "
             message += f"PA@high-1 {l_yesterday:16.8f} ``` "
-            message += f"US5S ``` "
+            message += "US5S ``` "
             message += f"Buy@high0 {us5s['High'].iloc[-1]:16.8f} \n "
             message += f"SL@low0   {us5s['Low'].iloc[-1]:16.8f} \n "
             message += f"PA@high-1 {us5s['High'].iloc[-2]:16.8f} ``` "

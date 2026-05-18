@@ -469,7 +469,6 @@ replacemenet_tickers = {
 
 def get_msci_world_tickers():
     import csv
-    import os
 
     tickers = []
     missing_exchanges = {}  # Changed to dict to track tickers per exchange

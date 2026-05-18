@@ -5,7 +5,7 @@ import time
 import yfinance as yf
 
 from telegram_service import send_message_to_first, get_application
-from ticker_service import get_all_tickers, get_nasdaq_100_tickers, chunk_list
+from ticker_service import get_all_tickers, chunk_list
 from message_utility import human_format
 
 
