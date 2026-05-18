@@ -4,6 +4,12 @@ from enum import Enum
 
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 output_directory = os.path.join(PROJECT_DIR, 'output') + os.sep
+subscribers_file = os.path.join(PROJECT_DIR, 'subscribers.txt')
+subscriptions_file = os.path.join(PROJECT_DIR, 'subscriptions.txt')
+group_subscriptions_file = os.path.join(PROJECT_DIR, 'group_subscriptions.txt')
+token_file = os.path.join(PROJECT_DIR, 'token')
+group_counts_file = os.path.join(PROJECT_DIR, 'group_counts.json')
+msci_world_csv = os.path.join(PROJECT_DIR, 'EUNL_holdings.csv')
 
 
 class CommonDictionaryKey(Enum):

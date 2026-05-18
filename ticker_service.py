@@ -1,6 +1,5 @@
 import asyncio
 import json
-import os
 import time
 from functools import lru_cache
 
@@ -10,7 +9,7 @@ import requests
 import yfinance
 from bs4 import BeautifulSoup
 
-from constants import PROJECT_DIR
+from constants import group_counts_file, msci_world_csv
 
 
 def chunk_list(lst, chunk_size):
@@ -475,12 +474,8 @@ def get_msci_world_tickers():
     tickers = []
     missing_exchanges = {}  # Changed to dict to track tickers per exchange
 
-    # Get the directory of this script
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    # https://www.ishares.com/de/privatanleger/de/produkte/251882/ishares-msci-world-ucits-etf-acc-fund/1478358465952.ajax?fileType=csv&fileName=EUNL_holdings&dataType=fund
-    csv_path = os.path.join(script_dir, 'EUNL_holdings.csv')
-
-    with open(csv_path, 'r', encoding='utf-8') as f:
+    # CSV source: https://www.ishares.com/de/privatanleger/de/produkte/251882/ishares-msci-world-ucits-etf-acc-fund/1478358465952.ajax?fileType=csv&fileName=EUNL_holdings&dataType=fund
+    with open(msci_world_csv, 'r', encoding='utf-8') as f:
         reader = csv.reader(f)
         for i, row in enumerate(reader):
             # Skip the first 3 rows (headers)
@@ -788,13 +783,12 @@ def build_ticker_to_groups(group_names):
     return ticker_to_groups
 
 
-GROUP_COUNTS_FILE = os.path.join(PROJECT_DIR, 'group_counts.json')
 _GROUP_COUNT_TTL = 36 * 60 * 60  # tolerate up to 36h since daily job is once-per-day
 
 
 def load_group_counts_from_disk():
     try:
-        with open(GROUP_COUNTS_FILE, 'r') as f:
+        with open(group_counts_file, 'r') as f:
             data = json.load(f)
         counts = data.get('counts', {}) or {}
         ts = float(data.get('ts', 0.0))
@@ -805,7 +799,7 @@ def load_group_counts_from_disk():
 
 def save_group_counts_to_disk(counts):
     payload = {'ts': time.time(), 'counts': counts}
-    with open(GROUP_COUNTS_FILE, 'w') as f:
+    with open(group_counts_file, 'w') as f:
         json.dump(payload, f)
 
 

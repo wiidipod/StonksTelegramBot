@@ -1,30 +1,29 @@
 import asyncio
 import logging
-import os
 
 from telegram import Update, InputMediaPhoto, BotCommand, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, CallbackQueryHandler, filters
 import yfinance as yf
 
 import yfinance_service
-from constants import PROJECT_DIR
+from constants import (
+    group_subscriptions_file,
+    subscribers_file,
+    subscriptions_file,
+    token_file,
+)
 from message_utility import (
     add_entry,
     escape_characters_for_markdown,
     get_group_subscriptions_for_chat,
     get_group_subscriptions_message,
     get_subscriptions_message,
-    group_subscriptions_file,
     list_entries,
     remove_entry,
-    subscriptions_file,
     wipe_entries,
 )
 import pe_utility
 from ticker_service import is_stock, is_valid_group, list_group_names, get_group_counts_async
-
-subscribers_file = os.path.join(PROJECT_DIR, 'subscribers.txt')
-token_file = os.path.join(PROJECT_DIR, 'token')
 
 
 logging.basicConfig(
