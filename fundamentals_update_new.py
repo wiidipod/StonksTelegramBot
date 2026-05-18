@@ -16,7 +16,7 @@ from regression_utility import add_close_window_growths
 from ta_utility import add_rsi
 from message_utility import get_group_subscriptions
 from telegram_service import get_application, send_plots, send_message_to_first
-from ticker_service import get_all_tickers, is_crypto, is_stock, chunk_list, build_ticker_to_groups
+from ticker_service import get_all_tickers, is_crypto, is_stock, chunk_list, build_ticker_to_groups, refresh_group_counts_file
 from yfinance_service import extract_ticker_df, get_pe_ratio_from_info, get_peg_ratio_from_info, \
     get_ev_to_ebitda_from_info, get_industry_from_info, get_price_target, P, get_name_from_info, \
     get_recommendation_from_info
@@ -336,6 +336,11 @@ def main():
     args = parser.parse_args()
 
     tickers = get_all_tickers()
+
+    try:
+        refresh_group_counts_file()
+    except Exception as e:
+        print(f'Error refreshing group counts file: {e}')
 
     active_groups = {
         sub.split('$', 1)[1]

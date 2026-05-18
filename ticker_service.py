@@ -1,3 +1,8 @@
+import asyncio
+import json
+import os
+import time
+
 import bs4 as bs
 import re
 import requests
@@ -803,6 +808,69 @@ def build_ticker_to_groups(group_names):
         for ticker in get_tickers_for_group(name):
             ticker_to_groups.setdefault(ticker, set()).add(name)
     return ticker_to_groups
+
+
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+GROUP_COUNTS_FILE = os.path.join(_SCRIPT_DIR, 'group_counts.json')
+_GROUP_COUNT_TTL = 36 * 60 * 60  # tolerate up to 36h since daily job is once-per-day
+
+
+def load_group_counts_from_disk():
+    try:
+        with open(GROUP_COUNTS_FILE, 'r') as f:
+            data = json.load(f)
+        counts = data.get('counts', {}) or {}
+        ts = float(data.get('ts', 0.0))
+        return counts, ts
+    except (FileNotFoundError, ValueError):
+        return {}, 0.0
+
+
+def save_group_counts_to_disk(counts):
+    payload = {'ts': time.time(), 'counts': counts}
+    with open(GROUP_COUNTS_FILE, 'w') as f:
+        json.dump(payload, f)
+
+
+def compute_group_counts():
+    counts = {}
+    for name in GROUP_REGISTRY:
+        try:
+            counts[name] = len(get_tickers_for_group(name))
+        except Exception as e:
+            print(f'Error computing count for group {name}: {e}')
+            counts[name] = None
+    return counts
+
+
+def refresh_group_counts_file():
+    counts = compute_group_counts()
+    save_group_counts_to_disk(counts)
+    return counts
+
+
+async def get_group_counts_async(refresh=False):
+    if not refresh:
+        counts, ts = load_group_counts_from_disk()
+        if counts and time.time() - ts <= _GROUP_COUNT_TTL:
+            return counts
+
+    names = list(GROUP_REGISTRY.keys())
+    results = await asyncio.gather(
+        *(asyncio.to_thread(get_tickers_for_group, name) for name in names),
+        return_exceptions=True,
+    )
+    counts = {}
+    for name, result in zip(names, results):
+        if isinstance(result, Exception):
+            counts[name] = None
+        else:
+            counts[name] = len(result)
+    try:
+        save_group_counts_to_disk(counts)
+    except Exception as e:
+        print(f'Error saving group counts: {e}')
+    return counts
 
 
 def is_index(ticker):

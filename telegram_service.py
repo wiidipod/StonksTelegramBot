@@ -20,7 +20,7 @@ from message_utility import (
     get_group_subscriptions_message,
 )
 import pe_utility
-from ticker_service import is_stock, is_valid_group, list_group_names
+from ticker_service import is_stock, is_valid_group, list_group_names, get_group_counts_async
 
 subscribers_file = '/home/moritz/PycharmProjects/StonksTelegramBot/subscribers.txt'
 
@@ -221,10 +221,17 @@ async def handle_groups(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
     names = list_group_names()
     subscribed = set(get_group_subscriptions_for_chat(chat_id))
+    try:
+        counts = await get_group_counts_async()
+    except Exception as e:
+        logging.error(f"Failed to fetch group counts: {e}")
+        counts = {}
     lines = ["Available groups:"]
     for name in names:
         marker = "✅" if name in subscribed else "☐"
-        lines.append(f"{marker} `{name}`")
+        count = counts.get(name)
+        count_str = f" ({count})" if isinstance(count, int) else ""
+        lines.append(f"{marker} `{name}`{count_str}")
     message = "\n".join(lines)
     await send_message_to_chat_id(chat_id, message, context=context)
 
