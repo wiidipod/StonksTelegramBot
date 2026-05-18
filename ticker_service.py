@@ -22,6 +22,7 @@ def get_tickers(
         fill_digits=0,
         is_crypto=False,
         is_future=False,
+        crypto_suffixes=('-USD', '-EUR'),
 ):
     headers = {'User-Agent': 'Mozilla/5.0'}
     resp = requests.get(source, headers=headers)
@@ -68,8 +69,8 @@ def get_tickers(
             ticker = ticker.replace('.', '-')
 
         if is_crypto:
-            tickers.append(f'{ticker}-USD')
-            tickers.append(f'{ticker}-EUR')
+            for suffix in crypto_suffixes:
+                tickers.append(f'{ticker}{suffix}')
             continue
 
         if is_future:
@@ -323,12 +324,38 @@ def get_ibex_35_tickers():
     return tickers
 
 
-def get_cryptocurrency_tickers():
+def get_cryptocurrency_usd_tickers():
     source = 'https://en.wikipedia.org/wiki/List_of_cryptocurrencies'
     attribute = 'class'
     name = 'wikitable'
     column = 2
-    return get_tickers(source, attribute=attribute, name=name, column=column, is_crypto=True)
+    return get_tickers(
+        source,
+        attribute=attribute,
+        name=name,
+        column=column,
+        is_crypto=True,
+        crypto_suffixes=('-USD',),
+    )
+
+
+def get_cryptocurrency_eur_tickers():
+    source = 'https://en.wikipedia.org/wiki/List_of_cryptocurrencies'
+    attribute = 'class'
+    name = 'wikitable'
+    column = 2
+    return get_tickers(
+        source,
+        attribute=attribute,
+        name=name,
+        column=column,
+        is_crypto=True,
+        crypto_suffixes=('-EUR',),
+    )
+
+
+def get_cryptocurrency_tickers():
+    return list(set(get_cryptocurrency_usd_tickers() + get_cryptocurrency_eur_tickers()))
 
 
 def get_precious_metals_tickers():
@@ -739,7 +766,8 @@ GROUP_REGISTRY = {
     'ibex_35': get_ibex_35_tickers,
     'atx': get_atx_tickers,
     'msci_world': get_msci_world_tickers,
-    'cryptocurrency': get_cryptocurrency_tickers,
+    'cryptocurrency_usd': get_cryptocurrency_usd_tickers,
+    'cryptocurrency_eur': get_cryptocurrency_eur_tickers,
     'precious_metals': get_precious_metals_tickers,
     'energy': get_energy_tickers,
     'currency': get_currency_tickers,
