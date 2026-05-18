@@ -8,6 +8,7 @@ from constants import DictionaryKeys
 import telegramify_markdown
 
 subscriptions_file = '/home/moritz/PycharmProjects/StonksTelegramBot/subscriptions.txt'
+group_subscriptions_file = '/home/moritz/PycharmProjects/StonksTelegramBot/group_subscriptions.txt'
 
 bearish_emoji = "📉"
 bullish_emoji = "📈"
@@ -470,6 +471,31 @@ def get_subscriptions():
     except FileNotFoundError:
         subscriptions = []
     return subscriptions
+
+
+def get_group_subscriptions():
+    try:
+        with open(group_subscriptions_file, 'r') as file:
+            lines = [line for line in file.read().splitlines() if line.strip()]
+    except FileNotFoundError:
+        lines = []
+    return lines
+
+
+def get_group_subscriptions_for_chat(chat_id):
+    return sorted({
+        sub.split('$', 1)[1]
+        for sub in get_group_subscriptions()
+        if '$' in sub and sub.split('$', 1)[0] == chat_id
+    })
+
+
+async def get_group_subscriptions_message(chat_id):
+    groups = get_group_subscriptions_for_chat(chat_id)
+    if not groups:
+        return "You have no group subscriptions."
+    lines = [f"- `{group}`" for group in groups]
+    return "\n".join(lines)
 
 
 def human_format(num):

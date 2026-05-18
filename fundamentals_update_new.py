@@ -14,8 +14,9 @@ from pe_utility import update_pe_ratios
 from plot_utility import plot_bands_by_labels_with_ta
 from regression_utility import add_close_window_growths
 from ta_utility import add_rsi
+from message_utility import get_group_subscriptions
 from telegram_service import get_application, send_plots, send_message_to_first
-from ticker_service import get_all_tickers, is_crypto, is_stock, chunk_list
+from ticker_service import get_all_tickers, is_crypto, is_stock, chunk_list, build_ticker_to_groups
 from yfinance_service import extract_ticker_df, get_pe_ratio_from_info, get_peg_ratio_from_info, \
     get_ev_to_ebitda_from_info, get_industry_from_info, get_price_target, P, get_name_from_info, \
     get_recommendation_from_info
@@ -291,6 +292,7 @@ def process_chunk(tickers, pe_ratios):
     messages = []
     plot_paths = []
     scores = []
+    matched_tickers = []
 
     for ticker in tqdm(tickers):
         dictionary, plot_path, score = process_ticker(
@@ -316,8 +318,9 @@ def process_chunk(tickers, pe_ratios):
         messages.append(message)
         plot_paths.append(plot_path)
         scores.append(score)
+        matched_tickers.append(ticker)
 
-    return messages, plot_paths, scores, indicator_counts
+    return messages, plot_paths, scores, matched_tickers, indicator_counts
 
 
 def initialize_indicator_counts() -> Dict[CommonDictionaryKey, int]:
@@ -334,9 +337,17 @@ def main():
 
     tickers = get_all_tickers()
 
+    active_groups = {
+        sub.split('$', 1)[1]
+        for sub in get_group_subscriptions()
+        if '$' in sub
+    }
+    ticker_to_groups = build_ticker_to_groups(active_groups)
+
     messages = []
     plot_paths = []
     scores = []
+    matched_tickers = []
     indicator_counts = initialize_indicator_counts()
 
     pe_ratios = update_pe_ratios()
@@ -348,24 +359,25 @@ def main():
         if i > 0:
             time.sleep(chunk_size)
 
-        messages_chunk, plot_paths_chunk, scores_chunk, indicator_counts_chunk = process_chunk(
+        messages_chunk, plot_paths_chunk, scores_chunk, tickers_chunk, indicator_counts_chunk = process_chunk(
             tickers=ticker_chunk,
             pe_ratios=pe_ratios,
         )
         messages.extend(messages_chunk)
         plot_paths.extend(plot_paths_chunk)
         scores.extend(scores_chunk)
+        matched_tickers.extend(tickers_chunk)
         for key in DictionaryKeysNew:
             indicator_counts[key] += indicator_counts_chunk[key]
 
     # Sort by score descending; entries with None score come last
     sorted_items = sorted(
-        zip(messages, plot_paths, scores),
+        zip(messages, plot_paths, scores, matched_tickers),
         key=lambda x: (x[2] is None, -(x[2] if x[2] is not None else 0)),
     )
     if sorted_items:
-        m, p, s = zip(*sorted_items)
-        messages, plot_paths, scores = list(m), list(p), list(s)
+        m, p, s, t = zip(*sorted_items)
+        messages, plot_paths, scores, matched_tickers = list(m), list(p), list(s), list(t)
 
     for key in DictionaryKeysNew:
         print(f'{key.value}: {indicator_counts[key]}')
@@ -380,6 +392,8 @@ def main():
         plot_paths=plot_paths,
         messages=messages,
         to_all=args.all,
+        tickers=matched_tickers,
+        ticker_to_groups=ticker_to_groups,
     ))
 
 

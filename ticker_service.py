@@ -420,36 +420,6 @@ def get_currency_tickers():
     ]
 
 
-def get_etf_tickers(index_ticker):
-    if index_ticker == '^GSPC':
-        return [
-            "CSSPX.MI",
-            "XS2D.L",
-            "3USL.L",
-        ]
-
-    if index_ticker == "^NDX":
-        return [
-            "SXRV.DE",
-            "LQQ.PA",
-            "QQQ3.L",
-        ]
-
-    if index_ticker == "^GDAXI":
-        return [
-            "DBXD.DE",
-            "DEL2.DE",
-            "3DEL.L",
-        ]
-
-    if index_ticker == "BTC-USD":
-        return [
-            "BTC-USD",
-            "BTC-USD",
-            "BTC-USD",
-        ]
-
-
 exchange_codes = {
     "NASDAQ": "",
     "New York Stock Exchange Inc.": "",
@@ -739,6 +709,72 @@ def get_letf_tickers():
         'EUS5.MI',  # Long USD Short EUR
         'USE5.MI',  # Short USD Long EUR
     ]
+
+
+GROUP_REGISTRY = {
+    's_p_500': get_s_p_500_tickers,
+    's_p_400': get_s_p_400_tickers,
+    's_p_600': get_s_p_600_tickers,
+    'nasdaq_100': get_nasdaq_100_tickers,
+    'dow_jones': get_dow_jones_tickers,
+    'euro_stoxx_50': get_euro_stoxx_50_tickers,
+    'dax': get_dax_tickers,
+    'mdax': get_mdax_tickers,
+    'tecdax': get_tecdax_tickers,
+    'smi': get_smi_tickers,
+    'ftse_100': get_ftse_100_tickers,
+    'cac_40': get_cac_40_tickers,
+    'asx_50': get_asx_50_tickers,
+    'hang_seng': get_hang_seng_tickers,
+    'nikkei_225': get_nikkei_225_tickers,
+    'kospi': get_kospi_tickers,
+    'sse_50': get_sse_50_tickers,
+    'ibovespa': get_ibovespa_tickers,
+    'nifty_50': get_nifty_50_tickers,
+    'ftse_250': get_ftse_250_tickers,
+    'tsx_60': get_tsx_60_tickers,
+    'tsx_composite': get_tsx_composite_tickers,
+    'omx_stockholm_30': get_omx_stockholm_30_tickers,
+    'omx_copenhagen_25': get_omx_copenhagen_25_tickers,
+    'ibex_35': get_ibex_35_tickers,
+    'atx': get_atx_tickers,
+    'msci_world': get_msci_world_tickers,
+    'cryptocurrency': get_cryptocurrency_tickers,
+    'precious_metals': get_precious_metals_tickers,
+    'energy': get_energy_tickers,
+    'currency': get_currency_tickers,
+    'stock_market_indices': get_index_tickers,
+    'future': get_future_tickers,
+    'bond': get_bond_tickers,
+    'letf': get_letf_tickers,
+}
+
+
+def list_group_names():
+    return sorted(GROUP_REGISTRY.keys())
+
+
+def is_valid_group(name):
+    return name in GROUP_REGISTRY
+
+
+def get_tickers_for_group(name):
+    fn = GROUP_REGISTRY.get(name)
+    if fn is None:
+        return []
+    try:
+        return fn()
+    except Exception as e:
+        print(f'Error fetching tickers for group {name}: {e}')
+        return []
+
+
+def build_ticker_to_groups(group_names):
+    ticker_to_groups = {}
+    for name in group_names:
+        for ticker in get_tickers_for_group(name):
+            ticker_to_groups.setdefault(ticker, set()).add(name)
+    return ticker_to_groups
 
 
 def is_index(ticker):

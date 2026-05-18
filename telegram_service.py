@@ -13,8 +13,14 @@ from message_utility import get_subscriptions
 from message_utility import subscriptions_file
 from message_utility import get_subscriptions_message
 from message_utility import escape_characters_for_markdown
+from message_utility import (
+    group_subscriptions_file,
+    get_group_subscriptions,
+    get_group_subscriptions_for_chat,
+    get_group_subscriptions_message,
+)
 import pe_utility
-from ticker_service import is_stock
+from ticker_service import is_stock, is_valid_group, list_group_names
 
 subscribers_file = '/home/moritz/PycharmProjects/StonksTelegramBot/subscribers.txt'
 
@@ -118,6 +124,87 @@ async def handle_subscriptions(update: Update, context: ContextTypes.DEFAULT_TYP
 
     message = await get_subscriptions_message(chat_id)
 
+    await send_message_to_chat_id(chat_id, message, context=context)
+
+
+async def handle_subscribe_group(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = str(update.effective_chat.id)
+
+    if len(context.args) < 1:
+        await update.message.reply_text(
+            "Invalid input. Try `/subscribe_group euro_stoxx_50 stock_market_indices`",
+            parse_mode='MarkdownV2',
+        )
+        return
+
+    lines = []
+    for group in [arg.lower() for arg in context.args]:
+        if not is_valid_group(group):
+            lines.append(f"Unknown group `{group}`. Use /groups to list available groups.")
+            continue
+        existing = get_group_subscriptions()
+        entry = f'{chat_id}${group}'
+        if entry not in existing:
+            existing.append(entry)
+            with open(group_subscriptions_file, 'w') as file:
+                file.write('\n'.join(existing))
+            lines.append(f"You have been subscribed to group `{group}`!")
+        else:
+            lines.append(f"You are already subscribed to group `{group}`!")
+    await send_message_to_chat_id(chat_id, '\n'.join(lines), context=context)
+
+
+async def handle_unsubscribe_group(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = str(update.effective_chat.id)
+
+    if len(context.args) < 1:
+        await update.message.reply_text(
+            "Invalid input. Try `/unsubscribe_group euro_stoxx_50`",
+            parse_mode='MarkdownV2',
+        )
+        return
+
+    lines = []
+    for group in [arg.lower() for arg in context.args]:
+        existing = get_group_subscriptions()
+        entry = f'{chat_id}${group}'
+        if entry in existing:
+            existing.remove(entry)
+            with open(group_subscriptions_file, 'w') as file:
+                file.write('\n'.join(existing))
+            lines.append(f"You have been unsubscribed from group `{group}`!")
+        else:
+            lines.append(f"You are not subscribed to group `{group}`!")
+    await send_message_to_chat_id(chat_id, '\n'.join(lines), context=context)
+
+
+async def handle_unsubscribe_all_groups(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = str(update.effective_chat.id)
+    existing = get_group_subscriptions()
+
+    original_length = len(existing)
+    existing = [sub for sub in existing if not sub.startswith(f'{chat_id}$')]
+
+    if len(existing) < original_length:
+        with open(group_subscriptions_file, 'w') as file:
+            file.write('\n'.join(existing))
+        message = "You have been unsubscribed from all groups!"
+    else:
+        message = "You have no group subscriptions to unsubscribe from!"
+
+    await send_message_to_chat_id(chat_id, message, context=context)
+
+
+async def handle_group_subscriptions(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = str(update.effective_chat.id)
+    message = await get_group_subscriptions_message(chat_id)
+    await send_message_to_chat_id(chat_id, message, context=context)
+
+
+async def handle_groups(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = str(update.effective_chat.id)
+    names = list_group_names()
+    message = "Available groups:\n" + "\n".join(f"- `{name}`" for name in names)
     await send_message_to_chat_id(chat_id, message, context=context)
 
 
@@ -299,11 +386,68 @@ async def send_plot_with_message(plot_path, message, chat_id, context: ContextTy
         logging.error(f"Plot path: {plot_path}, Message path: {message}")
 
 
-async def send_plots(context: ContextTypes.DEFAULT_TYPE, plot_paths, messages, to_all=True):
+async def send_plots(
+    context: ContextTypes.DEFAULT_TYPE,
+    plot_paths,
+    messages,
+    to_all=True,
+    tickers=None,
+    ticker_to_groups=None,
+):
+    if tickers is None or ticker_to_groups is None:
+        if to_all:
+            await send_plots_to_all(plot_paths, context, messages=messages)
+        else:
+            await send_plots_to_first(plot_paths, context, messages=messages)
+        return
+
+    await send_plots_grouped(
+        context=context,
+        plot_paths=plot_paths,
+        messages=messages,
+        tickers=tickers,
+        ticker_to_groups=ticker_to_groups,
+        to_all=to_all,
+    )
+
+
+async def send_plots_grouped(
+    context: ContextTypes.DEFAULT_TYPE,
+    plot_paths,
+    messages,
+    tickers,
+    ticker_to_groups,
+    to_all=True,
+):
     if to_all:
-        await send_plots_to_all(plot_paths, context, messages=messages)
+        all_subscribers = get_subscribers()
     else:
-        await send_plots_to_first(plot_paths, context, messages=messages)
+        first = get_subscribers()
+        all_subscribers = [first[0]] if first else []
+
+    chat_to_groups = {}
+    for sub in get_group_subscriptions():
+        if '$' not in sub:
+            continue
+        cid, grp = sub.split('$', 1)
+        chat_to_groups.setdefault(cid, set()).add(grp)
+
+    for plot_path, message, ticker in zip(plot_paths, messages, tickers):
+        targets = set(all_subscribers)
+        ticker_groups = ticker_to_groups.get(ticker, set())
+        for cid, grps in chat_to_groups.items():
+            if grps & ticker_groups:
+                targets.add(cid)
+        for chat_id in targets:
+            try:
+                await send_plot_with_message(
+                    plot_path=plot_path,
+                    message=message,
+                    chat_id=chat_id,
+                    context=context,
+                )
+            except Exception as e:
+                logging.error(f"Failed to send plot with message to {chat_id}: {e}")
 
 
 async def send_plots_to_all(plot_paths, context: ContextTypes.DEFAULT_TYPE, messages=None):
@@ -405,6 +549,14 @@ async def set_commands(context: ContextTypes.DEFAULT_TYPE):
         BotCommand(command='unsubscribe_all', description='/unsubscribe_all'),
         BotCommand(command='subscriptions', description='List your subscriptions'),
         BotCommand(command='subs', description='List your subscriptions (alias for /subscriptions)'),
+        BotCommand(command='subscribe_group', description='/subscribe_group euro_stoxx_50'),
+        BotCommand(command='sub_group', description='/sub_group euro_stoxx_50 (alias for /subscribe_group)'),
+        BotCommand(command='unsubscribe_group', description='/unsubscribe_group euro_stoxx_50'),
+        BotCommand(command='unsub_group', description='/unsub_group euro_stoxx_50 (alias for /unsubscribe_group)'),
+        BotCommand(command='unsubscribe_all_groups', description='/unsubscribe_all_groups'),
+        BotCommand(command='group_subscriptions', description='List your group subscriptions'),
+        BotCommand(command='group_subs', description='List your group subscriptions (alias)'),
+        BotCommand(command='groups', description='List available ticker groups'),
     ]
     await context.bot.set_my_commands(commands)
 
@@ -439,6 +591,21 @@ def get_handling_application():
 
     subscriptions_handler = CommandHandler(['subscriptions', 'subs'], handle_subscriptions)
     application.add_handler(subscriptions_handler)
+
+    subscribe_group_handler = CommandHandler(['subscribe_group', 'sub_group'], handle_subscribe_group)
+    application.add_handler(subscribe_group_handler)
+
+    unsubscribe_group_handler = CommandHandler(['unsubscribe_group', 'unsub_group'], handle_unsubscribe_group)
+    application.add_handler(unsubscribe_group_handler)
+
+    unsubscribe_all_groups_handler = CommandHandler('unsubscribe_all_groups', handle_unsubscribe_all_groups)
+    application.add_handler(unsubscribe_all_groups_handler)
+
+    group_subscriptions_handler = CommandHandler(['group_subscriptions', 'group_subs'], handle_group_subscriptions)
+    application.add_handler(group_subscriptions_handler)
+
+    groups_handler = CommandHandler('groups', handle_groups)
+    application.add_handler(groups_handler)
 
     ticker_handler = MessageHandler(filters.TEXT & ~filters.COMMAND, handle_ticker_message)
     application.add_handler(ticker_handler)
