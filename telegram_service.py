@@ -1,13 +1,10 @@
 import asyncio
 import logging
 
-import telegram
 from telegram import Update, InputMediaPhoto, BotCommand, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, CallbackQueryHandler, filters
 import yfinance as yf
 
-# import option_utility
-import ta_utility
 import yfinance_service
 from message_utility import get_subscriptions
 from message_utility import subscriptions_file
@@ -29,10 +26,6 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
-
-
-def escape_markdown(text):
-    return telegram.helpers.escape_markdown(text, version=2)
 
 
 def get_token():
@@ -469,21 +462,6 @@ async def handle_reversal(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(message, parse_mode='MarkdownV2')
     except Exception as e:
         await update.message.reply_text(f"An error occurred: {str(e)}")
-
-
-def extract_option_close_delta_and_ticker(context):
-    option_close = float(context.args[0])
-
-    if len(context.args) > 1:
-        delta = float(context.args[1])
-    else:
-        delta = 0.0
-
-    if len(context.args) > 2:
-        ticker = context.args[1]
-    else:
-        ticker = '^GSPC'
-    return option_close, delta, ticker
 
 
 async def end(update: Update, context: ContextTypes.DEFAULT_TYPE):
