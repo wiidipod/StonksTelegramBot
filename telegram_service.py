@@ -193,7 +193,13 @@ async def handle_group_subscriptions(update: Update, context: ContextTypes.DEFAU
     await send_message_to_chat_id(chat_id, message, context=context)
 
 
-def build_groups_keyboard(subscribed, counts):
+async def _build_groups_keyboard_for_chat(chat_id):
+    subscribed = set(get_group_subscriptions_for_chat(chat_id))
+    try:
+        counts = await get_group_counts_async()
+    except Exception as e:
+        logging.error(f"Failed to fetch group counts: {e}")
+        counts = {}
     rows = []
     for name in list_group_names():
         marker = "✅" if name in subscribed else "☐"
@@ -206,13 +212,7 @@ def build_groups_keyboard(subscribed, counts):
 
 async def handle_groups(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
-    subscribed = set(get_group_subscriptions_for_chat(chat_id))
-    try:
-        counts = await get_group_counts_async()
-    except Exception as e:
-        logging.error(f"Failed to fetch group counts: {e}")
-        counts = {}
-    keyboard = build_groups_keyboard(subscribed, counts)
+    keyboard = await _build_groups_keyboard_for_chat(chat_id)
     try:
         await context.bot.send_message(
             chat_id=chat_id,
@@ -244,13 +244,7 @@ async def handle_group_toggle(update: Update, context: ContextTypes.DEFAULT_TYPE
         action = "Subscribed to"
     await query.answer(f"{action} {group}")
 
-    subscribed = set(get_group_subscriptions_for_chat(chat_id))
-    try:
-        counts = await get_group_counts_async()
-    except Exception as e:
-        logging.error(f"Failed to fetch group counts: {e}")
-        counts = {}
-    keyboard = build_groups_keyboard(subscribed, counts)
+    keyboard = await _build_groups_keyboard_for_chat(chat_id)
     try:
         await query.edit_message_reply_markup(reply_markup=keyboard)
     except Exception as e:
