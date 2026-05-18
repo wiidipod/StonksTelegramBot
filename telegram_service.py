@@ -204,7 +204,12 @@ async def handle_group_subscriptions(update: Update, context: ContextTypes.DEFAU
 async def handle_groups(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
     names = list_group_names()
-    message = "Available groups:\n" + "\n".join(f"- `{name}`" for name in names)
+    subscribed = set(get_group_subscriptions_for_chat(chat_id))
+    lines = ["Available groups:"]
+    for name in names:
+        marker = "✅" if name in subscribed else "☐"
+        lines.append(f"{marker} `{name}`")
+    message = "\n".join(lines)
     await send_message_to_chat_id(chat_id, message, context=context)
 
 
