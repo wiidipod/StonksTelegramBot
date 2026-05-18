@@ -14,6 +14,14 @@ class P(Enum):
     C = 'Close'
 
 
+def ticker_exists(ticker):
+    try:
+        df = yf.Ticker(ticker).history(period='5d')
+        return not df.empty
+    except Exception:
+        return False
+
+
 def get_price(ticker, period='1d', interval='1m'):
     def _fetch_history():
         return yf.Ticker(ticker).history(period=period, interval=interval)

@@ -64,17 +64,27 @@ async def handle_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
     lines = []
     for ticker in [arg.upper() for arg in context.args]:
         subscriptions = get_subscriptions()
+        if f'{chat_id}${ticker}' in subscriptions:
+            try:
+                name = yfinance_service.get_name(ticker, mono=True)
+            except:
+                name = ticker
+            lines.append(f"You are already subscribed to {name}!")
+            continue
+
+        exists = await asyncio.to_thread(yfinance_service.ticker_exists, ticker)
+        if not exists:
+            lines.append(f"Ticker `{ticker}` not found. Subscription rejected.")
+            continue
+
         try:
             name = yfinance_service.get_name(ticker, mono=True)
         except:
             name = ticker
-        if f'{chat_id}${ticker}' not in subscriptions:
-            subscriptions.append(f'{chat_id}${ticker}')
-            with open(subscriptions_file, 'w') as file:
-                file.write('\n'.join(subscriptions))
-            lines.append(f"You have been subscribed to {name}!")
-        else:
-            lines.append(f"You are already subscribed to {name}!")
+        subscriptions.append(f'{chat_id}${ticker}')
+        with open(subscriptions_file, 'w') as file:
+            file.write('\n'.join(subscriptions))
+        lines.append(f"You have been subscribed to {name}!")
     await send_message_to_chat_id(chat_id, '\n'.join(lines), context=context)
 
 
