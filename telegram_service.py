@@ -630,90 +630,46 @@ async def send_message_to_first(message, context: ContextTypes.DEFAULT_TYPE):
     await send_message_to_chat_id(chat_id, message, context)
 
 
+HANDLERS = [
+    # (command, aliases, description, handler_fn)
+    ('start', None, 'Subscribe to daily updates', start),
+    ('end', None, 'Unsubscribe from daily updates', end),
+    ('analyze', None, '/analyze AAPL', handle_analyze),
+    ('subscribe', ['sub'], '/subscribe AAPL', handle_subscribe),
+    ('unsubscribe', ['unsub'], '/unsubscribe AAPL', handle_unsubscribe),
+    ('unsubscribe_all', None, '/unsubscribe_all', handle_unsubscribe_all),
+    ('subscriptions', ['subs'], 'List your subscriptions', handle_subscriptions),
+    ('subscribe_group', ['sub_group'], '/subscribe_group euro_stoxx_50', handle_subscribe_group),
+    ('unsubscribe_group', ['unsub_group'], '/unsubscribe_group euro_stoxx_50', handle_unsubscribe_group),
+    ('unsubscribe_all_groups', None, '/unsubscribe_all_groups', handle_unsubscribe_all_groups),
+    ('group_subscriptions', ['group_subs'], 'List your group subscriptions', handle_group_subscriptions),
+    ('groups', None, 'List available ticker groups', handle_groups),
+    ('status', None, 'Show daily, ticker, and group subscriptions', handle_status),
+    ('help', None, 'Show all commands and what they do', handle_help),
+]
+
+
 async def set_commands(context: ContextTypes.DEFAULT_TYPE):
-    commands = [
-        BotCommand(command='start', description='Subscribe to daily updates'),
-        BotCommand(command='end', description='Unsubscribe from daily updates'),
-        BotCommand(command='analyze', description='/analyze AAPL'),
-        BotCommand(command='subscribe', description='/subscribe AAPL'),
-        BotCommand(command='sub', description='/sub AAPL (alias for /subscribe)'),
-        BotCommand(command='unsubscribe', description='/unsubscribe AAPL'),
-        BotCommand(command='unsub', description='/unsub AAPL (alias for /unsubscribe)'),
-        BotCommand(command='unsubscribe_all', description='/unsubscribe_all'),
-        BotCommand(command='subscriptions', description='List your subscriptions'),
-        BotCommand(command='subs', description='List your subscriptions (alias for /subscriptions)'),
-        BotCommand(command='subscribe_group', description='/subscribe_group euro_stoxx_50'),
-        BotCommand(command='sub_group', description='/sub_group euro_stoxx_50 (alias for /subscribe_group)'),
-        BotCommand(command='unsubscribe_group', description='/unsubscribe_group euro_stoxx_50'),
-        BotCommand(command='unsub_group', description='/unsub_group euro_stoxx_50 (alias for /unsubscribe_group)'),
-        BotCommand(command='unsubscribe_all_groups', description='/unsubscribe_all_groups'),
-        BotCommand(command='group_subscriptions', description='List your group subscriptions'),
-        BotCommand(command='group_subs', description='List your group subscriptions (alias)'),
-        BotCommand(command='groups', description='List available ticker groups'),
-        BotCommand(command='status', description='Show daily, ticker, and group subscriptions'),
-        BotCommand(command='help', description='Show all commands and what they do'),
-    ]
+    commands = []
+    for name, aliases, description, _ in HANDLERS:
+        commands.append(BotCommand(command=name, description=description))
+        for alias in aliases or []:
+            commands.append(BotCommand(command=alias, description=f'/{alias} (alias for /{name})'))
     await context.bot.set_my_commands(commands)
 
 
 def get_application():
     token = get_token()
-    application = ApplicationBuilder().token(token).build()
-
-    return application
+    return ApplicationBuilder().token(token).build()
 
 
 def get_handling_application():
     application = get_application()
-
-    start_handler = CommandHandler('start', start)
-    application.add_handler(start_handler)
-
-    end_handler = CommandHandler('end', end)
-    application.add_handler(end_handler)
-
-    analyze_handler = CommandHandler('analyze', handle_analyze)
-    application.add_handler(analyze_handler)
-
-    subscribe_handler = CommandHandler(['subscribe', 'sub'], handle_subscribe)
-    application.add_handler(subscribe_handler)
-
-    unsubscribe_handler = CommandHandler(['unsubscribe', 'unsub'], handle_unsubscribe)
-    application.add_handler(unsubscribe_handler)
-
-    unsubscribe_all_handler = CommandHandler('unsubscribe_all', handle_unsubscribe_all)
-    application.add_handler(unsubscribe_all_handler)
-
-    subscriptions_handler = CommandHandler(['subscriptions', 'subs'], handle_subscriptions)
-    application.add_handler(subscriptions_handler)
-
-    subscribe_group_handler = CommandHandler(['subscribe_group', 'sub_group'], handle_subscribe_group)
-    application.add_handler(subscribe_group_handler)
-
-    unsubscribe_group_handler = CommandHandler(['unsubscribe_group', 'unsub_group'], handle_unsubscribe_group)
-    application.add_handler(unsubscribe_group_handler)
-
-    unsubscribe_all_groups_handler = CommandHandler('unsubscribe_all_groups', handle_unsubscribe_all_groups)
-    application.add_handler(unsubscribe_all_groups_handler)
-
-    group_subscriptions_handler = CommandHandler(['group_subscriptions', 'group_subs'], handle_group_subscriptions)
-    application.add_handler(group_subscriptions_handler)
-
-    groups_handler = CommandHandler('groups', handle_groups)
-    application.add_handler(groups_handler)
-
-    group_toggle_handler = CallbackQueryHandler(handle_group_toggle, pattern=r'^grp:')
-    application.add_handler(group_toggle_handler)
-
-    help_handler = CommandHandler('help', handle_help)
-    application.add_handler(help_handler)
-
-    status_handler = CommandHandler('status', handle_status)
-    application.add_handler(status_handler)
-
-    ticker_handler = MessageHandler(filters.TEXT & ~filters.COMMAND, handle_ticker_message)
-    application.add_handler(ticker_handler)
-
+    for name, aliases, _, fn in HANDLERS:
+        names = [name] + list(aliases or [])
+        application.add_handler(CommandHandler(names, fn))
+    application.add_handler(CallbackQueryHandler(handle_group_toggle, pattern=r'^grp:'))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_ticker_message))
     return application
 
 
