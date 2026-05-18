@@ -213,6 +213,39 @@ async def handle_groups(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await send_message_to_chat_id(chat_id, message, context=context)
 
 
+async def handle_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = str(update.effective_chat.id)
+    message = (
+        "**StonksBot Commands**\n"
+        "\n"
+        "📊 **Analysis**\n"
+        "- `/analyze TICKER` — analyze a ticker on demand\n"
+        "- Send one or more tickers as plain text to analyze them\n"
+        "\n"
+        "🔔 **Daily updates (all tickers)**\n"
+        "- `/start` — opt in to daily plots for every ticker\n"
+        "- `/end` — opt out\n"
+        "\n"
+        "📌 **Single-ticker subscriptions**\n"
+        "- `/subscribe TICKER` (alias `/sub`) — subscribe to a ticker\n"
+        "- `/unsubscribe TICKER` (alias `/unsub`)\n"
+        "- `/unsubscribe_all`\n"
+        "- `/subscriptions` (alias `/subs`) — list your tickers\n"
+        "\n"
+        "📁 **Group subscriptions**\n"
+        "- `/groups` — list all groups, marks the ones you are subscribed to\n"
+        "- `/subscribe_group NAME ...` (alias `/sub_group`)\n"
+        "- `/unsubscribe_group NAME ...` (alias `/unsub_group`)\n"
+        "- `/unsubscribe_all_groups`\n"
+        "- `/group_subscriptions` (alias `/group_subs`) — list your groups\n"
+        "\n"
+        "ℹ️ **Other**\n"
+        "- `/reversal` — S&P 500 reversal pattern check\n"
+        "- `/help` — show this message"
+    )
+    await send_message_to_chat_id(chat_id, message, context=context)
+
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
     subscribers = get_subscribers()
@@ -562,6 +595,7 @@ async def set_commands(context: ContextTypes.DEFAULT_TYPE):
         BotCommand(command='group_subscriptions', description='List your group subscriptions'),
         BotCommand(command='group_subs', description='List your group subscriptions (alias)'),
         BotCommand(command='groups', description='List available ticker groups'),
+        BotCommand(command='help', description='Show all commands and what they do'),
     ]
     await context.bot.set_my_commands(commands)
 
@@ -611,6 +645,9 @@ def get_handling_application():
 
     groups_handler = CommandHandler('groups', handle_groups)
     application.add_handler(groups_handler)
+
+    help_handler = CommandHandler('help', handle_help)
+    application.add_handler(help_handler)
 
     ticker_handler = MessageHandler(filters.TEXT & ~filters.COMMAND, handle_ticker_message)
     application.add_handler(ticker_handler)
