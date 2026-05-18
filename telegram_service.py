@@ -106,17 +106,25 @@ async def handle_unsubscribe_all(update: Update, context: ContextTypes.DEFAULT_T
     chat_id = str(update.effective_chat.id)
     subscriptions = get_subscriptions()
 
-    original_length = len(subscriptions)
-    subscriptions = [sub for sub in subscriptions if not sub.startswith(f'{chat_id}$')]
+    user_subs = [sub for sub in subscriptions if sub.startswith(f'{chat_id}$')]
 
-    if len(subscriptions) < original_length:
-        with open(subscriptions_file, 'w') as file:
-            file.write('\n'.join(subscriptions))
-            message = "You have been unsubscribed from all tickers!"
-    else:
-        message = "You have no subscriptions to unsubscribe from!"
+    if not user_subs:
+        await send_message_to_chat_id(chat_id, "You have no subscriptions to unsubscribe from!", context=context)
+        return
 
-    await send_message_to_chat_id(chat_id, message, context=context)
+    confirmed = len(context.args) >= 1 and context.args[0].lower() == 'confirm'
+    if not confirmed:
+        message = (
+            f"This will remove {len(user_subs)} ticker subscription(s).\n"
+            "Reply with `/unsubscribe_all confirm` to proceed."
+        )
+        await send_message_to_chat_id(chat_id, message, context=context)
+        return
+
+    remaining = [sub for sub in subscriptions if not sub.startswith(f'{chat_id}$')]
+    with open(subscriptions_file, 'w') as file:
+        file.write('\n'.join(remaining))
+    await send_message_to_chat_id(chat_id, "You have been unsubscribed from all tickers!", context=context)
 
 
 async def handle_subscriptions(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -182,17 +190,25 @@ async def handle_unsubscribe_all_groups(update: Update, context: ContextTypes.DE
     chat_id = str(update.effective_chat.id)
     existing = get_group_subscriptions()
 
-    original_length = len(existing)
-    existing = [sub for sub in existing if not sub.startswith(f'{chat_id}$')]
+    user_groups = [sub for sub in existing if sub.startswith(f'{chat_id}$')]
 
-    if len(existing) < original_length:
-        with open(group_subscriptions_file, 'w') as file:
-            file.write('\n'.join(existing))
-        message = "You have been unsubscribed from all groups!"
-    else:
-        message = "You have no group subscriptions to unsubscribe from!"
+    if not user_groups:
+        await send_message_to_chat_id(chat_id, "You have no group subscriptions to unsubscribe from!", context=context)
+        return
 
-    await send_message_to_chat_id(chat_id, message, context=context)
+    confirmed = len(context.args) >= 1 and context.args[0].lower() == 'confirm'
+    if not confirmed:
+        message = (
+            f"This will remove {len(user_groups)} group subscription(s).\n"
+            "Reply with `/unsubscribe_all_groups confirm` to proceed."
+        )
+        await send_message_to_chat_id(chat_id, message, context=context)
+        return
+
+    remaining = [sub for sub in existing if not sub.startswith(f'{chat_id}$')]
+    with open(group_subscriptions_file, 'w') as file:
+        file.write('\n'.join(remaining))
+    await send_message_to_chat_id(chat_id, "You have been unsubscribed from all groups!", context=context)
 
 
 async def handle_group_subscriptions(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -229,14 +245,14 @@ async def handle_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "📌 **Single-ticker subscriptions**\n"
         "- `/subscribe TICKER` (alias `/sub`) — subscribe to a ticker\n"
         "- `/unsubscribe TICKER` (alias `/unsub`)\n"
-        "- `/unsubscribe_all`\n"
+        "- `/unsubscribe_all confirm` — wipe all ticker subs (requires `confirm`)\n"
         "- `/subscriptions` (alias `/subs`) — list your tickers\n"
         "\n"
         "📁 **Group subscriptions**\n"
         "- `/groups` — list all groups, marks the ones you are subscribed to\n"
         "- `/subscribe_group NAME ...` (alias `/sub_group`)\n"
         "- `/unsubscribe_group NAME ...` (alias `/unsub_group`)\n"
-        "- `/unsubscribe_all_groups`\n"
+        "- `/unsubscribe_all_groups confirm` — wipe all group subs (requires `confirm`)\n"
         "- `/group_subscriptions` (alias `/group_subs`) — list your groups\n"
         "\n"
         "ℹ️ **Other**\n"
