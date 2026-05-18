@@ -2,8 +2,8 @@ import asyncio
 import logging
 
 import telegram
-from telegram import Update, InputMediaPhoto, BotCommand
-from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
+from telegram import Update, InputMediaPhoto, BotCommand, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, CallbackQueryHandler, filters
 import yfinance as yf
 
 # import option_utility
@@ -227,23 +227,73 @@ async def handle_group_subscriptions(update: Update, context: ContextTypes.DEFAU
     await send_message_to_chat_id(chat_id, message, context=context)
 
 
+def build_groups_keyboard(subscribed, counts):
+    rows = []
+    for name in list_group_names():
+        marker = "✅" if name in subscribed else "☐"
+        count = counts.get(name)
+        count_str = f" ({count})" if isinstance(count, int) else ""
+        text = f"{marker} {name}{count_str}"
+        rows.append([InlineKeyboardButton(text, callback_data=f"grp:{name}")])
+    return InlineKeyboardMarkup(rows)
+
+
 async def handle_groups(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
-    names = list_group_names()
     subscribed = set(get_group_subscriptions_for_chat(chat_id))
     try:
         counts = await get_group_counts_async()
     except Exception as e:
         logging.error(f"Failed to fetch group counts: {e}")
         counts = {}
-    lines = ["Available groups:"]
-    for name in names:
-        marker = "✅" if name in subscribed else "☐"
-        count = counts.get(name)
-        count_str = f" ({count})" if isinstance(count, int) else ""
-        lines.append(f"{marker} `{name}`{count_str}")
-    message = "\n".join(lines)
-    await send_message_to_chat_id(chat_id, message, context=context)
+    keyboard = build_groups_keyboard(subscribed, counts)
+    try:
+        await context.bot.send_message(
+            chat_id=chat_id,
+            text="Tap a group to toggle subscription:",
+            reply_markup=keyboard,
+        )
+    except Exception as e:
+        logging.error(f"Failed to send groups keyboard to {chat_id}: {e}")
+
+
+async def handle_group_toggle(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    if query is None or query.data is None:
+        return
+    chat_id = str(query.message.chat.id)
+    data = query.data
+    if not data.startswith("grp:"):
+        await query.answer()
+        return
+    group = data[len("grp:"):]
+    if not is_valid_group(group):
+        await query.answer("Unknown group")
+        return
+
+    existing = get_group_subscriptions()
+    entry = f"{chat_id}${group}"
+    if entry in existing:
+        existing.remove(entry)
+        action = "Unsubscribed from"
+    else:
+        existing.append(entry)
+        action = "Subscribed to"
+    with open(group_subscriptions_file, 'w') as file:
+        file.write('\n'.join(existing))
+    await query.answer(f"{action} {group}")
+
+    subscribed = set(get_group_subscriptions_for_chat(chat_id))
+    try:
+        counts = await get_group_counts_async()
+    except Exception as e:
+        logging.error(f"Failed to fetch group counts: {e}")
+        counts = {}
+    keyboard = build_groups_keyboard(subscribed, counts)
+    try:
+        await query.edit_message_reply_markup(reply_markup=keyboard)
+    except Exception as e:
+        logging.error(f"Failed to update groups keyboard: {e}")
 
 
 async def handle_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -701,6 +751,9 @@ def get_handling_application():
 
     groups_handler = CommandHandler('groups', handle_groups)
     application.add_handler(groups_handler)
+
+    group_toggle_handler = CallbackQueryHandler(handle_group_toggle, pattern=r'^grp:')
+    application.add_handler(group_toggle_handler)
 
     help_handler = CommandHandler('help', handle_help)
     application.add_handler(help_handler)
