@@ -1,12 +1,13 @@
 import math
+import os
 
 import yfinance_service
-from constants import DictionaryKeysNew
+from constants import DictionaryKeysNew, PROJECT_DIR
 from ticker_service import sort_tickers
 import telegramify_markdown
 
-subscriptions_file = '/home/moritz/PycharmProjects/StonksTelegramBot/subscriptions.txt'
-group_subscriptions_file = '/home/moritz/PycharmProjects/StonksTelegramBot/group_subscriptions.txt'
+subscriptions_file = os.path.join(PROJECT_DIR, 'subscriptions.txt')
+group_subscriptions_file = os.path.join(PROJECT_DIR, 'group_subscriptions.txt')
 
 
 def escape_characters_for_markdown(text):

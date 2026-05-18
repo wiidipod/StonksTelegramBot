@@ -9,6 +9,8 @@ import requests
 import yfinance
 from bs4 import BeautifulSoup
 
+from constants import PROJECT_DIR
+
 
 def chunk_list(lst, chunk_size):
     for list_index in range(0, len(lst), chunk_size):
@@ -798,8 +800,7 @@ def build_ticker_to_groups(group_names):
     return ticker_to_groups
 
 
-_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-GROUP_COUNTS_FILE = os.path.join(_SCRIPT_DIR, 'group_counts.json')
+GROUP_COUNTS_FILE = os.path.join(PROJECT_DIR, 'group_counts.json')
 _GROUP_COUNT_TTL = 36 * 60 * 60  # tolerate up to 36h since daily job is once-per-day
 
 

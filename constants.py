@@ -1,7 +1,9 @@
+import os
 from enum import Enum
 
 
-output_directory = '/home/moritz/PycharmProjects/StonksTelegramBot/output/'
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+output_directory = os.path.join(PROJECT_DIR, 'output') + os.sep
 
 
 class CommonDictionaryKey(Enum):

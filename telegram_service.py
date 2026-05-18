@@ -1,11 +1,13 @@
 import asyncio
 import logging
+import os
 
 from telegram import Update, InputMediaPhoto, BotCommand, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, CallbackQueryHandler, filters
 import yfinance as yf
 
 import yfinance_service
+from constants import PROJECT_DIR
 from message_utility import get_subscriptions
 from message_utility import subscriptions_file
 from message_utility import get_subscriptions_message
@@ -19,7 +21,8 @@ from message_utility import (
 import pe_utility
 from ticker_service import is_stock, is_valid_group, list_group_names, get_group_counts_async
 
-subscribers_file = '/home/moritz/PycharmProjects/StonksTelegramBot/subscribers.txt'
+subscribers_file = os.path.join(PROJECT_DIR, 'subscribers.txt')
+token_file = os.path.join(PROJECT_DIR, 'token')
 
 
 logging.basicConfig(
@@ -30,7 +33,7 @@ logging.basicConfig(
 
 def get_token():
     try:
-        with open('/home/moritz/PycharmProjects/StonksTelegramBot/token', 'r') as file:
+        with open(token_file, 'r') as file:
             token = file.read().strip()
     except FileNotFoundError:
         logging.error("Token file not found.")
