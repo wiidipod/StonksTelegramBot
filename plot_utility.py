@@ -257,17 +257,8 @@ def plot_with_ta(
             color = 'tab:cyan'
         else:
             color = 'tab:gray'
-        # plt.plot(growth[start_index:end_index], color=color, linestyle='dashed')
         plt.fill_between(x, growth_high[start_index:end_index], growth_low[start_index:end_index], color=color, linestyle='dashed')
 
-    # if upperband and lowerband:
-    #     plot_supertrend(
-    #         upperband[start_index:],
-    #         lowerband[start_index:],
-    #         price_subplot,
-    #     )
-
-    # price_subplot.plot(close[start_index:end_index], label='Close')
     price_subplot.fill_between(x, high[start_index:end_index], low[start_index:end_index])
 
     for i, sma in enumerate(smas):

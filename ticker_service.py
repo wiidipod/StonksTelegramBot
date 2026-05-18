@@ -211,16 +211,6 @@ def get_hang_seng_tickers():
 
 
 def get_nikkei_225_tickers():
-    # source = 'https://de.wikipedia.org/wiki/Nikkei_225'
-    # attribute = 'class'
-    # name = 'wikitable'
-    # table_index = -1
-    # column = 1
-    # exchange = 'T'
-    # tickers = get_tickers(source, attribute=attribute, name=name, table_index=table_index, column=column, exchange=exchange)
-    # # tickers.append('^N225')
-    # return tickers
-
     headers = {'User-Agent': 'Mozilla/5.0'}
     source = 'https://en.wikipedia.org/wiki/Nikkei_225'
     response = requests.get(source, headers=headers)
@@ -380,8 +370,6 @@ def get_energy_tickers():
     column = 3
     tickers = get_tickers(source, attribute=attribute, name=name, table_index=table_index, column=column, is_future=True)
     return tickers
-    # tickers = [ticker.split(' ') for ticker in tickers]
-    # return [ticker for ticker in tickers if '(' not in ticker]
 
 
 def get_atx_tickers():
@@ -1228,14 +1216,8 @@ def get_all_tickers():
     tickers = sort_tickers(list(set(tickers)))
     print(f"Total tickers collected: {len(tickers)}")
     return tickers
-    # return tickers
 
 
 if __name__ == '__main__':
-    # print(get_energy_tickers())
-    # print(get_precious_metals_tickers())
-    # print(get_cryptocurrency_tickers())
-
     main_tickers = get_all_tickers()
     print(len(main_tickers))
-    # print(main_tickers)

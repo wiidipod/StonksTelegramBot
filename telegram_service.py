@@ -399,33 +399,6 @@ async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 logging.error(f"Failed to send error message to chat: {send_error}. Original error: {e}")
 
 
-# async def handle_stop_loss(update: Update, context: ContextTypes.DEFAULT_TYPE):
-#     try:
-#         if len(context.args) < 1:
-#             await update.message.reply_text("Invalid input. Try `/stoploss 1.23`", parse_mode='MarkdownV2')
-#             return
-#
-#         option_close, delta, ticker = extract_option_close_delta_and_ticker(context)
-#
-#         high, low, close = yfinance_service.get_high_low_close(ticker, period='1y')
-#         upperband, lowerband = ta_utility.get_supertrend(high, low, close)
-#         if upperband[-1] is None:
-#             supertrend = lowerband[-1]
-#         else:
-#             supertrend = upperband[-1]
-#
-#         stop_loss = option_utility.get_stop_loss(
-#             option_close=option_close,
-#             supertrend=supertrend,
-#             delta=delta,
-#             ticker=ticker,
-#         )
-#
-#         await update.message.reply_text(f"Stop Loss: {stop_loss}")
-#     except ValueError:
-#         await update.message.reply_text("Invalid input. Please provide a valid number.")
-#     except Exception as e:
-#         await update.message.reply_text(f"An error occurred: {str(e)}")
 
 
 async def handle_reversal(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -492,10 +465,7 @@ async def send_plots_to_chat_id(plot_paths, chat_id, context: ContextTypes.DEFAU
 
 async def send_plot_with_message(plot_path, message, chat_id, context: ContextTypes.DEFAULT_TYPE):
     try:
-        with open(plot_path, 'rb') as photo_file:  # , open(message, 'r', encoding='utf-8') as message_file:
-            # caption = escape_markdown(message_file.read(), version=2)
-            # caption = escape_characters_for_markdown(message_file.read())
-            # caption = message_file.read()
+        with open(plot_path, 'rb') as photo_file:
             await context.bot.send_photo(
                 chat_id=chat_id,
                 photo=photo_file,
@@ -616,7 +586,6 @@ async def send_subscriptions_to_first_chat_id(context: ContextTypes.DEFAULT_TYPE
 async def send_message_to_chat_id(chat_id, message, context: ContextTypes.DEFAULT_TYPE):
     try:
         message = escape_characters_for_markdown(message)
-        # message = escape_markdown(message, version=2)
         await context.bot.send_message(chat_id=chat_id, text=message, parse_mode='MarkdownV2')
     except Exception as e:
         logging.error(f"Failed to send message to {chat_id}: {e}")
@@ -751,7 +720,6 @@ if __name__ == "__main__":
     name = yfinance_service.get_name('ADBE', mono=True, with_link=True)
     print(name)
     name = escape_characters_for_markdown(name)
-    # name = name.replace('\\', '\\\\').replace(')', '\\)')
     print(name)
     asyncio.run(
         send_message_to_first(
@@ -759,9 +727,3 @@ if __name__ == "__main__":
             context=main_application,
         )
     )
-    # asyncio.run(set_commands(main_application))
-
-    # asyncio.run(send_subscriptions_to_first_chat_id(context=main_application))
-
-    # text = "EUZ.DE (P/E: 12.34)"
-    # print(escape_markdown(text, version=2))

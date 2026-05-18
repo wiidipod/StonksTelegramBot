@@ -124,28 +124,8 @@ def human_format_from_string(num_str):
 
 
 if __name__ == "__main__":
-    # text_main = "EUZ.DE (P/E: 12.34)"
-    # print(escape_characters_for_markdown(text_main))
-
     print(round_down(35.05154639175, digits=1))
     print(round_down(35.05154639175, digits=2))
     print(round_down(35.05154639175, digits=3))
     print(round_down(35.05154639175, digits=4))
     print(round_down(35.05154639175, digits=5))
-
-
-# print(human_format_from_string("0.0"))
-    # print(human_format_from_string("12345"))
-    # print(human_format_from_string("543"))
-    # print(human_format_from_string("0.0098765"))
-    # print(human_format_from_string("-10.12345"))
-    # print(human_format_from_string("1.23"))
-    # print(human_format_from_string("0.01012345"))
-    #
-    # print(round_up(0.0))
-    # print(round_up(12345))
-    # print(round_up(543))
-    # print(round_up(0.0098765))
-    # print(round_up(-10.12345))
-    # print(round_up(1.23))
-    # print(round_up(0.01012345))
