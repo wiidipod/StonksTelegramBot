@@ -73,30 +73,68 @@ async def get_subscriptions_message(chat_id):
     return message
 
 
-def get_subscriptions():
+def _load_lines(path):
     try:
-        with open(subscriptions_file, 'r') as file:
-            subscriptions = file.read().splitlines()
+        with open(path, 'r') as file:
+            return [line for line in file.read().splitlines() if line.strip()]
     except FileNotFoundError:
-        subscriptions = []
-    return subscriptions
+        return []
+
+
+def _save_lines(path, lines):
+    with open(path, 'w') as file:
+        file.write('\n'.join(lines))
+
+
+def add_entry(file_path, chat_id, item):
+    """Append `chat_id$item` if absent. Return True if added, False if duplicate."""
+    entries = _load_lines(file_path)
+    key = f'{chat_id}${item}'
+    if key in entries:
+        return False
+    entries.append(key)
+    _save_lines(file_path, entries)
+    return True
+
+
+def remove_entry(file_path, chat_id, item):
+    """Remove `chat_id$item` if present. Return True if removed, False if absent."""
+    entries = _load_lines(file_path)
+    key = f'{chat_id}${item}'
+    if key not in entries:
+        return False
+    entries.remove(key)
+    _save_lines(file_path, entries)
+    return True
+
+
+def wipe_entries(file_path, chat_id):
+    """Drop every line starting with `chat_id$`. Return count removed."""
+    entries = _load_lines(file_path)
+    prefix = f'{chat_id}$'
+    remaining = [e for e in entries if not e.startswith(prefix)]
+    removed = len(entries) - len(remaining)
+    if removed > 0:
+        _save_lines(file_path, remaining)
+    return removed
+
+
+def list_entries(file_path, chat_id):
+    """Return items for chat_id (the part after `chat_id$`)."""
+    prefix = f'{chat_id}$'
+    return [e[len(prefix):] for e in _load_lines(file_path) if e.startswith(prefix)]
+
+
+def get_subscriptions():
+    return _load_lines(subscriptions_file)
 
 
 def get_group_subscriptions():
-    try:
-        with open(group_subscriptions_file, 'r') as file:
-            lines = [line for line in file.read().splitlines() if line.strip()]
-    except FileNotFoundError:
-        lines = []
-    return lines
+    return _load_lines(group_subscriptions_file)
 
 
 def get_group_subscriptions_for_chat(chat_id):
-    return sorted({
-        sub.split('$', 1)[1]
-        for sub in get_group_subscriptions()
-        if '$' in sub and sub.split('$', 1)[0] == chat_id
-    })
+    return sorted(set(list_entries(group_subscriptions_file, chat_id)))
 
 
 async def get_group_subscriptions_message(chat_id):

@@ -8,15 +8,17 @@ import yfinance as yf
 
 import yfinance_service
 from constants import PROJECT_DIR
-from message_utility import get_subscriptions
-from message_utility import subscriptions_file
-from message_utility import get_subscriptions_message
-from message_utility import escape_characters_for_markdown
 from message_utility import (
-    group_subscriptions_file,
-    get_group_subscriptions,
+    add_entry,
+    escape_characters_for_markdown,
     get_group_subscriptions_for_chat,
     get_group_subscriptions_message,
+    get_subscriptions_message,
+    group_subscriptions_file,
+    list_entries,
+    remove_entry,
+    subscriptions_file,
+    wipe_entries,
 )
 import pe_utility
 from ticker_service import is_stock, is_valid_group, list_group_names, get_group_counts_async
@@ -50,6 +52,13 @@ def get_subscribers():
     return subscribers
 
 
+def _name_or_ticker(ticker):
+    try:
+        return yfinance_service.get_name(ticker, mono=True)
+    except Exception:
+        return ticker
+
+
 async def handle_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
 
@@ -59,28 +68,14 @@ async def handle_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     lines = []
     for ticker in [arg.upper() for arg in context.args]:
-        subscriptions = get_subscriptions()
-        if f'{chat_id}${ticker}' in subscriptions:
-            try:
-                name = yfinance_service.get_name(ticker, mono=True)
-            except Exception:
-                name = ticker
-            lines.append(f"You are already subscribed to {name}!")
+        if ticker in list_entries(subscriptions_file, chat_id):
+            lines.append(f"You are already subscribed to {_name_or_ticker(ticker)}!")
             continue
-
-        exists = await asyncio.to_thread(yfinance_service.ticker_exists, ticker)
-        if not exists:
+        if not await asyncio.to_thread(yfinance_service.ticker_exists, ticker):
             lines.append(f"Ticker `{ticker}` not found. Subscription rejected.")
             continue
-
-        try:
-            name = yfinance_service.get_name(ticker, mono=True)
-        except Exception:
-            name = ticker
-        subscriptions.append(f'{chat_id}${ticker}')
-        with open(subscriptions_file, 'w') as file:
-            file.write('\n'.join(subscriptions))
-        lines.append(f"You have been subscribed to {name}!")
+        add_entry(subscriptions_file, chat_id, ticker)
+        lines.append(f"You have been subscribed to {_name_or_ticker(ticker)}!")
     await send_message_to_chat_id(chat_id, '\n'.join(lines), context=context)
 
 
@@ -93,15 +88,8 @@ async def handle_unsubscribe(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     lines = []
     for ticker in [arg.upper() for arg in context.args]:
-        subscriptions = get_subscriptions()
-        try:
-            name = yfinance_service.get_name(ticker, mono=True)
-        except Exception:
-            name = ticker
-        if f'{chat_id}${ticker}' in subscriptions:
-            subscriptions.remove(f'{chat_id}${ticker}')
-            with open(subscriptions_file, 'w') as file:
-                file.write('\n'.join(subscriptions))
+        name = _name_or_ticker(ticker)
+        if remove_entry(subscriptions_file, chat_id, ticker):
             lines.append(f"You have been unsubscribed from {name}!")
         else:
             lines.append(f"You are not subscribed to {name}!")
@@ -110,9 +98,7 @@ async def handle_unsubscribe(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
 async def handle_unsubscribe_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
-    subscriptions = get_subscriptions()
-
-    user_subs = [sub for sub in subscriptions if sub.startswith(f'{chat_id}$')]
+    user_subs = list_entries(subscriptions_file, chat_id)
 
     if not user_subs:
         await send_message_to_chat_id(chat_id, "You have no subscriptions to unsubscribe from!", context=context)
@@ -127,9 +113,7 @@ async def handle_unsubscribe_all(update: Update, context: ContextTypes.DEFAULT_T
         await send_message_to_chat_id(chat_id, message, context=context)
         return
 
-    remaining = [sub for sub in subscriptions if not sub.startswith(f'{chat_id}$')]
-    with open(subscriptions_file, 'w') as file:
-        file.write('\n'.join(remaining))
+    wipe_entries(subscriptions_file, chat_id)
     await send_message_to_chat_id(chat_id, "You have been unsubscribed from all tickers!", context=context)
 
 
@@ -156,12 +140,7 @@ async def handle_subscribe_group(update: Update, context: ContextTypes.DEFAULT_T
         if not is_valid_group(group):
             lines.append(f"Unknown group `{group}`. Use /groups to list available groups.")
             continue
-        existing = get_group_subscriptions()
-        entry = f'{chat_id}${group}'
-        if entry not in existing:
-            existing.append(entry)
-            with open(group_subscriptions_file, 'w') as file:
-                file.write('\n'.join(existing))
+        if add_entry(group_subscriptions_file, chat_id, group):
             lines.append(f"You have been subscribed to group `{group}`!")
         else:
             lines.append(f"You are already subscribed to group `{group}`!")
@@ -180,12 +159,7 @@ async def handle_unsubscribe_group(update: Update, context: ContextTypes.DEFAULT
 
     lines = []
     for group in [arg.lower() for arg in context.args]:
-        existing = get_group_subscriptions()
-        entry = f'{chat_id}${group}'
-        if entry in existing:
-            existing.remove(entry)
-            with open(group_subscriptions_file, 'w') as file:
-                file.write('\n'.join(existing))
+        if remove_entry(group_subscriptions_file, chat_id, group):
             lines.append(f"You have been unsubscribed from group `{group}`!")
         else:
             lines.append(f"You are not subscribed to group `{group}`!")
@@ -194,9 +168,7 @@ async def handle_unsubscribe_group(update: Update, context: ContextTypes.DEFAULT
 
 async def handle_unsubscribe_all_groups(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
-    existing = get_group_subscriptions()
-
-    user_groups = [sub for sub in existing if sub.startswith(f'{chat_id}$')]
+    user_groups = list_entries(group_subscriptions_file, chat_id)
 
     if not user_groups:
         await send_message_to_chat_id(chat_id, "You have no group subscriptions to unsubscribe from!", context=context)
@@ -211,9 +183,7 @@ async def handle_unsubscribe_all_groups(update: Update, context: ContextTypes.DE
         await send_message_to_chat_id(chat_id, message, context=context)
         return
 
-    remaining = [sub for sub in existing if not sub.startswith(f'{chat_id}$')]
-    with open(group_subscriptions_file, 'w') as file:
-        file.write('\n'.join(remaining))
+    wipe_entries(group_subscriptions_file, chat_id)
     await send_message_to_chat_id(chat_id, "You have been unsubscribed from all groups!", context=context)
 
 
@@ -267,16 +237,11 @@ async def handle_group_toggle(update: Update, context: ContextTypes.DEFAULT_TYPE
         await query.answer("Unknown group")
         return
 
-    existing = get_group_subscriptions()
-    entry = f"{chat_id}${group}"
-    if entry in existing:
-        existing.remove(entry)
+    if remove_entry(group_subscriptions_file, chat_id, group):
         action = "Unsubscribed from"
     else:
-        existing.append(entry)
+        add_entry(group_subscriptions_file, chat_id, group)
         action = "Subscribed to"
-    with open(group_subscriptions_file, 'w') as file:
-        file.write('\n'.join(existing))
     await query.answer(f"{action} {group}")
 
     subscribed = set(get_group_subscriptions_for_chat(chat_id))
