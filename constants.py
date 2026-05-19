@@ -11,6 +11,20 @@ token_file = os.path.join(PROJECT_DIR, 'token')
 group_counts_file = os.path.join(PROJECT_DIR, 'group_counts.json')
 msci_world_csv = os.path.join(PROJECT_DIR, 'EUNL_holdings.csv')
 
+DEFAULT_GROUPS = [
+    's_p_500',
+    'euro_stoxx_50',
+    'dax',
+    'msci_world',
+    'cryptocurrency_usd',
+    'cryptocurrency_eur',
+    'precious_metals',
+    'energy',
+    'stock_market_indices',
+    'future',
+    'letf',
+]
+
 
 class CommonDictionaryKey(Enum):
     """Base class for dictionary keys that can be used together"""

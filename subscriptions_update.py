@@ -43,11 +43,15 @@ if __name__ == '__main__':
     tickers_main = dict()
     application_main = telegram_service.get_application()
 
-    first_chat_id = telegram_service.get_subscribers()[0]
+    subscribers_list = telegram_service.get_subscribers()
+    enabled_subscribers = set(subscribers_list)
+    first_chat_id = subscribers_list[0] if subscribers_list else None
 
     for subscription in subscriptions:
         chat_id_main, ticker_main = subscription.split('$')
 
+        if chat_id_main not in enabled_subscribers:
+            continue
         if not args.all and chat_id_main != first_chat_id:
             continue
 

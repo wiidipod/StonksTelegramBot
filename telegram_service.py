@@ -3,10 +3,10 @@ import logging
 
 from telegram import Update, InputMediaPhoto, BotCommand, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, CallbackQueryHandler, filters
-import yfinance as yf
 
 import yfinance_service
 from constants import (
+    DEFAULT_GROUPS,
     group_subscriptions_file,
     subscribers_file,
     subscriptions_file,
@@ -257,16 +257,16 @@ async def handle_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ticker_msg = await get_subscriptions_message(chat_id)
     group_msg = await get_group_subscriptions_message(chat_id)
 
-    daily_marker = "✅ subscribed" if daily_all else "☐ not subscribed"
+    daily_marker = "✅ enabled" if daily_all else "☐ disabled"
     parts = [
         "**Your Status**",
         "",
-        f"**Daily updates (all tickers):** {daily_marker} (use /start or /end)",
+        f"**Daily updates:** {daily_marker} (master switch via /start or /end)",
         "",
-        "**Single-ticker subscriptions:**",
+        "**Single-ticker subscriptions** (sent daily, unfiltered)**:**",
         ticker_msg,
         "",
-        "**Group subscriptions:**",
+        "**Group subscriptions** (only undervalued tickers in group are sent)**:**",
         group_msg,
     ]
     await send_message_to_chat_id(chat_id, "\n".join(parts), context=context)
@@ -277,30 +277,29 @@ async def handle_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = (
         "**StonksBot Commands**\n"
         "\n"
-        "📊 **Analysis**\n"
+        "📊 **Analysis (on-demand, anytime)**\n"
         "- `/analyze TICKER` — analyze a ticker on demand\n"
         "- Send one or more tickers as plain text to analyze them\n"
         "\n"
-        "🔔 **Daily updates (all tickers)**\n"
-        "- `/start` — opt in to daily plots for every ticker\n"
-        "- `/end` — opt out\n"
+        "🔔 **Daily updates master switch**\n"
+        "- `/start` — enable daily delivery of your single-ticker and group subscriptions\n"
+        "- `/end` — disable daily delivery (your subscriptions are kept)\n"
         "\n"
-        "📌 **Single-ticker subscriptions**\n"
+        "📌 **Single-ticker subscriptions** — _every subscribed ticker is analyzed and sent daily, no filtering_\n"
         "- `/subscribe TICKER` (alias `/sub`) — subscribe to a ticker\n"
         "- `/unsubscribe TICKER` (alias `/unsub`)\n"
         "- `/unsubscribe_all confirm` — wipe all ticker subs (requires `confirm`)\n"
         "- `/subscriptions` (alias `/subs`) — list your tickers\n"
         "\n"
-        "📁 **Group subscriptions**\n"
-        "- `/groups` — list all groups, marks the ones you are subscribed to\n"
+        "📁 **Group subscriptions** — _each group is scanned daily; only tickers flagged as undervalued are sent_\n"
+        "- `/groups` — interactive keyboard to toggle groups (shows ticker count per group)\n"
         "- `/subscribe_group NAME ...` (alias `/sub_group`)\n"
         "- `/unsubscribe_group NAME ...` (alias `/unsub_group`)\n"
         "- `/unsubscribe_all_groups confirm` — wipe all group subs (requires `confirm`)\n"
         "- `/group_subscriptions` (alias `/group_subs`) — list your groups\n"
         "\n"
         "ℹ️ **Other**\n"
-        "- `/status` — overview of all your subscriptions\n"
-        "- `/reversal` — S&P 500 reversal pattern check\n"
+        "- `/status` — overview of master switch and all subscriptions\n"
         "- `/help` — show this message"
     )
     await send_message_to_chat_id(chat_id, message, context=context)
@@ -314,11 +313,29 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         subscribers.append(chat_id)
         with open(subscribers_file, 'w') as file:
             file.write('\n'.join(subscribers))
-            message = "You have been subscribed!"
+        seeded = _seed_default_groups_if_empty(chat_id)
+        if seeded:
+            message = (
+                "Daily updates enabled. You had no group subscriptions, so I seeded "
+                f"{seeded} default groups for you — use /groups to customize."
+            )
+        else:
+            message = "Daily updates enabled. You will receive your single-ticker and group subscriptions."
     else:
-        message = "You are already subscribed!"
+        message = "Daily updates are already enabled."
 
     await send_message_to_chat_id(chat_id, message, context=context)
+
+
+def _seed_default_groups_if_empty(chat_id):
+    """Seed DEFAULT_GROUPS for chat_id if it has no group subs yet. Return count added."""
+    if list_entries(group_subscriptions_file, chat_id):
+        return 0
+    added = 0
+    for group in DEFAULT_GROUPS:
+        if add_entry(group_subscriptions_file, chat_id, group):
+            added += 1
+    return added
 
 
 async def handle_ticker_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -363,42 +380,6 @@ async def handle_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 
-async def handle_reversal(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    try:
-        gspc = yf.Ticker('^GSPC').history(period='5d', interval='1d')
-        h_today = gspc['High'].iloc[-1]
-        h_yesterday = gspc['High'].iloc[-2]
-        l_today = gspc['Low'].iloc[-1]
-        l_yesterday = gspc['Low'].iloc[-2]
-        c = gspc['Close'].iloc[-1]
-        o = gspc['Open'].iloc[-1]
-        if h_yesterday > h_today and l_yesterday > l_today and o > c:
-            us5l = yf.Ticker('US5L.DE').history(period='5d', interval='1d')
-            message = "Long\nGSPC ``` "
-            message += f"Buy@high0 {h_today:16.8f} \n "
-            message += f"SL@low0 {l_today:16.8f} \n "
-            message += f"PA@high-1 {h_yesterday:16.8f} ``` "
-            message += "US5L ``` "
-            message += f"Buy@high0 {us5l['High'].iloc[-1]:16.8f} \n "
-            message += f"SL@low0 {us5l['Low'].iloc[-1]:16.8f} \n "
-            message += f"PA@high-1 {us5l['High'].iloc[-2]:16.8f} ``` "
-        elif h_yesterday < h_today and l_yesterday < l_today and o < c:
-            us5s = yf.Ticker('US5S.DE').history(period='5d', interval='1d')
-            message = "Short\nGSPC ``` "
-            message += f"Buy@high0 {l_today:16.8f} \n "
-            message += f"SL@low0   {h_today:16.8f} \n "
-            message += f"PA@high-1 {l_yesterday:16.8f} ``` "
-            message += "US5S ``` "
-            message += f"Buy@high0 {us5s['High'].iloc[-1]:16.8f} \n "
-            message += f"SL@low0   {us5s['Low'].iloc[-1]:16.8f} \n "
-            message += f"PA@high-1 {us5s['High'].iloc[-2]:16.8f} ``` "
-        else:
-            message = "Reversal signal not met"
-        await update.message.reply_text(message, parse_mode='MarkdownV2')
-    except Exception as e:
-        await update.message.reply_text(f"An error occurred: {str(e)}")
-
-
 async def end(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
     subscribers = get_subscribers()
@@ -407,9 +388,9 @@ async def end(update: Update, context: ContextTypes.DEFAULT_TYPE):
         subscribers.remove(chat_id)
         with open(subscribers_file, 'w') as file:
             file.write('\n'.join(subscribers))
-            message = "You have been unsubscribed!"
+            message = "Daily updates disabled. Your subscriptions are kept; use /start to re-enable."
     else:
-        message = "You are not subscribed!"
+        message = "Daily updates are already disabled."
 
     await send_message_to_chat_id(chat_id, message, context=context)
 
@@ -472,21 +453,23 @@ async def send_plots_grouped(
     ticker_to_groups,
     to_all=True,
 ):
+    subscribers = get_subscribers()
     if to_all:
-        all_subscribers = get_subscribers()
+        enabled_chats = set(subscribers)
     else:
-        first = get_subscribers()
-        all_subscribers = [first[0]] if first else []
+        enabled_chats = {subscribers[0]} if subscribers else set()
 
     chat_to_groups = {}
     for sub in get_group_subscriptions():
         if '$' not in sub:
             continue
         cid, grp = sub.split('$', 1)
+        if cid not in enabled_chats:
+            continue
         chat_to_groups.setdefault(cid, set()).add(grp)
 
     for plot_path, message, ticker in zip(plot_paths, messages, tickers):
-        targets = set(all_subscribers)
+        targets = set()
         ticker_groups = ticker_to_groups.get(ticker, set())
         for cid, grps in chat_to_groups.items():
             if grps & ticker_groups:
