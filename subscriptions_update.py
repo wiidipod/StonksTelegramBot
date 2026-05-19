@@ -1,4 +1,5 @@
 import telegram_service
+from message_utility import get_subscriptions
 from fundamentals_update_new import get_plot_path_and_message_for
 import logging
 import asyncio
@@ -39,7 +40,7 @@ if __name__ == '__main__':
     parser.add_argument('--all', action='store_true', help='Send plots for every subscription to all subscribers')
     args = parser.parse_args()
 
-    subscriptions = telegram_service.get_subscriptions()
+    subscriptions = get_subscriptions()
     tickers_main = dict()
     application_main = telegram_service.get_application()
 
